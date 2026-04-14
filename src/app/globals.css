@@ -2,26 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Background */
+    --color-bg-primary: #FAF8F5;
+    --color-bg-secondary: #F2EDE8;
+    --color-bg-dark: #1C1815;
+    --color-bg-overlay: rgba(28, 24, 21, 0.55);
+
+    /* Accent */
+    --color-accent: #C9A882;
+    --color-accent-light: #E8D5BE;
+    --color-accent-dark: #8B6E4E;
+
+    /* Text */
+    --color-text-primary: #1C1815;
+    --color-text-secondary: #6B5D52;
+    --color-text-muted: #A89385;
+    --color-text-inverse: #FAF8F5;
+
+    /* Semantic */
+    --color-success: #4A7C59;
+    --color-success-bg: #EAF2ED;
+    --color-warning: #9B7B2E;
+    --color-warning-bg: #FDF4DC;
+    --color-danger: #8B3A3A;
+    --color-danger-bg: #FAEAEA;
+    --color-info: #2B5F8E;
+    --color-info-bg: #EAF2FB;
+
+    /* Border */
+    --color-border: rgba(140, 110, 90, 0.15);
+    --color-border-strong: rgba(140, 110, 90, 0.30);
+
+    /* Spacing */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+    --space-9: 96px;
+    --space-10: 128px;
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+    --transition-slow: 0.4s ease;
+
+    /* Container */
+    --container-pad: clamp(16px, 5vw, 48px);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #FAF8F5;
+    color: #1C1815;
+    font-family: var(--font-body), 'Noto Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer utilities {
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #F2EDE8 25%,
+      #FAF8F5 50%,
+      #F2EDE8 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+
   .text-balance {
     text-wrap: balance;
+  }
+
+  .font-display {
+    font-family: var(--font-display), 'Gowun Batang', Georgia, serif;
+  }
+
+  .font-body {
+    font-family: var(--font-body), 'Noto Sans', system-ui, sans-serif;
   }
 }
