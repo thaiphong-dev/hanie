@@ -57,7 +57,9 @@
     "open_hours_title": "Opening Hours",
     "open_hours_value": "08:00 – 20:00 daily",
     "address_title": "Address",
-    "address_value": "55 Nguyen Nhac, Quy Nhon"
+    "address_value": "55 Nguyen Nhac, Quy Nhon",
+    "cta_book": "Book Now",
+    "cta_services": "View Services"
   },
   "services": {
     "nail": "Nail",
@@ -206,5 +208,14 @@
     "chat_greeting_vi": "Xin chào! Hanie có thể giúp gì cho bạn?",
     "chat_greeting_en": "Hello! How can Hanie help you?",
     "chat_greeting_ko": "안녕하세요! Hanie가 어떻게 도와드릴까요?"
+  },
+  "footer": {
+    "tagline": "Beauty studio in Quy Nhon. Lashes · Eyebrows · Hair Wash · Nail.",
+    "services": "Services",
+    "info": "Information",
+    "quick_book": "Quick Book",
+    "address": "55 Nguyen Nhac, Quy Nhon",
+    "phone": "0901 234 567",
+    "hours": "08:00 – 20:00 daily"
   }
 }

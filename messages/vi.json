@@ -57,7 +57,9 @@
     "open_hours_title": "Giờ mở cửa",
     "open_hours_value": "08:00 – 20:00 hàng ngày",
     "address_title": "Địa chỉ",
-    "address_value": "55 Nguyễn Nhạc, Quy Nhơn"
+    "address_value": "55 Nguyễn Nhạc, Quy Nhơn",
+    "cta_book": "Đặt lịch ngay",
+    "cta_services": "Xem dịch vụ"
   },
   "services": {
     "nail": "Nail",
@@ -206,5 +208,14 @@
     "chat_greeting_vi": "Xin chào! Hanie có thể giúp gì cho bạn?",
     "chat_greeting_en": "Hello! How can Hanie help you?",
     "chat_greeting_ko": "안녕하세요! Hanie가 어떻게 도와드릴까요?"
+  },
+  "footer": {
+    "tagline": "Studio làm đẹp tại Quy Nhơn. Nối mi · Lông mày · Gội đầu · Nail.",
+    "services": "Dịch vụ",
+    "info": "Thông tin",
+    "quick_book": "Đặt lịch nhanh",
+    "address": "55 Nguyễn Nhạc, Quy Nhơn",
+    "phone": "0901 234 567",
+    "hours": "08:00 – 20:00 hàng ngày"
   }
 }
