@@ -104,21 +104,57 @@
     "cancelled": "Cancelled",
     "no_show": "No show"
   },
+  "gallery": {
+    "title": "Gallery",
+    "eyebrow": "GALLERY",
+    "page_title": "Work from Hanie Studio",
+    "filter_all": "All",
+    "filter_nail": "Nail",
+    "filter_lash": "Lash Extensions",
+    "filter_brow": "Brow",
+    "filter_hair_wash": "Hair Wash",
+    "filter_studio": "Studio",
+    "empty": "No photos in this category yet",
+    "book_this": "Book this service"
+  },
+  "location": {
+    "title": "Find Hanie Studio",
+    "eyebrow": "STUDIO LOCATION",
+    "address_label": "Address",
+    "address_value": "55 Nguyen Nhac, Quy Nhon",
+    "hours_label": "Hours",
+    "hours_value": "Mon – Sun: 08:00 – 20:00",
+    "phone_label": "Contact",
+    "phone_value": "0901 234 567",
+    "call_btn": "Call now",
+    "zalo_btn": "Message on Zalo",
+    "maps_btn": "Open Google Maps",
+    "studio_photos": "Studio space"
+  },
   "history": {
     "title": "Booking History",
+    "tab_upcoming": "Upcoming",
+    "tab_completed": "Completed",
+    "tab_cancelled": "Cancelled",
     "empty": "You have no appointments yet",
-    "empty_desc": "Book now to experience our services"
+    "empty_desc": "Book now to experience our services",
+    "cancel_btn": "Cancel booking",
+    "rebook_btn": "Book again",
+    "cancel_confirm": "Are you sure you want to cancel this booking?"
   },
   "vouchers": {
     "title": "My Vouchers",
     "empty": "You have no vouchers",
+    "empty_desc": "Vouchers will be sent automatically when you qualify",
     "expires": "Expires {date}",
+    "expires_soon": "Expiring soon!",
     "min_order": "Min. order {amount}",
     "discount_pct": "{pct}% off",
     "discount_fixed": "{amount} off",
     "used": "Used",
     "expired": "Expired",
-    "active": "Active"
+    "active": "Active",
+    "use_now": "Book now →"
   },
   "profile": {
     "title": "My Profile",
@@ -127,8 +163,16 @@
     "tier_regular": "Regular",
     "tier_vip": "VIP",
     "total_spent": "Total spent",
+    "total_bookings": "Total bookings",
     "edit_profile": "Edit profile",
-    "logout": "Log out"
+    "change_name": "Update name",
+    "name_label": "Full name",
+    "change_password": "Change password",
+    "old_password": "Current password",
+    "new_password": "New password",
+    "save_changes": "Save changes",
+    "logout": "Log out",
+    "logout_confirm": "Are you sure you want to log out?"
   },
   "pos": {
     "title": "Create Order",

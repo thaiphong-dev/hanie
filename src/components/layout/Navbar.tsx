@@ -34,28 +34,33 @@ export function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  // Only use transparent/inverse style on the home page before scrolling
+  const isHeroMode = !scrolled && pathname === '/';
+
   return (
     <>
       <header
         className={cn(
           'fixed top-0 inset-x-0 z-50 transition-all duration-300',
-          scrolled
-            ? 'bg-bg-primary/95 backdrop-blur-sm border-b border-border'
-            : 'bg-transparent',
+          isHeroMode
+            ? 'bg-transparent'
+            : 'bg-bg-primary/95 backdrop-blur-sm border-b border-border',
         )}
       >
         <div className="mx-auto max-w-7xl px-4 md:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
+          <Link href="/" className="relative h-16 aspect-video">
             <Image
               src="/logo.svg"
               alt="Hanie Studio"
-              width={100}
-              height={40}
+              fill={true}
               priority
               className={cn(
-                'transition-all duration-300',
-                !scrolled && 'brightness-0 invert',
+                // 'transition-all duration-300',
+                // isHeroMode && 'brightness-0 invert',
+                isHeroMode
+            ? 'bg-transparent'
+            : 'bg-bg-primary/95 backdrop-blur-sm border-b border-border',
               )}
             />
           </Link>
@@ -70,9 +75,9 @@ export function Navbar() {
                   'font-body text-sm transition-colors duration-200',
                   pathname === href
                     ? 'text-accent border-b border-accent pb-0.5'
-                    : scrolled
-                    ? 'text-text-primary hover:text-accent'
-                    : 'text-text-inverse/90 hover:text-text-inverse',
+                    : isHeroMode
+                    ? 'text-text-inverse/90 hover:text-text-inverse'
+                    : 'text-text-primary hover:text-accent',
                 )}
               >
                 {t(label)}
@@ -82,7 +87,7 @@ export function Navbar() {
 
           {/* Right side: language + CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <LanguageSwitcher variant={scrolled ? 'light' : 'dark'} />
+            <LanguageSwitcher variant={isHeroMode ? 'dark' : 'light'} />
             <Link
               href="/booking"
               className="font-body text-sm font-medium tracking-widest uppercase
@@ -101,7 +106,7 @@ export function Navbar() {
           >
             <Menu
               size={22}
-              className={scrolled ? 'text-text-primary' : 'text-text-inverse'}
+              className={isHeroMode ? 'text-text-inverse' : 'text-text-primary'}
             />
           </button>
         </div>

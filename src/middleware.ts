@@ -24,9 +24,16 @@ const ADMIN_PAGE_PATTERNS = [/^\/[^/]+\/admin(\/.*)?$/];
 // ── API route patterns ───────────────────────────────────────────────────────
 
 // Public API routes — no auth required
+// Theo PLANNING.md: login, register, refresh, availability, services, gallery, staff đều public
 const PUBLIC_API_PATTERNS = [
   /^\/api\/v1\/availability(\/.*)?$/,
   /^\/api\/v1\/services(\/.*)?$/,
+  /^\/api\/v1\/gallery(\/.*)?$/,
+  /^\/api\/v1\/categories(\/.*)?$/,
+  /^\/api\/v1\/staff(\/.*)?$/,
+  /^\/api\/v1\/auth\/login$/,
+  /^\/api\/v1\/auth\/register$/,
+  /^\/api\/v1\/auth\/refresh$/,
 ];
 
 // Admin/Staff-only API routes

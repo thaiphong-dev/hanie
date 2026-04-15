@@ -1,6 +1,11 @@
+// database.ts — Supabase types khớp với migration.sql
+// Cập nhật: Fix service_categories→categories, staff_profiles, leave_requests,
+//           booking_services (thêm service_name), vouchers, customer_vouchers
+
 export interface Database {
   public: {
     Tables: {
+      // ── USERS ───────────────────────────────────────────────────────────────
       users: {
         Row: {
           id: string;
@@ -9,7 +14,7 @@ export interface Database {
           role: 'admin' | 'staff' | 'customer';
           full_name: string;
           zalo_id: string | null;
-          birthday: string | null;
+          birthday: string | null;        // date ISO string
           avatar_url: string | null;
           member_tier: 'new' | 'regular' | 'vip';
           total_spent: number;
@@ -22,6 +27,8 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['users']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['users']['Insert']>;
       };
+
+      // ── REFRESH_TOKENS ───────────────────────────────────────────────────────
       refresh_tokens: {
         Row: {
           id: string;
@@ -34,7 +41,9 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['refresh_tokens']['Row'], 'id' | 'created_at' | 'revoked'>;
         Update: Partial<Database['public']['Tables']['refresh_tokens']['Insert']>;
       };
-      service_categories: {
+
+      // ── CATEGORIES (tên bảng thật trong DB là "categories") ──────────────────
+      categories: {
         Row: {
           id: string;
           name: string;
@@ -44,9 +53,11 @@ export interface Database {
           is_active: boolean;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['service_categories']['Row'], 'id' | 'created_at'>;
-        Update: Partial<Database['public']['Tables']['service_categories']['Insert']>;
+        Insert: Omit<Database['public']['Tables']['categories']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['categories']['Insert']>;
       };
+
+      // ── SERVICES ────────────────────────────────────────────────────────────
       services: {
         Row: {
           id: string;
@@ -74,21 +85,59 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['services']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['services']['Insert']>;
       };
+
+      // ── STAFF_PROFILES (id = user id — PK references users.id) ──────────────
+      // Cột: id, specialties, base_salary, commission_pct, color, created_at, updated_at
       staff_profiles: {
         Row: {
-          id: string;
-          user_id: string;
+          id: string;           // = user id (PK references users.id)
           specialties: string[];
           base_salary: number;
           commission_pct: number;
-          is_active: boolean;
-          hire_date: string;
+          color: string;
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['staff_profiles']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Insert: Omit<Database['public']['Tables']['staff_profiles']['Row'], 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['staff_profiles']['Insert']>;
       };
+
+      // ── STAFF_SCHEDULES ──────────────────────────────────────────────────────
+      staff_schedules: {
+        Row: {
+          id: string;
+          staff_id: string;
+          date: string;        // YYYY-MM-DD
+          start_time: string;  // HH:mm:ss
+          end_time: string;    // HH:mm:ss
+          is_day_off: boolean;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['staff_schedules']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['staff_schedules']['Insert']>;
+      };
+
+      // ── LEAVE_REQUESTS ───────────────────────────────────────────────────────
+      // Cột thật: date (không phải leave_date), có review_note và updated_at
+      leave_requests: {
+        Row: {
+          id: string;
+          staff_id: string;
+          date: string;         // YYYY-MM-DD (tên thật trong DB là "date")
+          reason: string;
+          status: 'pending' | 'approved' | 'rejected';
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          review_note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['leave_requests']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['leave_requests']['Insert']>;
+      };
+
+      // ── BOOKINGS ────────────────────────────────────────────────────────────
       bookings: {
         Row: {
           id: string;
@@ -113,93 +162,152 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['bookings']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['bookings']['Insert']>;
       };
+
+      // ── BOOKING_SERVICES ─────────────────────────────────────────────────────
+      // service_name được thêm bằng ALTER TABLE (migration patch)
       booking_services: {
         Row: {
           id: string;
           booking_id: string;
           service_id: string;
-          service_name: string;
-          quantity: number;
+          service_name: string | null;  // denormalized — thêm bằng ALTER TABLE
           price: number;
-          notes: string | null;
+          quantity: number;
+          note: string | null;
           created_at: string;
         };
         Insert: Omit<Database['public']['Tables']['booking_services']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['booking_services']['Insert']>;
       };
-      orders: {
+
+      // ── BOOKING_ADDONS ───────────────────────────────────────────────────────
+      booking_addons: {
         Row: {
           id: string;
-          booking_id: string | null;
-          customer_id: string | null;
-          customer_name: string | null;
-          customer_phone: string | null;
-          staff_id: string | null;
-          subtotal: number;
+          booking_service_id: string;
+          addon_service_id: string;
+          quantity: number;
+          price_per_unit: number;
+          total_price: number;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['booking_addons']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['booking_addons']['Insert']>;
+      };
+
+      // ── PAYMENTS ────────────────────────────────────────────────────────────
+      payments: {
+        Row: {
+          id: string;
+          booking_id: string;
+          amount: number;
           discount_amount: number;
-          total: number;
+          final_amount: number;
+          method: 'cash' | 'transfer' | 'card';
+          status: 'pending' | 'paid' | 'refunded';
           voucher_id: string | null;
-          voucher_code: string | null;
-          payment_method: 'cash' | 'transfer' | 'card';
           paid_at: string | null;
-          notes: string | null;
-          created_by: string;
+          note: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['payments']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['payments']['Insert']>;
+      };
+
+      // ── MONTHLY_PAYROLL ──────────────────────────────────────────────────────
+      monthly_payroll: {
+        Row: {
+          id: string;
+          staff_id: string;
+          year: number;
+          month: number;
+          base_salary: number;
+          total_bill: number;
+          commission_pct: number;
+          commission_amount: number;
+          total_salary: number;
+          note: string | null;
+          finalized: boolean;
+          finalized_at: string | null;
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Database['public']['Tables']['orders']['Insert']>;
+        Insert: Omit<Database['public']['Tables']['monthly_payroll']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['monthly_payroll']['Insert']>;
       };
-      order_items: {
+
+      // ── CUSTOMER_NOTES ───────────────────────────────────────────────────────
+      customer_notes: {
         Row: {
           id: string;
-          order_id: string;
-          service_id: string | null;
-          service_name: string;
-          quantity: number;
-          unit_price: number;
-          total_price: number;
-          notes: string | null;
+          customer_id: string;
+          author_id: string;
+          content: string;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['order_items']['Row'], 'id' | 'created_at'>;
-        Update: Partial<Database['public']['Tables']['order_items']['Insert']>;
+        Insert: Omit<Database['public']['Tables']['customer_notes']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['customer_notes']['Insert']>;
       };
+
+      // ── VOUCHERS ─────────────────────────────────────────────────────────────
+      // discount_type: 'percent' | 'fixed' (theo migration.sql)
       vouchers: {
         Row: {
           id: string;
           code: string;
-          customer_id: string | null;
-          discount_type: 'percentage' | 'fixed_amount';
+          name: string;
+          name_i18n: Record<string, string>;
+          discount_type: 'percent' | 'fixed';
           discount_value: number;
           min_order_amount: number;
           applicable_categories: string[] | null;
           required_member_tier: 'new' | 'regular' | 'vip' | null;
-          max_uses: number | null;
-          used_count: number;
+          total_issued: number;
+          max_issue: number | null;
           expires_at: string | null;
           status: 'draft' | 'active' | 'expired' | 'disabled';
-          created_by: string;
+          created_by: string | null;
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['vouchers']['Row'], 'id' | 'created_at' | 'updated_at' | 'used_count'>;
+        Insert: Omit<Database['public']['Tables']['vouchers']['Row'], 'id' | 'created_at' | 'updated_at' | 'total_issued'>;
         Update: Partial<Database['public']['Tables']['vouchers']['Insert']>;
       };
-      leave_requests: {
+
+      // ── CUSTOMER_VOUCHERS ────────────────────────────────────────────────────
+      customer_vouchers: {
         Row: {
           id: string;
-          staff_id: string;
-          leave_date: string;
-          reason: string | null;
-          status: 'pending' | 'approved' | 'rejected';
-          reviewed_by: string | null;
-          reviewed_at: string | null;
+          voucher_id: string;
+          customer_id: string;
+          status: 'available' | 'used' | 'expired';
+          used_at: string | null;
+          used_in_payment_id: string | null;
+          sent_via_zalo: boolean;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['leave_requests']['Row'], 'id' | 'created_at'>;
-        Update: Partial<Database['public']['Tables']['leave_requests']['Insert']>;
+        Insert: Omit<Database['public']['Tables']['customer_vouchers']['Row'], 'id' | 'created_at' | 'sent_via_zalo'>;
+        Update: Partial<Database['public']['Tables']['customer_vouchers']['Insert']>;
       };
+
+      // ── GALLERY_IMAGES ───────────────────────────────────────────────────────
+      gallery_images: {
+        Row: {
+          id: string;
+          image_url: string;
+          alt_text: Record<string, string>;
+          category: 'nail' | 'mi' | 'long_may' | 'goi_dau' | 'studio';
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['gallery_images']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['gallery_images']['Insert']>;
+      };
+
+      // ── RATE_LIMIT_LOG ───────────────────────────────────────────────────────
+      // Thêm bằng migration patch (xem patch bên dưới)
       rate_limit_log: {
         Row: {
           id: string;
@@ -208,6 +316,24 @@ export interface Database {
         };
         Insert: { key: string };
         Update: never;
+      };
+
+      // ── INVENTORY (PENDING — schema giữ chỗ) ─────────────────────────────────
+      inventory_items: {
+        Row: {
+          id: string;
+          name: string;
+          unit: string;
+          current_stock: number;
+          min_stock: number;
+          category: string | null;
+          note: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['inventory_items']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['inventory_items']['Insert']>;
       };
     };
   };

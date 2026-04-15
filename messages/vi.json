@@ -104,21 +104,57 @@
     "cancelled": "Đã huỷ",
     "no_show": "Không đến"
   },
+  "gallery": {
+    "title": "Thư viện ảnh",
+    "eyebrow": "THƯ VIỆN ẢNH",
+    "page_title": "Tác phẩm từ Hanie Studio",
+    "filter_all": "Tất cả",
+    "filter_nail": "Nail",
+    "filter_lash": "Nối mi",
+    "filter_brow": "Lông mày",
+    "filter_hair_wash": "Gội đầu",
+    "filter_studio": "Studio",
+    "empty": "Chưa có ảnh trong mục này",
+    "book_this": "Đặt dịch vụ này"
+  },
+  "location": {
+    "title": "Tìm đường đến Hanie Studio",
+    "eyebrow": "ĐỊA CHỈ STUDIO",
+    "address_label": "Địa chỉ",
+    "address_value": "55 Nguyễn Nhạc, Quy Nhơn",
+    "hours_label": "Giờ mở cửa",
+    "hours_value": "Thứ 2 – Chủ nhật: 08:00 – 20:00",
+    "phone_label": "Liên hệ",
+    "phone_value": "0901 234 567",
+    "call_btn": "Gọi ngay",
+    "zalo_btn": "Nhắn Zalo",
+    "maps_btn": "Mở Google Maps",
+    "studio_photos": "Không gian studio"
+  },
   "history": {
     "title": "Lịch sử đặt lịch",
+    "tab_upcoming": "Sắp tới",
+    "tab_completed": "Hoàn thành",
+    "tab_cancelled": "Đã huỷ",
     "empty": "Bạn chưa có lịch hẹn nào",
-    "empty_desc": "Đặt lịch ngay để trải nghiệm dịch vụ của chúng tôi"
+    "empty_desc": "Đặt lịch ngay để trải nghiệm dịch vụ của chúng tôi",
+    "cancel_btn": "Huỷ lịch",
+    "rebook_btn": "Đặt lại",
+    "cancel_confirm": "Bạn có chắc muốn huỷ lịch hẹn này?"
   },
   "vouchers": {
     "title": "Voucher của tôi",
     "empty": "Bạn chưa có voucher nào",
+    "empty_desc": "Voucher sẽ được gửi tự động khi bạn đạt điều kiện",
     "expires": "Hết hạn {date}",
+    "expires_soon": "Sắp hết hạn!",
     "min_order": "Đơn tối thiểu {amount}",
     "discount_pct": "Giảm {pct}%",
     "discount_fixed": "Giảm {amount}",
     "used": "Đã dùng",
     "expired": "Hết hạn",
-    "active": "Còn hiệu lực"
+    "active": "Còn hiệu lực",
+    "use_now": "Đặt lịch ngay →"
   },
   "profile": {
     "title": "Hồ sơ cá nhân",
@@ -127,8 +163,16 @@
     "tier_regular": "Khách thân thiết",
     "tier_vip": "VIP",
     "total_spent": "Tổng chi tiêu",
+    "total_bookings": "Tổng lịch hẹn",
     "edit_profile": "Chỉnh sửa hồ sơ",
-    "logout": "Đăng xuất"
+    "change_name": "Cập nhật tên",
+    "name_label": "Họ và tên",
+    "change_password": "Đổi mật khẩu",
+    "old_password": "Mật khẩu hiện tại",
+    "new_password": "Mật khẩu mới",
+    "save_changes": "Lưu thay đổi",
+    "logout": "Đăng xuất",
+    "logout_confirm": "Bạn có chắc muốn đăng xuất?"
   },
   "pos": {
     "title": "Tạo đơn",
