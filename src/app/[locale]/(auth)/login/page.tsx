@@ -1,15 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores/authStore';
 
-export default function LoginPage() {
+interface LoginResponseData {
+  access_token: string;
+  user: { id: string; phone: string; role: 'admin' | 'staff' | 'customer'; full_name: string };
+}
+
+function LoginForm() {
   const t = useTranslations();
-  const router = useRouter();
+  const locale = useLocale();
   const searchParams = useSearchParams();
+  const setUser = useAuthStore((s) => s.setUser);
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -29,7 +36,7 @@ export default function LoginPage() {
       });
 
       const json = (await res.json()) as {
-        data: { access_token: string; user: { role: string } } | null;
+        data: LoginResponseData | null;
         error: { code: string } | null;
       };
 
@@ -39,14 +46,29 @@ export default function LoginPage() {
         return;
       }
 
-      // Store access token in sessionStorage (not localStorage — cleared on tab close)
       if (json.data) {
-        sessionStorage.setItem('access_token', json.data.access_token);
-        sessionStorage.setItem('user_role', json.data.user.role);
+        // Persist full profile to sessionStorage + Zustand store
+        setUser(
+          {
+            id: json.data.user.id,
+            name: json.data.user.full_name,
+            phone: json.data.user.phone,
+            role: json.data.user.role,
+          },
+          json.data.access_token,
+        );
       }
 
-      const callbackUrl = searchParams.get('callbackUrl') ?? '/';
-      router.push(callbackUrl);
+      // Use window.location to force a full browser navigation so the
+      // access_token cookie (set by the login API) is sent with the next request.
+      // router.push() uses RSC cache and may not re-trigger middleware cookie checks.
+      const role = json.data?.user.role;
+      const callbackUrl = searchParams.get('callbackUrl');
+      const destination = callbackUrl
+        ?? (role === 'admin' || role === 'staff'
+          ? `/${locale}/admin/dashboard`
+          : `/${locale}`);
+      window.location.replace(destination);
     } finally {
       setLoading(false);
     }
@@ -118,5 +140,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

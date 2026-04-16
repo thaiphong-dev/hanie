@@ -8,12 +8,13 @@ const WORK_START_HOUR = 8;
 const WORK_END_HOUR = 20;
 
 const CreateBookingSchema = z.object({
-  service_ids: z.array(z.string().uuid()).min(1),
+  booking_category_ids: z.array(z.string().uuid()).min(1),
   scheduled_at: z.string().datetime({ offset: true }),
   staff_id: z.string().uuid().optional(),
   customer_name: z.string().min(2).max(100),
   customer_phone: z.string().regex(PHONE_REGEX, 'INVALID_PHONE'),
   notes: z.string().max(500).optional(),
+  use_parallel: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,8 +32,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { service_ids, scheduled_at, staff_id, customer_name, customer_phone, notes } =
-      parsed.data;
+    const {
+      booking_category_ids,
+      scheduled_at,
+      staff_id,
+      customer_name,
+      customer_phone,
+      notes,
+      use_parallel,
+    } = parsed.data;
 
     const scheduledDate = new Date(scheduled_at);
     const now = new Date();
@@ -56,39 +64,49 @@ export async function POST(req: NextRequest) {
 
     const supabase = createServerClient();
 
-    // Fetch services to compute slot count
-    const { data: services, error: svcsErr } = await supabase
-      .from('services')
-      .select('id, name, price_min, slot_count')
-      .in('id', service_ids)
-      .is('deleted_at', null);
+    // Fetch booking_categories to compute slot count
+    const { data: bcats, error: bcatsErr } = await supabase
+      .from('booking_categories')
+      .select('id, name, slot_count, parallel_group')
+      .in('id', booking_category_ids)
+      .eq('is_active', true);
 
-    if (svcsErr) throw new Error(svcsErr.message);
-    if (!services || services.length !== service_ids.length) {
+    if (bcatsErr) throw new Error(bcatsErr.message);
+    if (!bcats || bcats.length !== booking_category_ids.length) {
       return NextResponse.json(
-        { data: null, error: { code: 'INVALID_SERVICE', message: 'One or more services not found' } },
+        { data: null, error: { code: 'INVALID_BOOKING_CATEGORY', message: 'One or more booking categories not found' } },
         { status: 400 },
       );
     }
 
-    const totalSlots = services.reduce((sum, s) => sum + s.slot_count, 0);
+    // Parallel: all same parallel_group and use_parallel requested → 1 slot total
+    const allSameGroup =
+      bcats.length >= 2 &&
+      bcats.every((bc) => bc.parallel_group !== null && bc.parallel_group === bcats[0]!.parallel_group);
+
+    const totalSlots = use_parallel && allSameGroup
+      ? 1
+      : bcats.reduce((sum, bc) => sum + bc.slot_count, 0);
+
     const endAt = new Date(scheduledDate.getTime() + totalSlots * 60 * 60 * 1000);
 
-    // Check slot conflict
-    const { data: conflicts } = await supabase
-      .from('bookings')
-      .select('id')
-      .in('status', ['pending', 'confirmed', 'in_progress'])
-      .lt('scheduled_at', endAt.toISOString())
-      .gt('end_at', scheduled_at)
-      .eq('staff_id', staff_id ?? '00000000-0000-0000-0000-000000000000')
-      .limit(1);
+    // Check slot conflict (only when staff is specified)
+    if (staff_id) {
+      const { data: conflicts } = await supabase
+        .from('bookings')
+        .select('id')
+        .in('status', ['pending', 'confirmed', 'in_progress'])
+        .lt('scheduled_at', endAt.toISOString())
+        .gt('end_at', scheduled_at)
+        .eq('staff_id', staff_id)
+        .limit(1);
 
-    if (staff_id && conflicts && conflicts.length > 0) {
-      return NextResponse.json(
-        { data: null, error: { code: 'BOOKING_CONFLICT', message: 'Time slot already taken' } },
-        { status: 409 },
-      );
+      if (conflicts && conflicts.length > 0) {
+        return NextResponse.json(
+          { data: null, error: { code: 'BOOKING_CONFLICT', message: 'Time slot already taken' } },
+          { status: 409 },
+        );
+      }
     }
 
     // Resolve guest customer (find or create)
@@ -115,13 +133,13 @@ export async function POST(req: NextRequest) {
     if (bookErr) throw new Error(bookErr.message);
     if (!booking) throw new Error('No booking returned');
 
-    // Insert booking_services
-    const bookingServices = services.map((s) => ({
+    // Insert booking_services linked to booking_categories
+    const bookingServices = bcats.map((bc) => ({
       booking_id: booking.id,
-      service_id: s.id,
-      service_name: s.name,
+      service_id: null,              // no longer tracking by service_id
+      booking_category_id: bc.id,
       quantity: 1,
-      price: s.price_min,
+      price: 0,                      // price TBD at checkout; 0 for now
     }));
 
     const { error: bsErr } = await supabase.from('booking_services').insert(bookingServices);
@@ -174,7 +192,7 @@ export async function GET(req: NextRequest) {
       .select(
         `id, status, booking_type, scheduled_at, end_at, slot_count, notes,
          customer_name, customer_phone,
-         booking_services(service_name, quantity, price)`,
+         booking_services(booking_category_id, quantity, price)`,
         { count: 'exact' },
       )
       .order('scheduled_at', { ascending: false })

@@ -100,6 +100,15 @@ export async function POST(req: NextRequest) {
       error: null,
     });
 
+    // access_token in cookie so middleware can verify on page navigation
+    response.cookies.set('access_token', accessToken, {
+      httpOnly: false, // readable by JS (needed for sessionStorage sync)
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 900, // 15 min — matches token lifetime
+      path: '/',
+    });
+
     response.cookies.set('refresh_token', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

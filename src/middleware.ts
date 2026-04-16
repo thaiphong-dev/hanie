@@ -30,6 +30,7 @@ const PUBLIC_API_PATTERNS = [
   /^\/api\/v1\/services(\/.*)?$/,
   /^\/api\/v1\/gallery(\/.*)?$/,
   /^\/api\/v1\/categories(\/.*)?$/,
+  /^\/api\/v1\/booking-categories(\/.*)?$/,
   /^\/api\/v1\/staff(\/.*)?$/,
   /^\/api\/v1\/auth\/login$/,
   /^\/api\/v1\/auth\/register$/,

@@ -82,6 +82,14 @@ export async function POST(req: NextRequest) {
       error: null,
     });
 
+    response.cookies.set('access_token', newAccessToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 900,
+      path: '/',
+    });
+
     response.cookies.set('refresh_token', newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

@@ -22,13 +22,15 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({ data: { success: true }, error: null });
     response.cookies.delete('refresh_token');
+    response.cookies.delete('access_token');
     return response;
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[POST /api/v1/auth/logout]', message);
-    // Always clear cookie even on error
+    // Always clear cookies even on error
     const response = NextResponse.json({ data: { success: true }, error: null });
     response.cookies.delete('refresh_token');
+    response.cookies.delete('access_token');
     return response;
   }
 }

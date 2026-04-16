@@ -19,29 +19,11 @@ function generateTimeSlots(): string[] {
   return slots;
 }
 
-// Returns occupied slot-hours for a given date (from booked appointments)
-function getOccupiedHours(
-  bookings: { scheduled_at: string; slot_count: number }[],
-  staffId: string | null,
-  staffBookings: { scheduled_at: string; slot_count: number }[],
-): Set<number> {
-  const occupied = new Set<number>();
-  const source = staffId ? staffBookings : bookings;
-  for (const b of source) {
-    const start = new Date(b.scheduled_at);
-    const startHour = start.getUTCHours();
-    for (let i = 0; i < b.slot_count; i++) {
-      occupied.add(startHour + i);
-    }
-  }
-  return occupied;
-}
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const dateStr = searchParams.get('date'); // YYYY-MM-DD
-    const serviceIdsParam = searchParams.get('service_ids'); // comma-separated UUIDs
+    const bookingCategoryIdsParam = searchParams.get('booking_category_ids'); // comma-separated UUIDs
     const staffIdParam = searchParams.get('staff_id') ?? null;
 
     if (!dateStr) {
@@ -51,29 +33,37 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const serviceIds = serviceIdsParam ? serviceIdsParam.split(',').filter(Boolean) : [];
+    const bookingCategoryIds = bookingCategoryIdsParam
+      ? bookingCategoryIdsParam.split(',').filter(Boolean)
+      : [];
+
     const supabase = createServerClient();
 
-    // 1. Fetch requested services to compute total slot count
+    // 1. Fetch booking_categories to compute total slots and parallel compatibility
     let totalSlots = 1;
     let isParallelCompatible = false;
 
-    if (serviceIds.length > 0) {
-      const { data: svcs, error: svcsErr } = await supabase
-        .from('services')
-        .select('id, slot_count, service_type')
-        .in('id', serviceIds)
-        .is('deleted_at', null);
+    if (bookingCategoryIds.length > 0) {
+      const { data: bcats, error: bcatsErr } = await supabase
+        .from('booking_categories')
+        .select('id, slot_count, parallel_group')
+        .in('id', bookingCategoryIds)
+        .eq('is_active', true);
 
-      if (svcsErr) throw new Error(svcsErr.message);
+      if (bcatsErr) throw new Error(bcatsErr.message);
 
-      if (svcs && svcs.length > 0) {
-        totalSlots = svcs.reduce((sum, s) => sum + s.slot_count, 0);
+      if (bcats && bcats.length > 0) {
+        totalSlots = bcats.reduce((sum, bc) => sum + bc.slot_count, 0);
 
-        // Parallel only for nail_tay + nail_chan combination (slot_count=1 each in same category)
-        // Heuristic: if all services each have slot_count=1 and there are 2 services
-        if (svcs.length === 2 && svcs.every((s) => s.slot_count === 1)) {
-          isParallelCompatible = true;
+        // Parallel: all selected categories must share the same non-null parallel_group
+        if (bcats.length >= 2) {
+          const groups = bcats.map((bc) => bc.parallel_group).filter(Boolean);
+          if (
+            groups.length === bcats.length &&
+            groups.every((g) => g === groups[0])
+          ) {
+            isParallelCompatible = true;
+          }
         }
       }
     }
@@ -117,12 +107,10 @@ export async function GET(req: NextRequest) {
     const todayStr = now.toISOString().slice(0, 10);
     const currentHour = now.getUTCHours();
 
-    // If specific staff requested
     const staffBookings = staffIdParam
       ? dayBookings.filter((b) => b.staff_id === staffIdParam)
       : [];
 
-    // Global occupied hours (for any-staff mode)
     // Count how many staff are occupied per hour
     const hourStaffOccupied: Record<number, number> = {};
     for (const b of dayBookings) {
@@ -139,12 +127,12 @@ export async function GET(req: NextRequest) {
       const [hStr] = time.split(':');
       const slotHour = parseInt(hStr, 10);
 
-      // Past hours today are unavailable
+      // Past hours today
       if (dateStr === todayStr && slotHour <= currentHour) {
         return { time, available: false, parallel_available: false };
       }
 
-      // Check if we'd exceed working hours
+      // Would exceed working hours
       if (slotHour + totalSlots > WORK_END_HOUR) {
         return { time, available: false, parallel_available: false };
       }
@@ -153,8 +141,14 @@ export async function GET(req: NextRequest) {
       let parallelAvailable = false;
 
       if (staffIdParam) {
-        // Check specific staff
-        const occupiedHours = getOccupiedHours([], staffIdParam, staffBookings);
+        // Check specific staff occupancy
+        const occupiedHours = new Set<number>();
+        for (const b of staffBookings) {
+          const startH = new Date(b.scheduled_at).getUTCHours();
+          for (let i = 0; i < b.slot_count; i++) {
+            occupiedHours.add(startH + i);
+          }
+        }
         available = true;
         for (let i = 0; i < totalSlots; i++) {
           if (occupiedHours.has(slotHour + i)) {
@@ -163,19 +157,17 @@ export async function GET(req: NextRequest) {
           }
         }
       } else {
-        // Any-staff mode: need at least 1 free staff for consecutive slots
-        available = false;
+        // Any-staff mode: need at least 1 free staff for all consecutive slots
+        available = true;
         for (let i = 0; i < totalSlots; i++) {
           const occupied = hourStaffOccupied[slotHour + i] ?? 0;
-          if (staffCount - occupied >= 1) {
-            available = true;
-          } else {
+          if (staffCount - occupied < 1) {
             available = false;
             break;
           }
         }
 
-        // Parallel: for nail tay+chan, check if 2 staff are free for 1 slot
+        // Parallel: need 2 free staff for the single slot
         if (isParallelCompatible) {
           const occupied = hourStaffOccupied[slotHour] ?? 0;
           parallelAvailable = staffCount - occupied >= 2;

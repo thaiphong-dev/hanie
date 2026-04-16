@@ -6,16 +6,13 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronRight, Zap, User, CalendarDays, Clock } from 'lucide-react';
 import { Link } from '@/lib/navigation';
-import { getLocaleText, formatPrice, formatDate } from '@/lib/i18n-helpers';
+import { getLocaleText, formatDate } from '@/lib/i18n-helpers';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import type { Database } from '@/types/database';
 import type { Locale } from '@/lib/navigation';
 
-type ServiceRow = Database['public']['Tables']['services']['Row'];
-interface ServiceWithCategory extends ServiceRow {
-  category?: { id: string; name: string; name_i18n: Record<string, string>; slug: string } | null;
-}
+type BookingCategory = Database['public']['Tables']['booking_categories']['Row'];
 
 interface TimeSlot {
   time: string;
@@ -45,17 +42,20 @@ function BookingContent() {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+
+  // Auth — hydrate from sessionStorage on mount, no API call
+  const { user, hydrate } = useAuthStore();
+  useEffect(() => { hydrate(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── State ──
   const [step, setStep] = useState<Step>(0);
   const [direction, setDirection] = useState(1);
 
-  // Step 1
-  const [services, setServices] = useState<ServiceWithCategory[]>([]);
-  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+  // Step 0 — Select booking category
+  const [bookingCategories, setBookingCategories] = useState<BookingCategory[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 
-  // Step 2
+  // Step 1 — Date & time
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
@@ -63,11 +63,11 @@ function BookingContent() {
   const [parallelAvailable, setParallelAvailable] = useState(false);
   const [useParallel, setUseParallel] = useState(false);
 
-  // Step 3
+  // Step 2 — Staff
   const [staffList, setStaffList] = useState<StaffOption[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string>('');
 
-  // Step 4
+  // Step 3 — Confirm
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
@@ -77,22 +77,24 @@ function BookingContent() {
   // Success
   const [, setBookingId] = useState('');
 
-  // ── Load services ──
+  // ── Load booking categories ──
   useEffect(() => {
-    fetch('/api/v1/services?active=true&type=main')
+    fetch('/api/v1/booking-categories')
       .then((r) => r.json())
-      .then((json: { data: ServiceWithCategory[] | null }) => {
-        setServices(json.data ?? []);
-        // Pre-select from URL param
-        const preselect = searchParams.get('service');
-        if (preselect && json.data?.some((s) => s.id === preselect)) {
-          setSelectedServiceIds([preselect]);
+      .then((json: { data: BookingCategory[] | null }) => {
+        const cats = json.data ?? [];
+        setBookingCategories(cats);
+        // Pre-select from URL param (by slug)
+        const preselect = searchParams.get('category');
+        if (preselect) {
+          const match = cats.find((c) => c.slug === preselect);
+          if (match) setSelectedCategoryIds([match.id]);
         }
       })
       .catch(() => {});
   }, [searchParams]);
 
-  // ── Load staff when entering step 2 (with date filter) ──
+  // ── Load staff when entering step 2 ──
   useEffect(() => {
     if (step !== 2) return;
     const dateParam = selectedDate ? `?date=${selectedDate}` : '';
@@ -105,20 +107,20 @@ function BookingContent() {
   // ── Prefill customer info from logged-in user ──
   useEffect(() => {
     if (user && step === 3) {
-      if (!customerName && user.full_name) setCustomerName(user.full_name);
+      if (!customerName && user.name) setCustomerName(user.name);
       if (!customerPhone && user.phone) setCustomerPhone(user.phone);
     }
   }, [user, step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Load availability ──
   const loadSlots = useCallback(async () => {
-    if (!selectedDate || selectedServiceIds.length === 0) return;
+    if (!selectedDate || selectedCategoryIds.length === 0) return;
     setSlotsLoading(true);
     try {
-      const ids = selectedServiceIds.join(',');
+      const ids = selectedCategoryIds.join(',');
       const staffParam = selectedStaffId ? `&staff_id=${selectedStaffId}` : '';
       const res = await fetch(
-        `/api/v1/availability?date=${selectedDate}&service_ids=${ids}${staffParam}`,
+        `/api/v1/availability?date=${selectedDate}&booking_category_ids=${ids}${staffParam}`,
       );
       const json = (await res.json()) as {
         data: { slots: TimeSlot[]; parallel_available: boolean } | null;
@@ -128,7 +130,7 @@ function BookingContent() {
     } finally {
       setSlotsLoading(false);
     }
-  }, [selectedDate, selectedServiceIds, selectedStaffId]);
+  }, [selectedDate, selectedCategoryIds, selectedStaffId]);
 
   useEffect(() => {
     if (step === 1) void loadSlots();
@@ -150,23 +152,19 @@ function BookingContent() {
     setSubmitting(true);
     setSubmitError('');
     try {
-      const selectedService = services.filter((s) => selectedServiceIds.includes(s.id));
-      const totalSlots = useParallel
-        ? 1
-        : selectedService.reduce((sum, s) => sum + s.slot_count, 0);
       const scheduledAt = new Date(`${selectedDate}T${selectedTime}:00+07:00`).toISOString();
 
       const res = await fetch('/api/v1/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          service_ids: selectedServiceIds,
+          booking_category_ids: selectedCategoryIds,
           scheduled_at: scheduledAt,
           staff_id: selectedStaffId || undefined,
           customer_name: customerName,
           customer_phone: customerPhone,
           notes: notes || undefined,
-          slot_count_override: totalSlots,
+          use_parallel: useParallel,
         }),
       });
 
@@ -190,19 +188,31 @@ function BookingContent() {
   }
 
   // ── Computed ──
-  const selectedServices = services.filter((s) => selectedServiceIds.includes(s.id));
-  const totalDuration = useParallel
-    ? Math.max(...selectedServices.map((s) => s.duration_min))
-    : selectedServices.reduce((sum, s) => sum + s.duration_min, 0);
+  const selectedCategories = bookingCategories.filter((c) => selectedCategoryIds.includes(c.id));
+
+  const totalDuration = (() => {
+    if (selectedCategories.length === 0) return 0;
+    if (useParallel && selectedCategories.length >= 2) {
+      return Math.max(...selectedCategories.map((c) => c.duration_min));
+    }
+    return selectedCategories.reduce((sum, c) => sum + c.duration_min, 0);
+  })();
+
+  // Parallel badge: all selected share the same parallel_group
+  const showParallelBadge =
+    selectedCategories.length >= 2 &&
+    selectedCategories.every(
+      (c) => c.parallel_group !== null && c.parallel_group === selectedCategories[0]!.parallel_group,
+    );
 
   const canGoNext: Record<number, boolean> = {
-    0: selectedServiceIds.length > 0,
+    0: selectedCategoryIds.length > 0,
     1: !!selectedDate && !!selectedTime,
     2: true, // staff is optional
     3: customerName.length >= 2 && /^(0[35789])+([0-9]{8})$/.test(customerPhone),
   };
 
-  // ── Render steps ──
+  // ── Render ──
   return (
     <div className="pt-16 min-h-screen bg-bg-primary">
       {/* Stepper */}
@@ -238,12 +248,7 @@ function BookingContent() {
                       </span>
                     </div>
                     {idx < STEPS.length - 1 && (
-                      <div
-                        className={cn(
-                          'flex-1 h-px mx-2',
-                          done ? 'bg-accent' : 'bg-border',
-                        )}
-                      />
+                      <div className={cn('flex-1 h-px mx-2', done ? 'bg-accent' : 'bg-border')} />
                     )}
                   </div>
                 );
@@ -256,7 +261,8 @@ function BookingContent() {
       {/* Step content */}
       <div className="mx-auto max-w-2xl px-4 py-10">
         <AnimatePresence mode="wait" custom={direction}>
-          {/* ── Step 0: Select Service ── */}
+
+          {/* ── Step 0: Select booking category ── */}
           {step === 0 && (
             <motion.div
               key="step0"
@@ -271,27 +277,28 @@ function BookingContent() {
                 {t('booking.select_service')}
               </h2>
 
-              {services.length === 0 && (
+              {bookingCategories.length === 0 && (
                 <div className="space-y-3">
-                  {Array.from({ length: 4 }).map((_, i) => (
+                  {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="skeleton h-20 rounded-2xl" />
                   ))}
                 </div>
               )}
 
               <div className="space-y-3">
-                {services.map((svc) => {
-                  const name = getLocaleText(svc.name_i18n, locale) || svc.name;
-                  const selected = selectedServiceIds.includes(svc.id);
+                {bookingCategories.map((cat) => {
+                  const name = getLocaleText(cat.name_i18n, locale) || cat.name;
+                  const selected = selectedCategoryIds.includes(cat.id);
                   return (
                     <button
-                      key={svc.id}
+                      key={cat.id}
                       onClick={() => {
-                        setSelectedServiceIds((prev) =>
-                          selected ? prev.filter((id) => id !== svc.id) : [...prev, svc.id],
+                        setSelectedCategoryIds((prev) =>
+                          selected ? prev.filter((id) => id !== cat.id) : [...prev, cat.id],
                         );
                         setSelectedTime('');
                         setSlots([]);
+                        setUseParallel(false);
                       }}
                       className={cn(
                         'w-full flex items-center justify-between p-4 rounded-2xl border transition-colors text-left',
@@ -303,10 +310,7 @@ function BookingContent() {
                       <div>
                         <p className="font-display text-base text-text-primary">{name}</p>
                         <p className="font-body text-sm text-text-muted mt-0.5">
-                          {formatPrice(svc.price_min, locale)}
-                          {svc.price_max > svc.price_min &&
-                            ` – ${formatPrice(svc.price_max, locale)}`}{' '}
-                          · {svc.duration_min} phút
+                          ~{cat.duration_min} phút · {cat.slot_count} slot
                         </p>
                       </div>
                       {selected && (
@@ -319,14 +323,13 @@ function BookingContent() {
                 })}
               </div>
 
-              {/* Parallel badge */}
-              {selectedServiceIds.length === 2 &&
-                selectedServices.every((s) => s.slot_count === 1) && (
-                  <div className="mt-4 flex items-center gap-2 text-accent font-body text-xs p-3 bg-accent/5 rounded-xl border border-accent/20">
-                    <Zap size={14} />
-                    {t('booking.option_parallel_note')} — 2 dịch vụ có thể làm cùng lúc
-                  </div>
-                )}
+              {/* Parallel hint */}
+              {showParallelBadge && (
+                <div className="mt-4 flex items-center gap-2 text-accent font-body text-xs p-3 bg-accent/5 rounded-xl border border-accent/20">
+                  <Zap size={14} />
+                  {t('booking.option_parallel_note')}
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -345,7 +348,6 @@ function BookingContent() {
                 {t('booking.select_date')}
               </h2>
 
-              {/* Date picker — native input for simplicity */}
               <div className="mb-6">
                 <label className="font-body text-sm text-text-muted block mb-2">
                   {t('booking.select_date')}
@@ -364,7 +366,6 @@ function BookingContent() {
                 />
               </div>
 
-              {/* Time slots */}
               {selectedDate && (
                 <>
                   <label className="font-body text-sm text-text-muted block mb-3">
@@ -421,10 +422,10 @@ function BookingContent() {
                             <span className="font-body text-sm text-text-primary">
                               {parallel
                                 ? t('booking.option_parallel', {
-                                    duration: Math.max(...selectedServices.map((s) => s.duration_min)),
+                                    duration: Math.max(...selectedCategories.map((c) => c.duration_min)),
                                   })
                                 : t('booking.option_sequential', {
-                                    duration: selectedServices.reduce((s, sv) => s + sv.duration_min, 0),
+                                    duration: selectedCategories.reduce((s, c) => s + c.duration_min, 0),
                                   })}
                             </span>
                           </div>
@@ -457,7 +458,6 @@ function BookingContent() {
                 {t('booking.select_staff')}
               </h2>
 
-              {/* Any staff option */}
               <button
                 onClick={() => setSelectedStaffId('')}
                 className={cn(
@@ -470,9 +470,7 @@ function BookingContent() {
                 <div className="w-10 h-10 rounded-full bg-bg-secondary flex items-center justify-center">
                   <User size={18} className="text-text-muted" />
                 </div>
-                <div>
-                  <p className="font-body text-sm text-text-primary">{t('booking.any_staff')}</p>
-                </div>
+                <p className="font-body text-sm text-text-primary">{t('booking.any_staff')}</p>
                 {selectedStaffId === '' && (
                   <Check size={16} className="text-accent ml-auto flex-shrink-0" />
                 )}
@@ -541,9 +539,7 @@ function BookingContent() {
                   <div>
                     <p className="font-body text-xs text-text-muted">Ngày</p>
                     <p className="font-body text-sm text-text-primary">
-                      {selectedDate
-                        ? formatDate(new Date(selectedDate), locale)
-                        : selectedDate}
+                      {selectedDate ? formatDate(new Date(selectedDate), locale) : selectedDate}
                     </p>
                   </div>
                 </div>
@@ -557,10 +553,14 @@ function BookingContent() {
                   </div>
                 </div>
                 <div className="border-t border-border pt-3 space-y-1">
-                  {selectedServices.map((s) => (
-                    <p key={s.id} className="font-body text-sm text-text-primary">
-                      {getLocaleText(s.name_i18n, locale) || s.name} —{' '}
-                      <span className="text-accent">{formatPrice(s.price_min, locale)}</span>
+                  {selectedCategories.map((c) => (
+                    <p key={c.id} className="font-body text-sm text-text-primary">
+                      {getLocaleText(c.name_i18n, locale) || c.name}
+                      {useParallel && selectedCategories.length > 1 && (
+                        <span className="text-accent ml-1 text-xs">
+                          <Zap size={10} className="inline" />
+                        </span>
+                      )}
                     </p>
                   ))}
                 </div>
@@ -711,7 +711,7 @@ function BookingSkeleton() {
   return (
     <div className="pt-16 min-h-screen bg-bg-primary">
       <div className="mx-auto max-w-2xl px-4 py-10 space-y-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="skeleton h-20 rounded-2xl" />
         ))}
       </div>

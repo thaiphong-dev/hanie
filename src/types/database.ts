@@ -1,6 +1,6 @@
 // database.ts — Supabase types khớp với migration.sql
-// Cập nhật: Fix service_categories→categories, staff_profiles, leave_requests,
-//           booking_services (thêm service_name), vouchers, customer_vouchers
+// Cập nhật: 2026-04-15 — Thêm booking_categories; booking_services: thêm
+//           booking_category_id, làm service_id nullable, bỏ service_name
 
 export interface Database {
   public: {
@@ -163,14 +163,38 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['bookings']['Insert']>;
       };
 
+      // ── BOOKING_CATEGORIES ───────────────────────────────────────────────────
+      // Loại hình dịch vụ granular cho đặt lịch — tách biệt với categories
+      // (categories = catalog display; booking_categories = booking flow)
+      booking_categories: {
+        Row: {
+          id: string;
+          category_id: string;           // FK → categories (broad: Nail, Mi, ...)
+          name: string;
+          name_i18n: Record<string, string>;
+          slug: string;                  // 'nail_tay' | 'nail_chan' | 'noi_mi' | ...
+          slot_count: number;
+          duration_min: number;
+          parallel_group: string | null; // 'nail' = nail tay+chân có thể làm song song
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['booking_categories']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['booking_categories']['Insert']>;
+      };
+
       // ── BOOKING_SERVICES ─────────────────────────────────────────────────────
-      // service_name được thêm bằng ALTER TABLE (migration patch)
+      // Cập nhật 2026-04-15: thêm booking_category_id, service_id nullable,
+      //                      bỏ service_name (denormalized, không cần thiết)
+      // Cập nhật 2026-04-15 patch5: thêm service_name cho POS backward compat
       booking_services: {
         Row: {
           id: string;
           booking_id: string;
-          service_id: string;
-          service_name: string | null;  // denormalized — thêm bằng ALTER TABLE
+          service_id: string | null;              // nullable — backward compat
+          booking_category_id: string | null;     // FK → booking_categories
+          service_name: string | null;            // denormalized cho POS display
           price: number;
           quantity: number;
           note: string | null;
@@ -316,6 +340,46 @@ export interface Database {
         };
         Insert: { key: string };
         Update: never;
+      };
+
+      // ── ORDERS (POS receipts) ────────────────────────────────────────────────
+      orders: {
+        Row: {
+          id: string;
+          booking_id: string | null;
+          customer_id: string | null;
+          staff_id: string | null;
+          subtotal: number;
+          discount_amount: number;
+          total: number;
+          method: 'cash' | 'transfer' | 'card' | null;
+          voucher_code: string | null;
+          voucher_id: string | null;
+          status: 'draft' | 'paid' | 'refunded';
+          note: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['orders']['Insert']>;
+      };
+
+      // ── ORDER_ITEMS ──────────────────────────────────────────────────────────
+      order_items: {
+        Row: {
+          id: string;
+          order_id: string;
+          service_id: string | null;
+          service_name: string;
+          price: number;
+          quantity: number;
+          unit: 'fixed' | 'per_nail' | 'per_piece' | 'per_set';
+          note: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['order_items']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['order_items']['Insert']>;
       };
 
       // ── INVENTORY (PENDING — schema giữ chỗ) ─────────────────────────────────

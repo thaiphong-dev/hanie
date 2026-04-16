@@ -1,14 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores/authStore';
+
+interface RegisterResponseData {
+  access_token: string;
+  user: { id: string; phone: string; role: 'admin' | 'staff' | 'customer'; full_name: string };
+}
 
 export default function RegisterPage() {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
+  const setUser = useAuthStore((s) => s.setUser);
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -29,7 +37,7 @@ export default function RegisterPage() {
       });
 
       const json = (await res.json()) as {
-        data: { access_token: string; user: { role: string } } | null;
+        data: RegisterResponseData | null;
         error: { code: string } | null;
       };
 
@@ -39,13 +47,21 @@ export default function RegisterPage() {
         return;
       }
 
-      // Auto-login after register
       if (json.data) {
-        sessionStorage.setItem('access_token', json.data.access_token);
-        sessionStorage.setItem('user_role', json.data.user.role);
+        // Persist full profile to sessionStorage + Zustand store
+        setUser(
+          {
+            id: json.data.user.id,
+            name: json.data.user.full_name,
+            phone: json.data.user.phone,
+            role: json.data.user.role,
+          },
+          json.data.access_token,
+        );
       }
 
-      router.push('/');
+      // Use locale-prefixed home path so middleware doesn't redirect
+      router.push(`/${locale}`);
     } finally {
       setLoading(false);
     }
