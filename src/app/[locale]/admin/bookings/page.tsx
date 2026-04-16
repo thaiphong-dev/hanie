@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
 import {
   format, addDays, startOfWeek, isSameDay, parseISO,
 } from 'date-fns';
@@ -121,7 +120,6 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
 }) {
   const t = useTranslations('admin');
   const tStatus = useTranslations('booking_status');
-  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [cancelMode, setCancelMode] = useState(false);
   const [cancelNote, setCancelNote] = useState('');
@@ -129,7 +127,7 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
   const ns = nextStatus(booking.status);
   const total = booking.booking_services.reduce((s, bs) => s + bs.price, 0);
 
-  async function doAction(status: string, note?: string) {
+  async function doAction(status: string) {
     setLoading(true);
     await onStatusChange(booking.id, status);
     setLoading(false);
@@ -254,7 +252,7 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
                   Huỷ bỏ
                 </button>
                 <button
-                  onClick={() => void doAction('cancelled', cancelNote)}
+                  onClick={() => void doAction('cancelled')}
                   disabled={loading}
                   className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-body text-sm hover:bg-red-600 disabled:opacity-50 transition-colors"
                 >
@@ -280,7 +278,6 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
 
 export default function BookingsPage() {
   const t = useTranslations('admin');
-  const locale = useLocale();
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [bookingsByDate, setBookingsByDate] = useState<Record<string, Booking[]>>({});

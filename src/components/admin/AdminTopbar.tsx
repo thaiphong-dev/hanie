@@ -36,7 +36,6 @@ interface AdminTopbarProps {
 
 export function AdminTopbar({ userName }: AdminTopbarProps) {
   const t = useTranslations('nav');
-  const tAdmin = useTranslations('admin');
   const pathname = usePathname();
   const locale = useLocale();
   const clearUser = useAuthStore((s) => s.clearUser);

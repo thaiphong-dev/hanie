@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, X, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 interface PendingLeave { id: string; date: string; reason: string; }
@@ -33,7 +32,8 @@ function StaffCard({ staff, onLeaveAction, locale }: {
   const [rejecting, setRejecting] = useState<string | null>(null);
 
   async function handleAction(leaveId: string, status: 'approved' | 'rejected') {
-    status === 'approved' ? setApproving(leaveId) : setRejecting(leaveId);
+    if (status === 'approved') setApproving(leaveId);
+    else setRejecting(leaveId);
     await onLeaveAction(leaveId, status);
     setApproving(null); setRejecting(null);
   }

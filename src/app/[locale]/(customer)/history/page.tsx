@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { CalendarDays, Clock, User } from 'lucide-react';
 import { AuthGuard } from '@/components/shared/AuthGuard';
 import { Link } from '@/lib/navigation';
-import { formatDate, formatPrice } from '@/lib/i18n-helpers';
+import { formatDate, formatPrice, getLocaleText } from '@/lib/i18n-helpers';
 import { cn } from '@/lib/utils';
 import type { Database } from '@/types/database';
 import type { Locale } from '@/lib/navigation';
@@ -15,10 +15,14 @@ type BookingStatus = BookingRow['status'];
 
 interface BookingWithServices extends BookingRow {
   booking_services?: Array<{
-    id: string;
-    service_id: string;
-    service_name: string;
+    booking_category_id: string;
     price: number;
+    quantity: number;
+    booking_categories: {
+      name: string;
+      name_i18n: Record<string, string>;
+      slug: string;
+    };
   }>;
 }
 
@@ -65,8 +69,8 @@ function HistoryContent() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
-      .then((json: { data: BookingWithServices[] | null }) => {
-        setBookings(json.data ?? []);
+      .then((json: { data: { bookings: BookingWithServices[] } | null }) => {
+        setBookings(json.data?.bookings ?? []);
       })
       .catch(() => setBookings([]))
       .finally(() => setLoading(false));
@@ -164,7 +168,7 @@ function HistoryContent() {
               ['pending', 'confirmed'].includes(booking.status);
 
             const serviceNames = booking.booking_services
-              ?.map((s) => s.service_name)
+              ?.map((s) => getLocaleText(s.booking_categories.name_i18n, locale))
               .join(', ');
 
             const totalPrice = booking.booking_services?.reduce(
@@ -234,7 +238,7 @@ function HistoryContent() {
                     </button>
                   )}
                   <Link
-                    href={`/booking?service=${booking.booking_services?.[0]?.service_id ?? ''}`}
+                    href={`/booking?category=${booking.booking_services?.[0]?.booking_categories.slug ?? ''}`}
                     className="font-body text-xs text-accent hover:text-accent-dark transition-colors ml-auto"
                   >
                     {t('history.rebook_btn')} →

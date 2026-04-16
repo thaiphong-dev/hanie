@@ -2,16 +2,95 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { User, Crown, LogOut } from 'lucide-react';
+import {
+  User,
+  Crown,
+  LogOut,
+  Clock,
+  Tag,
+  CalendarDays,
+  Ticket,
+  CalendarX,
+  CheckCircle,
+} from 'lucide-react';
 import { AuthGuard } from '@/components/shared/AuthGuard';
+import { Link } from '@/lib/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { formatPrice } from '@/lib/i18n-helpers';
+import { formatPrice, formatDate, getLocaleText } from '@/lib/i18n-helpers';
 import { cn } from '@/lib/utils';
 import type { Database } from '@/types/database';
 import type { Locale } from '@/lib/navigation';
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 type UserRow = Database['public']['Tables']['users']['Row'];
-type ProfileData = Pick<UserRow, 'id' | 'full_name' | 'phone' | 'avatar_url' | 'member_tier' | 'total_spent'>;
+type ProfileData = Pick<
+  UserRow,
+  'id' | 'full_name' | 'phone' | 'avatar_url' | 'member_tier' | 'total_spent'
+>;
+
+type BookingRow = Database['public']['Tables']['bookings']['Row'];
+type BookingStatus = BookingRow['status'];
+interface BookingWithServices extends BookingRow {
+  booking_services?: Array<{
+    booking_category_id: string;
+    price: number;
+    quantity: number;
+    booking_categories: {
+      name: string;
+      name_i18n: Record<string, string>;
+      slug: string;
+    };
+  }>;
+}
+
+type VoucherRow = Database['public']['Tables']['vouchers']['Row'];
+type CustomerVoucherStatus = Database['public']['Tables']['customer_vouchers']['Row']['status'];
+interface CustomerVoucher {
+  id: string;
+  status: CustomerVoucherStatus;
+  used_at: string | null;
+  created_at: string;
+  voucher: Pick<
+    VoucherRow,
+    | 'id'
+    | 'code'
+    | 'name'
+    | 'name_i18n'
+    | 'discount_type'
+    | 'discount_value'
+    | 'min_order_amount'
+    | 'expires_at'
+  > | null;
+}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+type TabKey = 'history' | 'vouchers' | 'account';
+
+type BookingTabKey = 'upcoming' | 'completed' | 'cancelled';
+const TAB_STATUSES: Record<BookingTabKey, BookingStatus[]> = {
+  upcoming: ['pending', 'confirmed', 'in_progress'],
+  completed: ['done'],
+  cancelled: ['cancelled', 'no_show'],
+};
+
+const STATUS_COLORS: Record<BookingStatus, string> = {
+  pending: 'bg-yellow-100 text-yellow-700',
+  confirmed: 'bg-blue-100 text-blue-700',
+  in_progress: 'bg-purple-100 text-purple-700',
+  done: 'bg-green-100 text-green-700',
+  cancelled: 'bg-red-100 text-red-700',
+  no_show: 'bg-gray-100 text-gray-600',
+};
+
+const VOUCHER_STATUS_STYLES: Record<CustomerVoucherStatus, string> = {
+  available: 'border-accent/40 bg-bg-primary',
+  used: 'border-border bg-bg-secondary opacity-60',
+  expired: 'border-border bg-bg-secondary opacity-60',
+};
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
   return (
@@ -21,20 +100,399 @@ export default function ProfilePage() {
   );
 }
 
+// ── Shell ─────────────────────────────────────────────────────────────────────
+
 function ProfileContent() {
+  const t = useTranslations();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<TabKey>('history');
+
+  const TABS: Array<{ key: TabKey; label: string; icon: React.ElementType }> = [
+    { key: 'history', label: t('history.title'), icon: Clock },
+    { key: 'vouchers', label: t('vouchers.title'), icon: Tag },
+    { key: 'account', label: t('profile.title'), icon: User },
+  ];
+
+  return (
+    <div className="min-h-screen bg-bg-primary">
+      {/* Header */}
+      <div className="pt-24 pb-6 px-4 bg-bg-secondary">
+        <div className="mx-auto max-w-2xl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+              <User size={22} className="text-accent" />
+            </div>
+            <div>
+              <p className="font-display text-xl text-text-primary">
+                {user?.full_name ?? ''}
+              </p>
+              <p className="font-body text-sm text-text-muted">{user?.phone ?? ''}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="sticky top-16 z-30 bg-bg-secondary/95 backdrop-blur-sm border-b border-border">
+        <div className="mx-auto max-w-2xl px-4">
+          <div className="flex">
+            {TABS.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={cn(
+                  'flex-1 flex items-center justify-center gap-1.5 font-body text-sm py-3.5 border-b-2 transition-colors',
+                  activeTab === key
+                    ? 'border-accent text-text-primary font-medium'
+                    : 'border-transparent text-text-muted hover:text-text-primary',
+                )}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Tab content */}
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        {activeTab === 'history' && <HistoryTab />}
+        {activeTab === 'vouchers' && <VouchersTab />}
+        {activeTab === 'account' && <AccountTab />}
+      </div>
+    </div>
+  );
+}
+
+// ── History Tab ───────────────────────────────────────────────────────────────
+
+function HistoryTab() {
+  const t = useTranslations();
+  const locale = useLocale() as Locale;
+
+  const [activeTab, setActiveTab] = useState<BookingTabKey>('upcoming');
+  const [bookings, setBookings] = useState<BookingWithServices[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('access_token');
+    if (!token) return;
+
+    setLoading(true);
+    fetch('/api/v1/bookings', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((json: { data: { bookings: BookingWithServices[] } | null }) => {
+        setBookings(json.data?.bookings ?? []);
+      })
+      .catch(() => setBookings([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function handleCancel(bookingId: string) {
+    if (!confirm(t('history.cancel_confirm'))) return;
+    const token = sessionStorage.getItem('access_token');
+    if (!token) return;
+
+    setCancellingId(bookingId);
+    try {
+      const res = await fetch(`/api/v1/bookings/${bookingId}/cancel`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({}),
+      });
+      if (res.ok) {
+        setBookings((prev) =>
+          prev.map((b) => (b.id === bookingId ? { ...b, status: 'cancelled' as const } : b)),
+        );
+      }
+    } finally {
+      setCancellingId(null);
+    }
+  }
+
+  const bookingTabKeys: BookingTabKey[] = ['upcoming', 'completed', 'cancelled'];
+  const filtered = bookings.filter((b) => TAB_STATUSES[activeTab].includes(b.status));
+
+  return (
+    <div>
+      {/* Sub-tabs */}
+      <div className="flex border-b border-border mb-6">
+        {bookingTabKeys.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              'flex-1 font-body text-xs py-2.5 border-b-2 transition-colors',
+              activeTab === tab
+                ? 'border-accent text-text-primary font-medium'
+                : 'border-transparent text-text-muted hover:text-text-primary',
+            )}
+          >
+            {t(`history.tab_${tab}` as Parameters<typeof t>[0])}
+          </button>
+        ))}
+      </div>
+
+      {loading && (
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="skeleton h-32 rounded-2xl" />
+          ))}
+        </div>
+      )}
+
+      {!loading && filtered.length === 0 && (
+        <div className="text-center py-16">
+          <p className="font-display text-xl text-text-muted mb-2">{t('history.empty')}</p>
+          <p className="font-body text-sm text-text-muted mb-8">{t('history.empty_desc')}</p>
+          <Link
+            href="/booking"
+            className="inline-block font-body text-sm font-medium tracking-widest uppercase
+              bg-accent hover:bg-accent-dark text-text-inverse px-8 py-4 rounded-full transition-colors"
+          >
+            {t('common.book_now')}
+          </Link>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {filtered.map((booking) => {
+          const canCancel =
+            activeTab === 'upcoming' && ['pending', 'confirmed'].includes(booking.status);
+          const serviceNames = booking.booking_services
+            ?.map((s) => getLocaleText(s.booking_categories.name_i18n, locale))
+            .join(', ');
+          const totalPrice = booking.booking_services?.reduce((sum, s) => sum + (s.price * (s.quantity || 1)), 0);
+
+          return (
+            <div key={booking.id} className="bg-bg-primary border border-border rounded-2xl p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span
+                  className={cn(
+                    'font-body text-xs px-2.5 py-1 rounded-full font-medium',
+                    STATUS_COLORS[booking.status],
+                  )}
+                >
+                  {t(`booking_status.${booking.status}` as Parameters<typeof t>[0])}
+                </span>
+                {totalPrice !== undefined && totalPrice > 0 && (
+                  <span className="font-display text-sm text-accent">
+                    {formatPrice(totalPrice, locale)}
+                  </span>
+                )}
+              </div>
+
+              <p className="font-display text-base text-text-primary mb-2">
+                {serviceNames || booking.customer_name}
+              </p>
+
+              <div className="flex items-center gap-4 text-text-muted font-body text-xs mb-4">
+                <span className="flex items-center gap-1.5">
+                  <CalendarDays size={12} />
+                  {formatDate(new Date(booking.scheduled_at), locale)}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock size={12} />
+                  {new Date(booking.scheduled_at).toLocaleTimeString(locale, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+
+              <div className="flex gap-3">
+                {canCancel && (
+                  <button
+                    onClick={() => void handleCancel(booking.id)}
+                    disabled={cancellingId === booking.id}
+                    className="font-body text-xs text-red-500 hover:text-red-700 transition-colors"
+                  >
+                    {cancellingId === booking.id ? t('common.loading') : t('history.cancel_btn')}
+                  </button>
+                )}
+                <Link
+                  href={`/booking?category=${booking.booking_services?.[0]?.booking_categories.slug ?? ''}`}
+                  className="font-body text-xs text-accent hover:text-accent-dark transition-colors ml-auto"
+                >
+                  {t('history.rebook_btn')} →
+                </Link>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Vouchers Tab ──────────────────────────────────────────────────────────────
+
+function VouchersTab() {
+  const t = useTranslations();
+  const locale = useLocale() as Locale;
+
+  const [vouchers, setVouchers] = useState<CustomerVoucher[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('access_token');
+    if (!token) return;
+
+    fetch('/api/v1/vouchers/mine', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((json: { data: CustomerVoucher[] | null }) => {
+        setVouchers(Array.isArray(json.data) ? json.data : []);
+      })
+      .catch(() => setVouchers([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function isExpiringSoon(expiresAt: string | null): boolean {
+    if (!expiresAt) return false;
+    const diff = new Date(expiresAt).getTime() - Date.now();
+    return diff > 0 && diff < 3 * 24 * 60 * 60 * 1000;
+  }
+
+  function getDiscountLabel(voucher: CustomerVoucher['voucher']): string {
+    if (!voucher) return '';
+    if (voucher.discount_type === 'percent') {
+      return t('vouchers.discount_pct', { pct: voucher.discount_value });
+    }
+    return t('vouchers.discount_fixed', { amount: formatPrice(voucher.discount_value, locale) });
+  }
+
+  function getVoucherName(voucher: CustomerVoucher['voucher']): string {
+    if (!voucher) return '';
+    const i18n = voucher.name_i18n as Record<string, string>;
+    return i18n?.[locale] ?? voucher.name;
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="skeleton h-36 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (vouchers.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <Ticket size={48} className="mx-auto mb-4 text-text-muted opacity-40" />
+        <p className="font-display text-xl text-text-muted mb-2">{t('vouchers.empty')}</p>
+        <p className="font-body text-sm text-text-muted">{t('vouchers.empty_desc')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {vouchers.map((cv) => {
+        const v = cv.voucher;
+        const isAvailable = cv.status === 'available';
+        const expiringSoon = isAvailable && isExpiringSoon(v?.expires_at ?? null);
+
+        return (
+          <div
+            key={cv.id}
+            className={cn(
+              'relative border rounded-2xl overflow-hidden transition-all',
+              VOUCHER_STATUS_STYLES[cv.status],
+            )}
+          >
+            <div
+              className={cn(
+                'absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl',
+                isAvailable ? 'bg-accent' : 'bg-border',
+              )}
+            />
+            <div className="pl-6 pr-5 py-5">
+              <div className="flex items-start justify-between mb-2">
+                <span className="font-mono text-xs tracking-widest text-text-muted uppercase">
+                  {v?.code}
+                </span>
+                <div className="flex flex-col items-end gap-1">
+                  {cv.status === 'used' && (
+                    <span className="flex items-center gap-1 font-body text-xs text-text-muted">
+                      <CheckCircle size={12} /> {t('vouchers.used')}
+                    </span>
+                  )}
+                  {cv.status === 'expired' && (
+                    <span className="flex items-center gap-1 font-body text-xs text-text-muted">
+                      <CalendarX size={12} /> {t('vouchers.expired')}
+                    </span>
+                  )}
+                  {expiringSoon && (
+                    <span className="font-body text-xs text-red-500 font-medium animate-pulse">
+                      {t('vouchers.expires_soon')}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <p className="font-display text-lg text-text-primary mb-1">{getVoucherName(v)}</p>
+              <p className="font-body text-2xl font-bold text-accent mb-3">
+                {getDiscountLabel(v)}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-body text-xs text-text-muted">
+                {v?.min_order_amount != null && v.min_order_amount > 0 && (
+                  <span>
+                    {t('vouchers.min_order', {
+                      amount: formatPrice(v.min_order_amount, locale),
+                    })}
+                  </span>
+                )}
+                {v?.expires_at && (
+                  <span>
+                    {t('vouchers.expires', {
+                      date: formatDate(new Date(v.expires_at), locale),
+                    })}
+                  </span>
+                )}
+              </div>
+
+              {isAvailable && (
+                <div className="mt-4">
+                  <Link
+                    href="/booking"
+                    className="inline-block font-body text-xs font-medium tracking-widest uppercase
+                      text-accent hover:text-accent-dark transition-colors"
+                  >
+                    {t('vouchers.use_now')}
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Account Tab ───────────────────────────────────────────────────────────────
+
+function AccountTab() {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const { user, logout } = useAuth();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
-  // Name update form
   const [nameValue, setNameValue] = useState('');
   const [nameSaving, setNameSaving] = useState(false);
   const [nameSuccess, setNameSuccess] = useState(false);
   const [nameError, setNameError] = useState('');
 
-  // Password change form
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [pwSaving, setPwSaving] = useState(false);
@@ -42,27 +500,20 @@ function ProfileContent() {
   const [pwError, setPwError] = useState('');
 
   useEffect(() => {
-    // Bootstrap name from auth state while we fetch full profile
     if (user?.full_name) setNameValue(user.full_name);
   }, [user]);
 
-  // Fetch full profile data (tier, total_spent) from a dedicated endpoint
-  // Re-use the bookings endpoint isn't ideal — so we'll derive from sessionStorage
-  // and show what we have from the JWT. Tier/spent come from auth context only if
-  // the backend embeds them. For now, use what's available in sessionStorage.
   useEffect(() => {
     if (!user) return;
-    // Build a minimal profile from auth state
     setProfile({
       id: user.id,
       full_name: user.full_name,
       phone: user.phone,
       avatar_url: null,
-      member_tier: 'new', // default — will update if we fetch
+      member_tier: 'new',
       total_spent: 0,
     });
 
-    // Optionally fetch richer profile data
     const token = sessionStorage.getItem('access_token');
     if (!token) return;
 
@@ -97,7 +548,10 @@ function ProfileContent() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ full_name: nameValue.trim() }),
       });
-      const json = (await res.json()) as { data: ProfileData | null; error: { message: string } | null };
+      const json = (await res.json()) as {
+        data: ProfileData | null;
+        error: { message: string } | null;
+      };
       if (!res.ok || json.error) {
         setNameError(json.error?.message ?? t('common.error'));
       } else {
@@ -106,7 +560,6 @@ function ProfileContent() {
           setProfile(json.data);
           setNameValue(json.data.full_name);
         }
-        // Sync sessionStorage so Navbar / useAuth reflects change
         sessionStorage.setItem('user_name', nameValue.trim());
       }
     } catch {
@@ -157,155 +610,135 @@ function ProfileContent() {
     vip: t('profile.tier_vip'),
   };
 
-  const displayName = profile?.full_name ?? user?.full_name ?? '';
-  const displayPhone = profile?.phone ?? user?.phone ?? '';
   const tier = profile?.member_tier ?? 'new';
 
   return (
-    <div className="min-h-screen bg-bg-primary">
-      {/* Header */}
-      <div className="pt-24 pb-8 px-4 bg-bg-secondary">
-        <div className="mx-auto max-w-2xl">
-          <h1 className="font-display text-3xl text-text-primary mb-6">{t('profile.title')}</h1>
-
-          {/* Avatar + name */}
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
-              <User size={28} className="text-accent" />
-            </div>
-            <div>
-              <p className="font-display text-xl text-text-primary">{displayName}</p>
-              <p className="font-body text-sm text-text-muted">{displayPhone}</p>
+    <div className="space-y-8">
+      {/* Member tier card */}
+      {user?.role === 'customer' && (
+        <div className="bg-bg-secondary border border-border rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Crown size={16} className="text-accent" />
+            <p className="font-body text-sm font-medium text-text-primary uppercase tracking-wider">
+              {t('profile.member_tier')}
+            </p>
+          </div>
+          <div className="flex items-center justify-between">
+            <span
+              className={cn(
+                'font-display text-base px-3 py-1 rounded-full',
+                tier === 'vip'
+                  ? 'bg-amber-100 text-amber-700'
+                  : tier === 'regular'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-gray-100 text-gray-600',
+              )}
+            >
+              {tierLabel[tier] ?? tier}
+            </span>
+            <div className="text-right">
+              <p className="font-body text-xs text-text-muted">{t('profile.total_spent')}</p>
+              <p className="font-display text-base text-accent">
+                {formatPrice(profile?.total_spent ?? 0, locale)}
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="mx-auto max-w-2xl px-4 py-8 space-y-8">
-        {/* Member tier card */}
-        {user?.role === 'customer' && (
-          <div className="bg-bg-secondary border border-border rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Crown size={16} className="text-accent" />
-              <p className="font-body text-sm font-medium text-text-primary uppercase tracking-wider">
-                {t('profile.member_tier')}
-              </p>
-            </div>
-            <div className="flex items-center justify-between">
-              <span
-                className={cn(
-                  'font-display text-base px-3 py-1 rounded-full',
-                  tier === 'vip'
-                    ? 'bg-amber-100 text-amber-700'
-                    : tier === 'regular'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600',
-                )}
-              >
-                {tierLabel[tier] ?? tier}
-              </span>
-              <div className="text-right">
-                <p className="font-body text-xs text-text-muted">{t('profile.total_spent')}</p>
-                <p className="font-display text-base text-accent">
-                  {formatPrice(profile?.total_spent ?? 0, locale)}
-                </p>
-              </div>
-            </div>
+      {/* Update name */}
+      <section>
+        <h2 className="font-display text-lg text-text-primary mb-4">{t('profile.change_name')}</h2>
+        <form onSubmit={(e) => void handleSaveName(e)} className="space-y-3">
+          <div>
+            <label htmlFor="full_name" className="block font-body text-sm text-text-muted mb-1">
+              {t('profile.name_label')}
+            </label>
+            <input
+              id="full_name"
+              type="text"
+              value={nameValue}
+              onChange={(e) => {
+                setNameValue(e.target.value);
+                setNameSuccess(false);
+              }}
+              className="w-full font-body text-sm bg-bg-secondary border border-border rounded-xl
+                px-4 py-3 text-text-primary placeholder-text-muted
+                focus:outline-none focus:border-accent transition-colors"
+            />
           </div>
-        )}
-
-        {/* Update name */}
-        <section>
-          <h2 className="font-display text-lg text-text-primary mb-4">{t('profile.change_name')}</h2>
-          <form onSubmit={(e) => void handleSaveName(e)} className="space-y-3">
-            <div>
-              <label htmlFor="full_name" className="block font-body text-sm text-text-muted mb-1">
-                {t('profile.name_label')}
-              </label>
-              <input
-                id="full_name"
-                type="text"
-                value={nameValue}
-                onChange={(e) => {
-                  setNameValue(e.target.value);
-                  setNameSuccess(false);
-                }}
-                className="w-full font-body text-sm bg-bg-secondary border border-border rounded-xl
-                  px-4 py-3 text-text-primary placeholder-text-muted
-                  focus:outline-none focus:border-accent transition-colors"
-              />
-            </div>
-            {nameError && <p className="font-body text-xs text-red-500">{nameError}</p>}
-            {nameSuccess && <p className="font-body text-xs text-green-600">{t('common.success')}</p>}
-            <button
-              type="submit"
-              disabled={nameSaving || !nameValue.trim()}
-              className="font-body text-sm font-medium tracking-widest uppercase
-                bg-accent hover:bg-accent-dark disabled:opacity-50
-                text-text-inverse px-6 py-3 rounded-full transition-colors"
-            >
-              {nameSaving ? t('common.loading') : t('profile.save_changes')}
-            </button>
-          </form>
-        </section>
-
-        {/* Change password */}
-        <section>
-          <h2 className="font-display text-lg text-text-primary mb-4">{t('profile.change_password')}</h2>
-          <form onSubmit={(e) => void handleChangePassword(e)} className="space-y-3">
-            <div>
-              <label htmlFor="old_password" className="block font-body text-sm text-text-muted mb-1">
-                {t('profile.old_password')}
-              </label>
-              <input
-                id="old_password"
-                type="password"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full font-body text-sm bg-bg-secondary border border-border rounded-xl
-                  px-4 py-3 text-text-primary placeholder-text-muted
-                  focus:outline-none focus:border-accent transition-colors"
-              />
-            </div>
-            <div>
-              <label htmlFor="new_password" className="block font-body text-sm text-text-muted mb-1">
-                {t('profile.new_password')}
-              </label>
-              <input
-                id="new_password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full font-body text-sm bg-bg-secondary border border-border rounded-xl
-                  px-4 py-3 text-text-primary placeholder-text-muted
-                  focus:outline-none focus:border-accent transition-colors"
-              />
-            </div>
-            {pwError && <p className="font-body text-xs text-red-500">{pwError}</p>}
-            {pwSuccess && <p className="font-body text-xs text-green-600">{t('common.success')}</p>}
-            <button
-              type="submit"
-              disabled={pwSaving || !oldPassword || !newPassword}
-              className="font-body text-sm font-medium tracking-widest uppercase
-                bg-accent hover:bg-accent-dark disabled:opacity-50
-                text-text-inverse px-6 py-3 rounded-full transition-colors"
-            >
-              {pwSaving ? t('common.loading') : t('profile.save_changes')}
-            </button>
-          </form>
-        </section>
-
-        {/* Logout */}
-        <section className="pt-4 border-t border-border">
+          {nameError && <p className="font-body text-xs text-red-500">{nameError}</p>}
+          {nameSuccess && <p className="font-body text-xs text-green-600">{t('common.success')}</p>}
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 font-body text-sm text-red-500 hover:text-red-700 transition-colors"
+            type="submit"
+            disabled={nameSaving || !nameValue.trim()}
+            className="font-body text-sm font-medium tracking-widest uppercase
+              bg-accent hover:bg-accent-dark disabled:opacity-50
+              text-text-inverse px-6 py-3 rounded-full transition-colors"
           >
-            <LogOut size={16} />
-            {t('profile.logout')}
+            {nameSaving ? t('common.loading') : t('profile.save_changes')}
           </button>
-        </section>
-      </div>
+        </form>
+      </section>
+
+      {/* Change password */}
+      <section>
+        <h2 className="font-display text-lg text-text-primary mb-4">
+          {t('profile.change_password')}
+        </h2>
+        <form onSubmit={(e) => void handleChangePassword(e)} className="space-y-3">
+          <div>
+            <label htmlFor="old_password" className="block font-body text-sm text-text-muted mb-1">
+              {t('profile.old_password')}
+            </label>
+            <input
+              id="old_password"
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              className="w-full font-body text-sm bg-bg-secondary border border-border rounded-xl
+                px-4 py-3 text-text-primary placeholder-text-muted
+                focus:outline-none focus:border-accent transition-colors"
+            />
+          </div>
+          <div>
+            <label htmlFor="new_password" className="block font-body text-sm text-text-muted mb-1">
+              {t('profile.new_password')}
+            </label>
+            <input
+              id="new_password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full font-body text-sm bg-bg-secondary border border-border rounded-xl
+                px-4 py-3 text-text-primary placeholder-text-muted
+                focus:outline-none focus:border-accent transition-colors"
+            />
+          </div>
+          {pwError && <p className="font-body text-xs text-red-500">{pwError}</p>}
+          {pwSuccess && <p className="font-body text-xs text-green-600">{t('common.success')}</p>}
+          <button
+            type="submit"
+            disabled={pwSaving || !oldPassword || !newPassword}
+            className="font-body text-sm font-medium tracking-widest uppercase
+              bg-accent hover:bg-accent-dark disabled:opacity-50
+              text-text-inverse px-6 py-3 rounded-full transition-colors"
+          >
+            {pwSaving ? t('common.loading') : t('profile.save_changes')}
+          </button>
+        </form>
+      </section>
+
+      {/* Logout */}
+      <section className="pt-4 border-t border-border">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 font-body text-sm text-red-500 hover:text-red-700 transition-colors"
+        >
+          <LogOut size={16} />
+          {t('profile.logout')}
+        </button>
+      </section>
     </div>
   );
 }

@@ -2,9 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
 import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
 import {
   TrendingUp,
   TrendingDown,
@@ -124,7 +122,6 @@ function SkeletonCard() {
 export default function DashboardPage() {
   const t = useTranslations('admin');
   const tStatus = useTranslations('booking_status');
-  const locale = useLocale();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +142,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  useEffect(() => { void fetchDashboard(); }, [fetchDashboard]);
+  useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
   async function handleLeaveAction(id: string, status: 'approved' | 'rejected') {
     const note = status === 'rejected' ? rejectNote : undefined;

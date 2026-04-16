@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 import Image from 'next/image';
 import { Link, usePathname } from '@/lib/navigation';
 import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const NAV_LINKS = [
@@ -22,6 +23,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const t = useTranslations();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -85,9 +87,10 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Right side: language + CTA */}
+          {/* Right side: language + profile + CTA */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageSwitcher variant={isHeroMode ? 'dark' : 'light'} />
+            
             <Link
               href="/booking"
               className="font-body text-sm font-medium tracking-widest uppercase
@@ -96,6 +99,35 @@ export function Navbar() {
             >
               {t('common.book_now')}
             </Link>
+
+            {user ? (
+              <Link
+                href="/profile"
+                className={cn(
+                  'flex items-center gap-1.5 font-body text-sm transition-colors duration-200',
+                  pathname === '/profile'
+                    ? 'text-accent'
+                    : isHeroMode
+                    ? 'text-text-inverse/90 hover:text-text-inverse'
+                    : 'text-text-primary hover:text-accent',
+                )}
+              >
+                <User size={15} />
+                {user.full_name?.split(' ').pop() ?? t('nav.profile')}
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className={cn(
+                  'font-body text-sm transition-colors duration-200',
+                  isHeroMode
+                    ? 'text-text-inverse/90 hover:text-text-inverse'
+                    : 'text-text-primary hover:text-accent',
+                )}
+              >
+                {t('nav.login_register')}
+              </Link>
+            )}
           </div>
 
           {/* Mobile: hamburger → opens drawer */}
@@ -161,6 +193,26 @@ export function Navbar() {
 
               <div className="mt-auto space-y-4">
                 <LanguageSwitcher variant="dark" />
+                
+                {user ? (
+                  <Link
+                    href="/profile"
+                    className="flex items-center justify-center gap-2 font-body text-sm text-text-inverse py-3 border border-text-inverse/20 rounded-full"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <User size={16} />
+                    {user.full_name ?? t('nav.profile')}
+                  </Link>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="block text-center font-body text-sm text-text-inverse py-3 border border-text-inverse/20 rounded-full"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {t('nav.login_register')}
+                  </Link>
+                )}
+
                 <Link
                   href="/booking"
                   className="block text-center font-body text-sm font-medium tracking-widest uppercase

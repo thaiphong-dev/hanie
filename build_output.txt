@@ -1,0 +1,208 @@
+﻿
+> hanie-studio@0.1.0 build
+> next build
+
+  Ôû▓ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+node.exe : (node:58676) 
+ExperimentalWarning: Type 
+Stripping is an 
+experimental feature and 
+might change at any time
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified: ((no  
+  de:58676) Ex...nge at    
+ any time:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+(Use `node 
+--trace-warnings ...` to 
+show where the warning was 
+created)
+ Ô£ô Compiled successfully
+   Linting and checking validity of types ...
+
+./src/app/[locale]/admin/bookings/page.tsx
+310:6  Warning: React Hook useCallback has a missing dependency: 'weekDays'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/30) ...
+[admin/customers GET] 
+Dynamic server usage: 
+Route 
+/api/v1/admin/customers 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/do
+cs/messages/dynamic-server-
+error
+[admin/leave-requests GET] 
+Dynamic server usage: 
+Route /api/v1/admin/leave-r
+equests couldn't be 
+rendered statically 
+because it used `headers`. 
+See more info here: https:/
+/nextjs.org/docs/messages/d
+ynamic-server-error
+[admin/dashboard] Dynamic 
+server usage: Route 
+/api/v1/admin/dashboard 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/do
+cs/messages/dynamic-server-
+error
+   Generating static pages (7/30) 
+[admin/reports GET] 
+Dynamic server usage: 
+Route 
+/api/v1/admin/reports 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/do
+cs/messages/dynamic-server-
+error
+[admin/staff GET] Dynamic 
+server usage: Route 
+/api/v1/admin/staff 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/do
+cs/messages/dynamic-server-
+error
+   Generating static pages (14/30) 
+[GET /api/v1/availability] 
+Dynamic server usage: 
+Route /api/v1/availability 
+couldn't be rendered 
+statically because it used 
+`nextUrl.searchParams`. 
+See more info here: https:/
+/nextjs.org/docs/messages/d
+ynamic-server-error
+[GET /api/v1/staff] 
+Dynamic server usage: 
+Route /api/v1/staff 
+couldn't be rendered 
+statically because it used 
+`nextUrl.searchParams`. 
+See more info here: https:/
+/nextjs.org/docs/messages/d
+ynamic-server-error
+[GET /api/v1/gallery] 
+Dynamic server usage: 
+Route /api/v1/gallery 
+couldn't be rendered 
+statically because it used 
+`nextUrl.searchParams`. 
+See more info here: https:/
+/nextjs.org/docs/messages/d
+ynamic-server-error
+   Generating static pages (22/30) 
+[GET /api/v1/services] 
+Dynamic server usage: 
+Route /api/v1/services 
+couldn't be rendered 
+statically because it used 
+`nextUrl.searchParams`. 
+See more info here: https:/
+/nextjs.org/docs/messages/d
+ynamic-server-error
+[GET 
+/api/v1/vouchers/mine] 
+Dynamic server usage: 
+Route 
+/api/v1/vouchers/mine 
+couldn't be rendered 
+statically because it used 
+`request.headers`. See 
+more info here: https://nex
+tjs.org/docs/messages/dynam
+ic-server-error
+ Ô£ô Generating static pages (30/30)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+Ôöî Ôùï /                                    142 B          87.5 kB
+Ôö£ Ôùï /_not-found                          873 B          88.2 kB
+Ôö£ ãÆ /[locale]                            3.85 kB         169 kB
+Ôö£ ãÆ /[locale]/admin/bookings             7.68 kB         124 kB
+Ôö£ ãÆ /[locale]/admin/customers            2.17 kB         119 kB
+Ôö£ ãÆ /[locale]/admin/customers/[id]       3.61 kB         120 kB
+Ôö£ ãÆ /[locale]/admin/dashboard            3.41 kB         120 kB
+Ôö£ ãÆ /[locale]/admin/gallery              3.81 kB         119 kB
+Ôö£ ãÆ /[locale]/admin/pos                  4.46 kB         121 kB
+Ôö£ ãÆ /[locale]/admin/reports              2.65 kB         106 kB
+Ôö£ ãÆ /[locale]/admin/services             3.83 kB         114 kB
+Ôö£ ãÆ /[locale]/admin/staff                2.01 kB         112 kB
+Ôö£ ãÆ /[locale]/admin/staff/payroll        2.45 kB         112 kB
+Ôö£ ãÆ /[locale]/admin/vouchers             4.34 kB         121 kB
+Ôö£ ãÆ /[locale]/booking                    6.91 kB         167 kB
+Ôö£ ãÆ /[locale]/gallery                    4.72 kB         170 kB
+Ôö£ ãÆ /[locale]/history                    3.56 kB         128 kB
+Ôö£ ãÆ /[locale]/location                   2.54 kB         111 kB
+Ôö£ ãÆ /[locale]/login                      6.18 kB         126 kB
+Ôö£ ãÆ /[locale]/profile                    6.21 kB         130 kB
+Ôö£ ãÆ /[locale]/register                   6.14 kB         126 kB
+Ôö£ ãÆ /[locale]/services                   3.84 kB         169 kB
+Ôö£ ãÆ /[locale]/vouchers                   3.15 kB         127 kB
+Ôö£ ãÆ /api/v1/admin/bookings               0 B                0 B
+Ôö£ ãÆ /api/v1/admin/bookings/[id]/status   0 B                0 B
+Ôö£ ãÆ /api/v1/admin/customers              0 B                0 B
+Ôö£ ãÆ /api/v1/admin/customers/[id]         0 B                0 B
+Ôö£ ãÆ /api/v1/admin/customers/[id]/notes   0 B                0 B
+Ôö£ ãÆ /api/v1/admin/dashboard              0 B                0 B
+Ôö£ ãÆ /api/v1/admin/gallery                0 B                0 B
+Ôö£ ãÆ /api/v1/admin/leave-requests         0 B                0 B
+Ôö£ ãÆ /api/v1/admin/leave-requests/[id]    0 B                0 B
+Ôö£ ãÆ /api/v1/admin/orders                 0 B                0 B
+Ôö£ ãÆ /api/v1/admin/payroll                0 B                0 B
+Ôö£ ãÆ /api/v1/admin/reports                0 B                0 B
+Ôö£ ãÆ /api/v1/admin/services               0 B                0 B
+Ôö£ ãÆ /api/v1/admin/staff                  0 B                0 B
+Ôö£ ãÆ /api/v1/admin/vouchers               0 B                0 B
+Ôö£ ãÆ /api/v1/auth/login                   0 B                0 B
+Ôö£ ãÆ /api/v1/auth/logout                  0 B                0 B
+Ôö£ ãÆ /api/v1/auth/refresh                 0 B                0 B
+Ôö£ ãÆ /api/v1/auth/register                0 B                0 B
+Ôö£ ãÆ /api/v1/availability                 0 B                0 B
+Ôö£ Ôùï /api/v1/booking-categories           0 B                0 B
+Ôö£ ãÆ /api/v1/bookings                     0 B                0 B
+Ôö£ ãÆ /api/v1/bookings/[id]                0 B                0 B
+Ôö£ ãÆ /api/v1/bookings/[id]/cancel         0 B                0 B
+Ôö£ Ôùï /api/v1/categories                   0 B                0 B
+Ôö£ ãÆ /api/v1/gallery                      0 B                0 B
+Ôö£ ãÆ /api/v1/services                     0 B                0 B
+Ôö£ ãÆ /api/v1/staff                        0 B                0 B
+Ôö£ ãÆ /api/v1/users/me                     0 B                0 B
+Ôö£ ãÆ /api/v1/users/me/password            0 B                0 B
+Ôöö ãÆ /api/v1/vouchers/mine                0 B                0 B
++ First Load JS shared by all            87.3 kB
+  Ôö£ chunks/117-648129468f8bcd07.js       31.7 kB
+  Ôö£ chunks/fd9d1056-ea949d58b73d551c.js  53.6 kB
+  Ôöö other shared chunks (total)          1.96 kB
+
+
+ãÆ Middleware                             45.5 kB
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+

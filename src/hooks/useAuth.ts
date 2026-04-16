@@ -137,6 +137,7 @@ export function useAuth(): AuthState & {
     sessionStorage.removeItem('user_id');
     sessionStorage.removeItem('user_phone');
     setState({ user: null, isLoggedIn: false, isLoading: false });
+    window.location.replace('/');
   }, []);
 
   return { ...state, login, logout };

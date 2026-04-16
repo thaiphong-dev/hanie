@@ -139,11 +139,16 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}`, req.url));
   }
 
-  // Auth passed — inject user headers and propagate intl cookies
+  // Auth passed — inject user headers and propagate intl state
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-user-id', payload.sub);
   requestHeaders.set('x-user-role', payload.role);
   requestHeaders.set('x-user-phone', payload.phone);
+
+  // next-intl's requestLocale reads 'x-next-intl-locale' from request headers.
+  // When we create a new NextResponse.next() for protected routes, the intlResponse
+  // headers are not automatically propagated. Inject the locale directly from the URL.
+  requestHeaders.set('x-next-intl-locale', locale);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   // Propagate locale cookie that intl middleware may have set

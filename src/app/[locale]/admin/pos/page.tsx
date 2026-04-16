@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Plus, Trash2, X, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';

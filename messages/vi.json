@@ -15,7 +15,8 @@
     "all": "Tất cả",
     "close": "Đóng",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "next": "Tiếp theo"
   },
   "nav": {
     "home": "Trang chủ",
@@ -32,7 +33,8 @@
     "reports": "Báo cáo",
     "more": "Thêm",
     "gallery": "Thư viện ảnh",
-    "location": "Địa chỉ"
+    "location": "Địa chỉ",
+    "login_register": "Đăng nhập / Đăng ký"
   },
   "home": {
     "hero_eyebrow": "Hanie in Quy Nhon · Studio Làm Đẹp",

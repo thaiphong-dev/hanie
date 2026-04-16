@@ -192,7 +192,7 @@ export async function GET(req: NextRequest) {
       .select(
         `id, status, booking_type, scheduled_at, end_at, slot_count, notes,
          customer_name, customer_phone,
-         booking_services(booking_category_id, quantity, price)`,
+         booking_services(booking_category_id, quantity, price, booking_categories(name, name_i18n, slug))`,
         { count: 'exact' },
       )
       .order('scheduled_at', { ascending: false })
