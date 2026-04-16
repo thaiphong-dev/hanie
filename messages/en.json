@@ -71,7 +71,8 @@
     "book_service": "Book this service",
     "warranty": "{days}-day warranty",
     "price_range": "{min} – {max}",
-    "view_all": "View all services"
+    "view_all": "View all services",
+    "no_results": "No services found in this category"
   },
   "booking": {
     "title": "Book an Appointment",
@@ -125,7 +126,7 @@
     "hours_label": "Hours",
     "hours_value": "Mon – Sun: 08:00 – 20:00",
     "phone_label": "Contact",
-    "phone_value": "0901 234 567",
+    "phone_value": "0901234567",
     "call_btn": "Call now",
     "zalo_btn": "Message on Zalo",
     "maps_btn": "Open Google Maps",

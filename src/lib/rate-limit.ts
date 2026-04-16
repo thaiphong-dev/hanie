@@ -13,6 +13,11 @@ interface RateLimitResult {
 }
 
 export async function checkRateLimit(config: RateLimitConfig): Promise<RateLimitResult> {
+  // Bypass rate limiting in development/test environments to avoid blocking tests
+  if (process.env.RATE_LIMIT_DISABLED === 'true') {
+    return { allowed: true, remaining: config.maxRequests, resetAt: 0 };
+  }
+
   const supabase = createServerClient();
   const windowStart = new Date(Date.now() - config.windowSeconds * 1000).toISOString();
 

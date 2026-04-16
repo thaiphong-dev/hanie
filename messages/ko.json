@@ -71,7 +71,8 @@
     "book_service": "이 서비스 예약",
     "warranty": "{days}일 보증",
     "price_range": "{min} – {max}",
-    "view_all": "모든 서비스 보기"
+    "view_all": "모든 서비스 보기",
+    "no_results": "이 카테고리에 서비스가 없습니다"
   },
   "booking": {
     "title": "예약하기",
@@ -125,7 +126,7 @@
     "hours_label": "영업시간",
     "hours_value": "월 – 일: 08:00 – 20:00",
     "phone_label": "연락처",
-    "phone_value": "0901 234 567",
+    "phone_value": "0901234567",
     "call_btn": "전화하기",
     "zalo_btn": "Zalo로 메시지",
     "maps_btn": "Google Maps 열기",

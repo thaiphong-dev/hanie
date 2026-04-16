@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useLocale } from 'next-intl';
+// Use next-intl router/pathname so locale is handled automatically
+import { useRouter, usePathname } from '@/lib/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AuthGuardProps {
@@ -16,14 +16,14 @@ interface AuthGuardProps {
 export function AuthGuard({ children }: AuthGuardProps) {
   const { isLoggedIn, isLoading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  const locale = useLocale();
+  const pathname = usePathname(); // locale-stripped path e.g. "/history"
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
-      router.push(`/${locale}/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      // next-intl router handles locale prefix automatically
+      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
     }
-  }, [isLoggedIn, isLoading, router, pathname, locale]);
+  }, [isLoggedIn, isLoading, router, pathname]);
 
   if (isLoading) {
     return (

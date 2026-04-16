@@ -13,9 +13,10 @@ export default async function AdminLayout({
   const user = getCurrentUser();
   const locale = await getLocale();
 
-  // Double-check: middleware handles this, but guard at layout level too
+  // Double-check: middleware handles this, but guard at layout level too.
+  // Redirect to /login (not home) so users can re-authenticate if session expired.
   if (!user || user.role === 'customer') {
-    redirect(`/${locale}`);
+    redirect(`/${locale}/login`);
   }
 
   return (

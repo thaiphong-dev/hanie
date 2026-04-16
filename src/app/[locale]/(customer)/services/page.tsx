@@ -61,7 +61,9 @@ export default function ServicesPage() {
   const categoryMap = new Map<string, CategoryGroup>();
 
   for (const svc of allServices) {
-    const catId = svc.category_id;
+    // API returns joined `category` object but not `category_id` directly; use the join.
+    const catId = svc.category?.id ?? svc.category_id;
+    if (!catId) continue; // skip services without a category
     if (!categoryMap.has(catId)) {
       categoryMap.set(catId, {
         categoryId: catId,
@@ -151,7 +153,7 @@ export default function ServicesPage() {
 
         {!loading && filteredGroups.length === 0 && (
           <div className="text-center py-20">
-            <p className="font-body text-text-muted">{t('common.error')}</p>
+            <p className="font-body text-text-muted">{t('services.no_results')}</p>
           </div>
         )}
 

@@ -684,7 +684,7 @@ function BookingContent() {
                     : 'bg-bg-secondary text-text-muted cursor-not-allowed',
                 )}
               >
-                {t('common.confirm')} <ChevronRight size={16} />
+                {t('common.next')} <ChevronRight size={16} />
               </button>
             ) : (
               <button

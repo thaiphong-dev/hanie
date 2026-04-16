@@ -71,7 +71,8 @@
     "book_service": "Đặt dịch vụ này",
     "warranty": "Bảo hành {days} ngày",
     "price_range": "{min} – {max}",
-    "view_all": "Xem tất cả dịch vụ"
+    "view_all": "Xem tất cả dịch vụ",
+    "no_results": "Không có dịch vụ nào trong danh mục này"
   },
   "booking": {
     "title": "Đặt lịch",
@@ -125,7 +126,7 @@
     "hours_label": "Giờ mở cửa",
     "hours_value": "Thứ 2 – Chủ nhật: 08:00 – 20:00",
     "phone_label": "Liên hệ",
-    "phone_value": "0901 234 567",
+    "phone_value": "0901234567",
     "call_btn": "Gọi ngay",
     "zalo_btn": "Nhắn Zalo",
     "maps_btn": "Mở Google Maps",

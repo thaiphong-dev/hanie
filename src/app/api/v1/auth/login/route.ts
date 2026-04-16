@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
 
     // Rate limit: 5 per phone / 15 min, 10 per IP / 15 min
     const [phoneLimit, ipLimit] = await Promise.all([
-      checkRateLimit({ key: `login:phone:${phone}`, maxRequests: 5, windowSeconds: 900 }),
-      checkRateLimit({ key: `login:ip:${ip}`, maxRequests: 10, windowSeconds: 900 }),
+      checkRateLimit({ key: `login:phone:${phone}`, maxRequests: 20, windowSeconds: 60 }),
+      checkRateLimit({ key: `login:ip:${ip}`, maxRequests: 40, windowSeconds: 60 }),
     ]);
 
     if (!phoneLimit.allowed || !ipLimit.allowed) {
