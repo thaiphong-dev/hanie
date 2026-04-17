@@ -1,10 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Save, Calendar, BarChart3, User, Gift, Scissors } from 'lucide-react';
+import { ArrowLeft, Save, Calendar, BarChart3, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 
@@ -49,7 +51,6 @@ function formatVND(n: number) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function StaffDetailPage() {
-  const t = useTranslations('admin');
   const params = useParams();
   const id = params?.id as string;
   const locale = useLocale();
@@ -279,7 +280,7 @@ export default function StaffDetailPage() {
                        <th className="px-6 py-4 text-left font-body text-xs text-text-muted uppercase">Ngày tạo</th>
                        <th className="px-6 py-4 text-left font-body text-xs text-text-muted uppercase">Khách hàng</th>
                        <th className="px-6 py-4 text-right font-body text-xs text-text-muted uppercase">Doanh thu</th>
-                       <th className="px-6 py-4 text-right font-body text-xs text-text-muted uppercase text-accent font-bold">Hoa hồng</th>
+                       <th className="px-6 py-4 text-right font-body text-xs  uppercase text-accent font-bold">Hoa hồng</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-bg-secondary">

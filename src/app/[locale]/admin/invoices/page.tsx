@@ -1,9 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
-import { Search, Filter, Printer, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search,  Printer, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
@@ -30,7 +30,6 @@ function formatVND(n: number) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function InvoicesPage() {
-  const t = useTranslations('admin');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);

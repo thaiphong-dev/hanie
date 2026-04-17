@@ -120,8 +120,8 @@ export async function GET(req: NextRequest) {
       const cInfo = Array.isArray(o.customer) ? o.customer[0] : o.customer;
       if (!customerSpendMap[cid]) {
         customerSpendMap[cid] = { 
-          name: (cInfo as any)?.full_name ?? 'Khách lẻ', 
-          phone: (cInfo as any)?.phone ?? '', 
+          name: (cInfo)?.full_name ?? 'Khách lẻ', 
+          phone: (cInfo)?.phone ?? '', 
           total: 0, 
           visits: 0 
         };

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface DayRevenue { date: string; amount: number; }
@@ -58,7 +57,6 @@ function BarChart({ data }: { data: DayRevenue[] }) {
 }
 
 export default function ReportsPage() {
-  const t = useTranslations('admin');
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -149,7 +147,7 @@ export default function ReportsPage() {
             <p className="font-body text-sm text-text-muted text-center py-10">Chưa có dữ liệu</p>
           ) : (
             <div className="space-y-5 flex-1">
-              {(data?.top_services ?? []).map((s, i) => (
+              {(data?.top_services ?? []).map((s) => (
                 <div key={s.service_name} className="relative">
                   <div className="flex items-center justify-between mb-1.5">
                     <p className="font-body text-xs text-text-primary font-bold truncate pr-4">{s.service_name}</p>

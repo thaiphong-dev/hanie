@@ -45,7 +45,7 @@ export async function PATCH(
     const supabase = createServerClient();
 
     // Update User
-    const userUpdates: Record<string, any> = {};
+    const userUpdates: Record<string, string | boolean | undefined> = {};
     if (full_name !== undefined) userUpdates.full_name = full_name;
     if (phone !== undefined) userUpdates.phone = phone;
     if (role !== undefined) userUpdates.role = role;
@@ -60,7 +60,7 @@ export async function PATCH(
     }
 
     // Update Profile
-    const profileUpdates: Record<string, any> = {};
+    const profileUpdates: Record<string, string | number | undefined> = {};
     if (specialties !== undefined) profileUpdates.specialties = specialties;
     if (base_salary !== undefined) profileUpdates.base_salary = base_salary;
     if (commission_pct !== undefined) profileUpdates.commission_pct = commission_pct;

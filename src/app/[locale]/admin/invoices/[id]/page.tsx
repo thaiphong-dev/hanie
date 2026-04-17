@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { format } from 'date-fns';
-import { Printer, ChevronLeft, Calendar, User, Phone, Tag, CreditCard, Banknote } from 'lucide-react';
+import { Printer, ChevronLeft, Calendar, User,  Tag, CreditCard, Banknote } from 'lucide-react';
 import { Link } from '@/lib/navigation';
-import { cn } from '@/lib/utils';
 import { useParams } from 'next/navigation';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -40,7 +38,6 @@ function formatVND(n: number) {
 export default function InvoiceDetail() {
   const params = useParams();
   const id = params?.id as string;
-  const t = useTranslations('admin');
   
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);

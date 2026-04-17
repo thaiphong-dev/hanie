@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Printer, X, Calendar, User, Tag, CreditCard, Banknote } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Printer, X, Calendar, User,   CreditCard, Banknote } from 'lucide-react';
 
 interface OrderDetail {
   id: string;

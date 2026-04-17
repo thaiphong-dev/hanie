@@ -85,7 +85,7 @@ export function AdminBookingModal({ isOpen, onClose, onSuccess, staffList }: Adm
 
       if (!res.ok || json.error) {
         const errorCode = json.error?.code ?? 'INTERNAL_ERROR';
-        setSubmitError(te(errorCode as any));
+        setSubmitError(te(errorCode) || json.error?.message || "Error");
         return;
       }
 

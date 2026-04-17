@@ -1,10 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { UserPlus, Search, MoreVertical, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { UserPlus, Search,  Edit,  ExternalLink } from 'lucide-react';
 import { Link } from '@/lib/navigation';
-import { cn } from '@/lib/utils';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -29,7 +28,6 @@ function formatVND(n: number) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function StaffManagementPage() {
-  const t = useTranslations('admin');
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

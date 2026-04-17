@@ -7,6 +7,7 @@ import { Plus, Trash2, X, CheckCircle2, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useAuthStore } from "@/stores/authStore";
+import { Database } from "@/types/database";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -37,7 +38,25 @@ interface CustomerInfo {
   phone: string;
   member_tier: string;
 }
+type ServiceRow = Database['public']['Tables']['services']['Row'];
 
+interface ServiceWithCategory extends ServiceRow {
+  category?: { id: string; name: string; name_i18n: Record<string, string>; slug: string } | null;
+}
+type CategoryRow = Database['public']['Tables']['categories']['Row'];
+interface StaffMember {
+  id: string;
+  full_name: string;
+  phone: string;
+  avatar_url: string | null;
+  specialties: string[];
+  base_salary: number;
+  commission_pct: number;
+  month_revenue: number;
+  month_commission: number;
+  month_total: number;
+  color: string;
+}
 type PaymentMethod = "cash" | "transfer" | "card";
 
 function formatVND(n: number) {
@@ -242,7 +261,7 @@ function POSContent() {
   const [phoneInput, setPhoneInput] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [voucherCode, setVoucherCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [method, setMethod] = useState<PaymentMethod>("cash");
@@ -259,13 +278,13 @@ function POSContent() {
 
   // Task 2: Staff assignment
   const [assignedStaffId, setAssignedStaffId] = useState<string | null>(null);
-  const [allStaff, setAllStaff] = useState<any[]>([]);
+  const [allStaff, setAllStaff] = useState<StaffMember[]>([]);
 
   // Load services
   useEffect(() => {
     void fetch("/api/v1/services?active=true")
       .then((r) => r.json())
-      .then((j: { data: any[] }) => {
+      .then((j: { data: ServiceWithCategory[] }) => {
         const mapped = (j.data ?? []).map((s) => ({
           ...s,
           category_id: s.category?.id ?? s.category_id,
@@ -275,7 +294,7 @@ function POSContent() {
 
     void fetch("/api/v1/categories")
       .then((r) => r.json())
-      .then((j: { data: any[] }) => setCategories(j.data ?? []));
+      .then((j: { data: CategoryRow[] }) => setCategories(j.data ?? []));
   }, []);
 
   // Task 2: Load staff for admin
@@ -283,7 +302,7 @@ function POSContent() {
     if (user?.role === "admin") {
       void fetch("/api/v1/admin/staff?limit=50")
         .then((r) => r.json())
-        .then((j: { data: any[] }) => setAllStaff(j.data ?? []));
+        .then((j: { data: StaffMember[] }) => setAllStaff(j.data ?? []));
     }
   }, [user]);
 

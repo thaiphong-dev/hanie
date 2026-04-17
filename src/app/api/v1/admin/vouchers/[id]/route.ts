@@ -15,7 +15,7 @@ export async function PATCH(
 
     const supabase = createServerClient();
 
-    const updates: Record<string, any> = {};
+    const updates: Record<string, string | number | null | undefined> = {};
     if (code !== undefined) updates.code = code.toUpperCase();
     if (name !== undefined) updates.name = name;
     if (discount_type !== undefined) updates.discount_type = discount_type;

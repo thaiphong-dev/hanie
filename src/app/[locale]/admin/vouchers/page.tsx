@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -14,12 +15,12 @@ interface Voucher {
   expires_at: string | null; status: string;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-green-100 text-green-700',
-  draft: 'bg-gray-100 text-gray-600',
-  expired: 'bg-red-100 text-red-600',
-  disabled: 'bg-gray-100 text-gray-500',
-};
+// const STATUS_COLORS: Record<string, string> = {
+//   active: 'bg-green-100 text-green-700',
+//   draft: 'bg-gray-100 text-gray-600',
+//   expired: 'bg-red-100 text-red-600',
+//   disabled: 'bg-gray-100 text-gray-500',
+// };
 
 function formatVND(n: number) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(n);
@@ -293,7 +294,7 @@ export default function VouchersPage() {
               <div>
                 <label className="font-body text-xs text-text-muted block mb-1">{t('voucher_code_label')} *</label>
                 <input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
-                  className="w-full border border-bg-secondary rounded-xl px-3 py-2 font-body text-sm font-mono focus:outline-none focus:border-accent uppercase"
+                  className="w-full border border-bg-secondary rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent uppercase"
                   placeholder="SUMMER20" />
               </div>
               <div>

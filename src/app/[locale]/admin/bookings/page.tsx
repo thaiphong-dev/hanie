@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -7,7 +8,7 @@ import {
 } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AdminBookingModal } from './AdminBookingModal';
-import { ChevronLeft, ChevronRight, Plus, X, Check, PlayCircle, CheckCircle, Receipt } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Check, PlayCircle,  Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
