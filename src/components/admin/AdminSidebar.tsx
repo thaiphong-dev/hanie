@@ -14,6 +14,7 @@ import {
   BarChart3,
   ImageIcon,
   LogOut,
+  Receipt,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { key: 'dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
   { key: 'bookings', icon: CalendarDays, href: '/admin/bookings' },
   { key: 'pos', icon: ShoppingBag, href: '/admin/pos' },
+  { key: 'invoices', icon: Receipt, href: '/admin/invoices' },
   { key: 'customers', icon: Users, href: '/admin/customers' },
   { key: 'staff', icon: UserCheck, href: '/admin/staff' },
   { key: 'services', icon: Scissors, href: '/admin/services' },
@@ -68,7 +70,12 @@ export function AdminSidebar({ userName, userRole }: AdminSidebarProps) {
 
       {/* Nav links */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map(({ key, icon: Icon, href }) => {
+        {NAV_ITEMS.filter(({ key }) => {
+          if (userRole === 'staff') {
+            return key === 'bookings' || key === 'pos' || key === 'invoices';
+          }
+          return true;
+        }).map(({ key, icon: Icon, href }) => {
           const localHref = `/${locale}${href}`;
           const isActive = pathname === localHref || pathname.startsWith(`${localHref}/`);
           return (

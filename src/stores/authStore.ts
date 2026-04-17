@@ -4,7 +4,7 @@ import { create } from 'zustand';
 
 export interface AuthUser {
   id: string;
-  name: string;
+  full_name: string;
   phone: string;
   role: 'admin' | 'staff' | 'customer';
 }
@@ -25,7 +25,7 @@ function readFromSession(): AuthUser | null {
   try {
     const token = sessionStorage.getItem('access_token');
     const id = sessionStorage.getItem('user_id');
-    const name = sessionStorage.getItem('user_name') ?? '';
+    const fullName = sessionStorage.getItem('user_full_name') ?? '';
     const phone = sessionStorage.getItem('user_phone') ?? '';
     const role = sessionStorage.getItem('user_role') as AuthUser['role'] | null;
     if (!token || !id || !role) return null;
@@ -34,7 +34,7 @@ function readFromSession(): AuthUser | null {
     if (parts.length !== 3) return null;
     const payload = JSON.parse(atob(parts[1]!.replace(/-/g, '+').replace(/_/g, '/'))) as { exp?: number };
     if (payload.exp && Date.now() / 1000 >= payload.exp) return null;
-    return { id, name, phone, role };
+    return { id, full_name: fullName, phone, role };
   } catch {
     return null;
   }
@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('access_token', token);
       sessionStorage.setItem('user_id', user.id);
-      sessionStorage.setItem('user_name', user.name);
+      sessionStorage.setItem('user_full_name', user.full_name);
       sessionStorage.setItem('user_phone', user.phone);
       sessionStorage.setItem('user_role', user.role);
     }
@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('access_token');
       sessionStorage.removeItem('user_id');
-      sessionStorage.removeItem('user_name');
+      sessionStorage.removeItem('user_full_name');
       sessionStorage.removeItem('user_phone');
       sessionStorage.removeItem('user_role');
     }

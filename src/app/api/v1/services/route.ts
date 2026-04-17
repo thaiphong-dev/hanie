@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     let query = supabase
       .from('services')
       .select(
-        `id, name, name_i18n, description, desc_i18n,
+        `id, category_id, name, name_i18n, description, desc_i18n,
          service_type, price_min, price_max, unit,
          duration_min, slot_count, warranty_days,
          requires_booking, image_url, sort_order, is_active,

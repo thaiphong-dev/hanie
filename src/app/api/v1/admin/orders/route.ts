@@ -37,7 +37,16 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createServerClient();
-    const { booking_id, customer_id, staff_id, items, method, voucher_code, note } = parsed.data;
+    const { booking_id, customer_id, items, method, voucher_code, note } = parsed.data;
+    let { staff_id } = parsed.data;
+
+    // Staff assignment logic
+    if (user!.role === 'staff') {
+      staff_id = user!.id; // Staff can't change themselves
+    } else if (user!.role === 'admin') {
+      // If admin doesn't provide a staff_id, default to themselves or leave as is if provided
+      staff_id = staff_id || user!.id;
+    }
 
     // Calculate subtotal
     const subtotal = items.reduce((s, item) => s + item.price * item.quantity, 0);
@@ -183,14 +192,40 @@ export async function GET(req: NextRequest) {
     const limit = 20;
     const offset = (page - 1) * limit;
 
-    const { data, error, count } = await supabase
+    const dateFrom = searchParams.get('date_from');
+    const dateTo = searchParams.get('date_to');
+    const staffId = searchParams.get('staff_id');
+    const method = searchParams.get('method');
+    const q = searchParams.get('q');
+
+    let query = supabase
       .from('orders')
       .select(
         `id, status, subtotal, discount_amount, total, method, created_at,
          customer:users!orders_customer_id_fkey(id, full_name, phone),
          order_items(id, service_name, price, quantity, unit)`,
         { count: 'exact' },
-      )
+      );
+
+    if (dateFrom) query = query.gte('created_at', dateFrom);
+    if (dateTo) query = query.lte('created_at', dateTo);
+    if (staffId) query = query.eq('staff_id', staffId);
+    if (method) query = query.eq('method', method);
+
+    // Filter by staff_id if user is staff
+    if (user!.role === 'staff') {
+      query = query.eq('staff_id', user!.id);
+    }
+    
+    // For search 'q', we can join with users or search by ID
+    if (q) {
+      // Simple approach: search by ID or customer name (partial)
+      // Note: customer is a joined table, filtering on joined table might need more complex syntax in Supabase JS
+      // or we can use or() if it's broad.
+      query = query.or(`voucher_code.ilike.%${q}%, id.eq.${q.length === 36 ? q : '00000000-0000-0000-0000-000000000000'}`);
+    }
+
+    const { data, error, count } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

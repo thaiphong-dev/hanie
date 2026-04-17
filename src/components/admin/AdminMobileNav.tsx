@@ -17,6 +17,7 @@ import {
   ImageIcon,
   X,
   LogOut,
+  Receipt,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
@@ -26,6 +27,7 @@ const MAIN_NAV = [
   { key: 'dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
   { key: 'bookings', icon: CalendarDays, href: '/admin/bookings' },
   { key: 'pos', icon: ShoppingBag, href: '/admin/pos' },
+  { key: 'invoices', icon: Receipt, href: '/admin/invoices' },
   { key: 'customers', icon: Users, href: '/admin/customers' },
 ] as const;
 
@@ -37,7 +39,7 @@ const MORE_NAV = [
   { key: 'gallery', icon: ImageIcon, href: '/admin/gallery' },
 ] as const;
 
-export function AdminMobileNav() {
+export function AdminMobileNav({ userRole }: { userRole: string }) {
   const t = useTranslations('nav');
   const pathname = usePathname();
   const locale = useLocale();
@@ -78,7 +80,12 @@ export function AdminMobileNav() {
       {/* Bottom tab bar */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-bg-dark border-t border-white/10 z-40 safe-area-inset-bottom">
         <div className="flex items-center">
-          {MAIN_NAV.map(({ key, icon: Icon, href }) => {
+          {MAIN_NAV.filter(({ key }) => {
+            if (userRole === 'staff') {
+              return key === 'bookings' || key === 'pos' || key === 'invoices';
+            }
+            return key !== 'customers'; // For admin, dashboard, bookings, pos, invoices are in MAIN_NAV
+          }).map(({ key, icon: Icon, href }) => {
             const active = isActive(href);
             return (
               <Link
@@ -105,22 +112,35 @@ export function AdminMobileNav() {
           })}
 
           {/* More button */}
-          <button
-            onClick={() => setSheetOpen(true)}
-            className="flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors"
-          >
-            <MoreHorizontal
-              className={cn('w-5 h-5', moreActive ? 'text-accent' : 'text-text-muted')}
-            />
-            <span
-              className={cn(
-                'font-body text-[10px]',
-                moreActive ? 'text-accent' : 'text-text-muted',
-              )}
+          {userRole === 'admin' && (
+            <button
+              onClick={() => setSheetOpen(true)}
+              className="flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors"
             >
-              {t('more')}
-            </span>
-          </button>
+              <MoreHorizontal
+                className={cn('w-5 h-5', moreActive ? 'text-accent' : 'text-text-muted')}
+              />
+              <span
+                className={cn(
+                  'font-body text-[10px]',
+                  moreActive ? 'text-accent' : 'text-text-muted',
+                )}
+              >
+                {t('more')}
+              </span>
+            </button>
+          )}
+
+          {/* Logout button for staff on the bar (since they have no 'More') */}
+          {userRole === 'staff' && (
+            <button
+              onClick={handleLogout}
+              className="flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors"
+            >
+              <LogOut className="w-5 h-5 text-text-muted" />
+              <span className="font-body text-[10px] text-text-muted">Đăng xuất</span>
+            </button>
+          )}
         </div>
       </nav>
 
@@ -144,7 +164,8 @@ export function AdminMobileNav() {
             </div>
 
             <div className="grid grid-cols-4 gap-4 mb-6">
-              {MORE_NAV.map(({ key, icon: Icon, href }) => {
+              {/* For admin, show MORE_NAV + Customers (which was in MAIN_NAV but shifted out) */}
+              {[...MORE_NAV, { key: 'customers', icon: Users, href: '/admin/customers' }].map(({ key, icon: Icon, href }) => {
                 const active = isActive(href);
                 return (
                   <Link

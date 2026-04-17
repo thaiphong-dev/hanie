@@ -34,6 +34,7 @@
     "more": "Thêm",
     "gallery": "Thư viện ảnh",
     "location": "Địa chỉ",
+    "invoices": "Hoá đơn",
     "login_register": "Đăng nhập / Đăng ký"
   },
   "home": {
@@ -334,7 +335,18 @@
     "image_category": "Danh mục",
     "order_count": "Số đơn",
     "order_revenue": "Doanh thu",
-    "commission": "Hoa hồng"
+    "commission": "Hoa hồng",
+    "booking_category": "Loại dịch vụ",
+    "select_category": "Chọn loại dịch vụ",
+    "notes": "Ghi chú",
+    "use_parallel": "Phục vụ song song",
+    "booking_customer_name": "Tên khách hàng",
+    "booking_customer_phone": "Số điện thoại",
+    "date": "Ngày",
+    "time": "Giờ",
+    "booking_staff": "Kỹ thuật viên",
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận"
   },
   "errors": {
     "INVALID_PHONE": "Số điện thoại không hợp lệ",

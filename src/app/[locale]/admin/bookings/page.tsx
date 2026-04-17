@@ -6,20 +6,24 @@ import {
   format, addDays, startOfWeek, isSameDay, parseISO,
 } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Plus, X, Check, PlayCircle, CheckCircle } from 'lucide-react';
+import { AdminBookingModal } from './AdminBookingModal';
+import { ChevronLeft, ChevronRight, Plus, X, Check, PlayCircle, CheckCircle, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface StaffUser { id: string; full_name: string; }
+export interface StaffUser { id: string; full_name: string; }
 
 interface BookingService { service_name: string | null; price: number; }
 
-interface Booking {
+export interface Booking {
   id: string;
   status: string;
   scheduled_at: string;
   end_at: string;
+  // Layout info
+  left?: number;
+  width?: number;
   slot_count: number;
   staff_id: string | null;
   customer_name: string | null;
@@ -79,11 +83,12 @@ function formatVND(n: number) {
 
 // ── BookingCard placed in calendar grid ──────────────────────────────────────
 
-function BookingCard({ booking, colorClass, onClick }: {
+function BookingCard({ booking, staffColorClass, onClick }: {
   booking: Booking;
-  colorClass: string;
+  staffColorClass: string;
   onClick: () => void;
 }) {
+  const { left = 0, width = 100 } = booking;
   const start = parseISO(booking.scheduled_at);
   const end = parseISO(booking.end_at);
   const startHour = start.getHours() + start.getMinutes() / 60;
@@ -91,21 +96,58 @@ function BookingCard({ booking, colorClass, onClick }: {
   const top = (startHour - 8) * SLOT_HEIGHT;
   const height = Math.max(durationH * SLOT_HEIGHT - 2, 20);
 
+  // Status mapping to colors
+  const STATUS_STYLES: Record<string, string> = {
+    pending: 'bg-slate-50 border-slate-200 text-slate-700',
+    confirmed: 'bg-sky-50 border-sky-200 text-sky-800',
+    in_progress: 'bg-amber-50 border-amber-200 text-amber-800',
+    done: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+    cancelled: 'bg-rose-50 border-rose-200 text-rose-800',
+    no_show: 'bg-slate-200 border-slate-300 text-slate-500',
+  };
+
+  const statusStyle = STATUS_STYLES[booking.status] || STATUS_STYLES.pending;
+  const serviceName = booking.booking_services?.[0]?.service_name || 'Dịch vụ';
+
   return (
     <button
       onClick={onClick}
-      style={{ top, height }}
+      style={{ 
+        top, 
+        height,
+        left: `${left}%`,
+        width: `${width}%`,
+      }}
       className={cn(
-        'absolute inset-x-0.5 rounded-lg border px-2 py-1 text-left overflow-hidden cursor-pointer hover:shadow-md transition-shadow',
-        colorClass,
+        'absolute rounded-lg border-l-4 px-2 py-1 text-left overflow-hidden cursor-pointer hover:shadow-md transition-shadow z-10',
+        statusStyle,
       )}
     >
-      <p className="font-body text-[11px] font-semibold leading-tight truncate">{booking.customer_name ?? 'Khách'}</p>
-      <p className="font-body text-[10px] leading-tight truncate opacity-80">
-        {format(start, 'HH:mm')} – {format(end, 'HH:mm')}
+      <div className="flex justify-between items-start gap-1">
+        <p className="font-body text-[10px] sm:text-[11px] font-bold leading-tight truncate flex-1">
+          {booking.customer_name ?? 'Khách'}
+        </p>
+        <div className={cn('w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 mt-0.5 border border-white/20', staffColorClass.split(' ')[0])} title={booking.staff?.full_name} />
+      </div>
+      
+      <p className="font-body text-[9px] sm:text-[10px] leading-tight truncate opacity-90 mt-0.5 hidden xs:block">
+        {booking.customer_phone}
       </p>
-      {booking.staff && (
-        <p className="font-body text-[10px] leading-tight truncate opacity-70">{booking.staff.full_name}</p>
+      
+      <p className="font-body text-[9px] sm:text-[10px] leading-tight truncate font-medium mt-1">
+        {serviceName}
+      </p>
+
+      {booking.staff && height > 35 && (
+        <p className="font-body text-[8px] sm:text-[9px] leading-tight truncate opacity-80 italic mt-0.5">
+          {booking.staff.full_name}
+        </p>
+      )}
+
+      {height > 50 && (
+        <p className="absolute bottom-1 right-2 font-body text-[8px] sm:text-[9px] opacity-60">
+          {format(start, 'HH:mm')}
+        </p>
       )}
     </button>
   );
@@ -113,10 +155,12 @@ function BookingCard({ booking, colorClass, onClick }: {
 
 // ── Detail Sheet ──────────────────────────────────────────────────────────────
 
-function BookingSheet({ booking, onClose, onStatusChange }: {
+function BookingSheet({ booking, onClose, onStatusChange, staffList, onAssignStaff }: {
   booking: Booking;
   onClose: () => void;
   onStatusChange: (id: string, status: string) => Promise<void>;
+  staffList: StaffUser[];
+  onAssignStaff: (bookingId: string, staffId: string) => Promise<void>;
 }) {
   const t = useTranslations('admin');
   const tStatus = useTranslations('booking_status');
@@ -136,7 +180,7 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 z-50 m-0!" onClick={onClose} />
       <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-bg-secondary">
@@ -149,7 +193,7 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {/* Status badge */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
             <span className={cn(
               'px-3 py-1 rounded-full font-body text-xs font-medium',
               booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -160,6 +204,8 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
             )}>
               {getStatusLabel(booking.status, (k) => tStatus(k as Parameters<typeof tStatus>[0]))}
             </span>
+            
+            <p className="font-body text-xs text-text-muted">ID: {booking.id.slice(0, 8)}</p>
           </div>
 
           {/* Customer */}
@@ -180,7 +226,25 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
             </div>
             <div className="bg-bg-secondary rounded-xl p-4">
               <p className="font-body text-xs text-text-muted mb-1">Kỹ thuật viên</p>
-              <p className="font-body text-sm text-text-primary">{booking.staff?.full_name ?? 'Chưa gán'}</p>
+              {booking.staff ? (
+                <p className="font-body text-sm text-text-primary font-medium">{booking.staff.full_name}</p>
+              ) : (
+                <div className="space-y-2">
+                  <p className="font-body text-xs text-red-500 italic">Chưa gán</p>
+                  <select
+                    className="w-full bg-white border border-bg-secondary rounded-lg px-2 py-1.5 font-body text-xs"
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        void onAssignStaff(booking.id, e.target.value);
+                      }
+                    }}
+                    defaultValue=""
+                  >
+                    <option value="">-- Gán nhân viên --</option>
+                    {staffList.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
@@ -229,7 +293,20 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
           <div className="p-4 border-t border-bg-secondary space-y-2">
             {ns && (
               <button
-                onClick={() => void doAction(ns)}
+                onClick={() => {
+                  if (booking.status === 'in_progress') {
+                    // Redirect to POS with details
+                    const params = new URLSearchParams({
+                      booking_id: booking.id,
+                      customer_name: booking.customer_name || 'Khách walk-in',
+                      customer_phone: booking.customer_phone || '',
+                      staff_id: booking.staff_id || '',
+                    });
+                    window.location.href = `/admin/pos?${params.toString()}`;
+                  } else {
+                    void doAction(ns);
+                  }
+                }}
                 disabled={loading}
                 className={cn(
                   'w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-body text-sm font-medium transition-colors disabled:opacity-50',
@@ -238,34 +315,37 @@ function BookingSheet({ booking, onClose, onStatusChange }: {
               >
                 {booking.status === 'pending' && <Check className="w-4 h-4" />}
                 {booking.status === 'confirmed' && <PlayCircle className="w-4 h-4" />}
-                {booking.status === 'in_progress' && <CheckCircle className="w-4 h-4" />}
-                {nextStatusLabel(booking.status, (k) => t(k as Parameters<typeof t>[0]))}
+                {booking.status === 'in_progress' && <Receipt className="w-4 h-4" />}
+                {booking.status === 'in_progress' ? t('booking_action_pos') : nextStatusLabel(booking.status, (k) => t(k as Parameters<typeof t>[0]))}
               </button>
             )}
 
-            {cancelMode ? (
-              <div className="flex gap-2">
+            {!['confirmed', 'in_progress'].includes(booking.status) && (
+              cancelMode ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setCancelMode(false); setCancelNote(''); }}
+                    className="flex-1 py-2.5 rounded-xl border border-bg-secondary font-body text-sm text-text-secondary"
+                  >
+                    Huỷ bỏ
+                  </button>
+                  <button
+                    onClick={() => void doAction('cancelled')}
+                    disabled={loading}
+                    className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-body text-sm hover:bg-red-600 disabled:opacity-50 transition-colors"
+                  >
+                    Huỷ lịch
+                  </button>
+                </div>
+              ) : (
                 <button
-                  onClick={() => { setCancelMode(false); setCancelNote(''); }}
-                  className="flex-1 py-2.5 rounded-xl border border-bg-secondary font-body text-sm text-text-secondary"
-                >
-                  Huỷ bỏ
-                </button>
-                <button
-                  onClick={() => void doAction('cancelled')}
+                  onClick={() => setCancelMode(true)}
                   disabled={loading}
-                  className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-body text-sm hover:bg-red-600 disabled:opacity-50 transition-colors"
+                  className="w-full py-2.5 rounded-xl border border-red-200 text-red-600 font-body text-sm hover:bg-red-50 transition-colors"
                 >
-                  Xác nhận huỷ
+                  {t('booking_action_cancel')}
                 </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setCancelMode(true)}
-                className="w-full py-2.5 rounded-xl border border-red-200 text-red-600 font-body text-sm hover:bg-red-50 transition-colors"
-              >
-                {t('booking_action_cancel')}
-              </button>
+              )
             )}
           </div>
         )}
@@ -285,6 +365,67 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [staffList, setStaffList] = useState<StaffUser[]>([]);
   const [filterStaffId, setFilterStaffId] = useState<string>('');
+  const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
+
+  const calculateLayout = (bookings: Booking[]): Booking[] => {
+    if (!bookings.length) return [];
+
+    // Sort by start time
+    const sorted = [...bookings].sort((a, b) => 
+      parseISO(a.scheduled_at).getTime() - parseISO(b.scheduled_at).getTime()
+    );
+
+    const clusters: Booking[][] = [];
+    let currentCluster: Booking[] = [];
+    let maxEnd: number = 0;
+
+    for (const b of sorted) {
+      const start = parseISO(b.scheduled_at).getTime();
+      const end = parseISO(b.end_at).getTime();
+
+      if (currentCluster.length > 0 && start < maxEnd) {
+        currentCluster.push(b);
+        maxEnd = Math.max(maxEnd, end);
+      } else {
+        if (currentCluster.length > 0) clusters.push(currentCluster);
+        currentCluster = [b];
+        maxEnd = end;
+      }
+    }
+    if (currentCluster.length > 0) clusters.push(currentCluster);
+
+    // Process each cluster to assign columns
+    const result: Booking[] = [];
+    for (const cluster of clusters) {
+      const columns: Booking[][] = [];
+      
+      for (const b of cluster) {
+        let placed = false;
+        for (let i = 0; i < columns.length; i++) {
+          const lastInCol = columns[i]![columns[i]!.length - 1]!;
+          if (parseISO(b.scheduled_at).getTime() >= parseISO(lastInCol.end_at).getTime()) {
+            columns[i]!.push(b);
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          columns.push([b]);
+        }
+      }
+
+      const colCount = columns.length;
+      for (let i = 0; i < colCount; i++) {
+        for (const b of columns[i]!) {
+          b.width = 100 / colCount;
+          b.left = (i / colCount) * 100;
+          result.push(b);
+        }
+      }
+    }
+
+    return result;
+  };
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -302,7 +443,7 @@ export default function BookingsPage() {
         if (filterStaffId) params.set('staff_id', filterStaffId);
         const res = await fetch(`/api/v1/admin/bookings?${params}`);
         const json = await res.json() as { data: Booking[] };
-        byDate[dateStr] = json.data ?? [];
+        byDate[dateStr] = calculateLayout(json.data ?? []);
       }),
     );
     setBookingsByDate(byDate);
@@ -325,9 +466,9 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="">
       {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap py-4 ">
         <div className="flex items-center gap-1">
           <button onClick={() => setWeekStart((d) => addDays(d, -7))} className="p-2 hover:bg-bg-secondary rounded-lg transition-colors">
             <ChevronLeft className="w-4 h-4 text-text-secondary" />
@@ -359,7 +500,7 @@ export default function BookingsPage() {
         </select>
 
         <button
-          onClick={() => {/* walk-in modal */}}
+          onClick={() => setIsNewBookingModalOpen(true)}
           className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent text-bg-dark font-body text-sm font-medium hover:bg-accent-dark transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -368,9 +509,11 @@ export default function BookingsPage() {
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-white rounded-2xl border border-bg-secondary overflow-auto">
-        {/* Day headers */}
-        <div className="grid border-b border-bg-secondary" style={{ gridTemplateColumns: '48px repeat(7, 1fr)' }}>
+      <div className="bg-white rounded-2xl border border-bg-secondary overflow-hidden flex flex-col">
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="min-w-[900px] lg:min-w-full">
+            {/* Day headers - Sticky */}
+            <div className="grid border-b border-bg-secondary sticky top-0 bg-white z-30" style={{ gridTemplateColumns: '48px repeat(7, 1fr)' }}>
           <div className="border-r border-bg-secondary" />
           {weekDays.map((day) => (
             <div
@@ -427,16 +570,18 @@ export default function BookingsPage() {
                     <BookingCard
                       key={b.id}
                       booking={b}
-                      colorClass={b.staff_id ? (staffColorMap.get(b.staff_id) ?? STAFF_COLORS[0]!) : STAFF_COLORS[0]!}
+                      staffColorClass={b.staff_id ? (staffColorMap.get(b.staff_id) ?? STAFF_COLORS[0]!) : STAFF_COLORS[0]!}
                       onClick={() => setSelectedBooking(b)}
                     />
                   ))}
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
       {/* Detail Sheet */}
       {selectedBooking && (
@@ -444,8 +589,28 @@ export default function BookingsPage() {
           booking={selectedBooking}
           onClose={() => setSelectedBooking(null)}
           onStatusChange={handleStatusChange}
+          staffList={staffList}
+          onAssignStaff={async (bid, sid) => {
+            await fetch(`/api/v1/admin/bookings/${bid}/assign`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ staff_id: sid }),
+            });
+            void fetchWeek();
+            setSelectedBooking(prev => prev ? { ...prev, staff_id: sid, staff: staffList.find(s => s.id === sid) || null } : null);
+          }}
         />
       )}
+
+      <AdminBookingModal
+        isOpen={isNewBookingModalOpen}
+        onClose={() => setIsNewBookingModalOpen(false)}
+        onSuccess={() => {
+          void fetchWeek();
+          setIsNewBookingModalOpen(false);
+        }}
+        staffList={staffList}
+      />
     </div>
   );
 }

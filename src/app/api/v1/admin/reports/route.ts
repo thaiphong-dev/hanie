@@ -94,6 +94,47 @@ export async function GET(req: NextRequest) {
       commission: Math.round(stats.revenue * ((commissionMap[staffId] ?? 0) / 100)),
     }));
 
+    // Completion Rate (Bookings)
+    const { data: bookingsRaw } = await supabase
+      .from('bookings')
+      .select('status')
+      .gte('scheduled_at', `${monthStart}T00:00:00`)
+      .lte('scheduled_at', `${monthEnd}T23:59:59`);
+    
+    const totalBookings = bookingsRaw?.length ?? 0;
+    const completedBookings = bookingsRaw?.filter(b => b.status === 'done').length ?? 0;
+    const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+
+    // Loyal Customers (Top Spenders)
+    const { data: loyalCustomersRaw } = await supabase
+      .from('orders')
+      .select('customer_id, total, customer:users!orders_customer_id_fkey(full_name, phone)')
+      .eq('status', 'paid')
+      .gte('created_at', `${monthStart}T00:00:00`)
+      .lte('created_at', `${monthEnd}T23:59:59`)
+      .not('customer_id', 'is', null);
+
+    const customerSpendMap: Record<string, { name: string, phone: string, total: number, visits: number }> = {};
+    for (const o of loyalCustomersRaw ?? []) {
+      const cid = o.customer_id!;
+      const cInfo = Array.isArray(o.customer) ? o.customer[0] : o.customer;
+      if (!customerSpendMap[cid]) {
+        customerSpendMap[cid] = { 
+          name: (cInfo as any)?.full_name ?? 'Khách lẻ', 
+          phone: (cInfo as any)?.phone ?? '', 
+          total: 0, 
+          visits: 0 
+        };
+      }
+      customerSpendMap[cid].total += o.total;
+      customerSpendMap[cid].visits += 1;
+    }
+
+    const loyalCustomers = Object.entries(customerSpendMap)
+      .map(([id, stats]) => ({ id, ...stats }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+
     // Customer stats
     const { count: newCustomers } = await supabase
       .from('users')
@@ -114,6 +155,8 @@ export async function GET(req: NextRequest) {
         revenue_by_day: revenueByDay,
         top_services: topServices,
         staff_performance: staffPerformance,
+        completion_rate: completionRate,
+        loyal_customers: loyalCustomers,
         customer_stats: {
           new: newCustomers ?? 0,
           returning: returningCustomers ?? 0,

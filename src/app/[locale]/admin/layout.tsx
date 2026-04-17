@@ -4,6 +4,7 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { AdminMobileNav } from '@/components/admin/AdminMobileNav';
 import { getLocale } from 'next-intl/server';
+import { AuthHydrator } from '@/components/auth/AuthHydrator';
 
 export default async function AdminLayout({
   children,
@@ -21,6 +22,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-bg-primary">
+      <AuthHydrator />
       {/* Desktop Sidebar */}
       <AdminSidebar userName={user.full_name || user.phone} userRole={user.role} />
 
@@ -35,7 +37,7 @@ export default async function AdminLayout({
       </div>
 
       {/* Mobile Header + Bottom Nav */}
-      <AdminMobileNav />
+      <AdminMobileNav userRole={user.role} />
     </div>
   );
 }

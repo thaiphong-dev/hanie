@@ -85,3 +85,53 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: null, error: { code: 'INTERNAL_ERROR', message } }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const user = getCurrentUser();
+    requireRole(user, 'admin');
+
+    const body = await req.json();
+    const { full_name, phone, role = 'staff', specialties = [], base_salary = 0, commission_pct = 0, color = '#C9A882' } = body;
+
+    if (!full_name || !phone) {
+      return NextResponse.json({ data: null, error: { code: 'VALIDATION_ERROR', message: 'Full name and phone are required' } }, { status: 400 });
+    }
+
+    const supabase = createServerClient();
+
+    // 1. Create User (Note: In a real app, you'd use Auth service to create accounts. 
+    // Here we just insert into users table if they don't exist, as a placeholder)
+    const { data: newUser, error: userErr } = await supabase
+      .from('users')
+      .insert({
+        full_name,
+        phone,
+        role,
+        is_active: true
+      })
+      .select('id')
+      .single();
+
+    if (userErr) throw new Error(userErr.message);
+
+    // 2. Create Staff Profile
+    const { error: profErr } = await supabase
+      .from('staff_profiles')
+      .insert({
+        id: newUser.id,
+        specialties,
+        base_salary,
+        commission_pct,
+        color
+      });
+
+    if (profErr) throw new Error(profErr.message);
+
+    return NextResponse.json({ data: { id: newUser.id }, error: null });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[admin/staff POST]', message);
+    return NextResponse.json({ data: null, error: { code: 'INTERNAL_ERROR', message } }, { status: 500 });
+  }
+}

@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       data: {
         access_token: accessToken,
-        expires_in: 900, // 15 min
+        expires_in: 86400, // 1 day
         user: { id: user.id, phone: user.phone, role: user.role, full_name: user.full_name },
       },
       error: null,
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       httpOnly: false, // readable by JS (needed for sessionStorage sync)
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 900, // 15 min — matches token lifetime
+      maxAge: 86400, // 1 day — matches token lifetime
       path: '/',
     });
 

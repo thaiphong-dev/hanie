@@ -34,6 +34,7 @@
     "more": "더보기",
     "gallery": "갤러리",
     "location": "위치",
+    "invoices": "송장",
     "login_register": "로그인 / 회원가입"
   },
   "home": {
@@ -334,7 +335,18 @@
     "image_category": "카테고리",
     "order_count": "주문 수",
     "order_revenue": "매출",
-    "commission": "커미션"
+    "commission": "커미션",
+    "booking_category": "서비스 카테고리",
+    "select_category": "카테고리 선택",
+    "notes": "메모",
+    "use_parallel": "병렬 서비스",
+    "booking_customer_name": "고객 명",
+    "booking_customer_phone": "전화번호",
+    "date": "날짜",
+    "time": "시간",
+    "booking_staff": "테크니션",
+    "cancel": "취소",
+    "confirm": "확인"
   },
   "errors": {
     "INVALID_PHONE": "유효하지 않은 전화번호",

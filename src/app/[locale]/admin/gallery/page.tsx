@@ -114,7 +114,7 @@ export default function GalleryAdminPage() {
   const filtered = filterCat ? images.filter((img) => img.category === filterCat) : images;
 
   return (
-    <div className="space-y-5 max-w-5xl">
+    <div className="space-y-5">
       <h2 className="font-display text-xl text-text-primary">{t('gallery_title')}</h2>
 
       {/* Upload + filter row */}

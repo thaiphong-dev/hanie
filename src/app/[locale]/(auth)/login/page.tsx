@@ -51,7 +51,7 @@ function LoginForm() {
         setUser(
           {
             id: json.data.user.id,
-            name: json.data.user.full_name,
+            full_name: json.data.user.full_name,
             phone: json.data.user.phone,
             role: json.data.user.role,
           },

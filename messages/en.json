@@ -34,6 +34,7 @@
     "more": "More",
     "gallery": "Gallery",
     "location": "Location",
+    "invoices": "Invoices",
     "login_register": "Login / Register"
   },
   "home": {
@@ -334,7 +335,18 @@
     "image_category": "Category",
     "order_count": "Orders",
     "order_revenue": "Revenue",
-    "commission": "Commission"
+    "commission": "Commission",
+    "booking_category": "Service Category",
+    "select_category": "Select category",
+    "notes": "Notes",
+    "use_parallel": "Parallel service",
+    "booking_customer_name": "Customer Name",
+    "booking_customer_phone": "Phone Number",
+    "date": "Date",
+    "time": "Time",
+    "booking_staff": "Technician",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "errors": {
     "INVALID_PHONE": "Invalid phone number",

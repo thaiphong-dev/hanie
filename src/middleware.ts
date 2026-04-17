@@ -135,8 +135,24 @@ export async function middleware(req: NextRequest) {
   }
 
   // Admin page routes — admin/staff only (redirect customer to home)
-  if (ADMIN_PAGE_PATTERNS.some((p) => p.test(pathname)) && payload.role === 'customer') {
-    return NextResponse.redirect(new URL(`/${locale}`, req.url));
+  if (ADMIN_PAGE_PATTERNS.some((p) => p.test(pathname))) {
+    if (payload.role === 'customer') {
+      return NextResponse.redirect(new URL(`/${locale}`, req.url));
+    }
+
+    // Role-based access within admin: Staff only allowed in bookings and pos
+    if (payload.role === 'staff') {
+      const allowedPatterns = [
+        /^\/[^/]+\/admin\/bookings(\/.*)?$/,
+        /^\/[^/]+\/admin\/pos(\/.*)?$/,
+        /^\/[^/]+\/admin\/invoices(\/.*)?$/,
+      ];
+
+      const isAllowed = allowedPatterns.some((p) => p.test(pathname));
+      if (!isAllowed) {
+        return NextResponse.redirect(new URL(`/${locale}/admin/bookings`, req.url));
+      }
+    }
   }
 
   // Auth passed — inject user headers and propagate intl state

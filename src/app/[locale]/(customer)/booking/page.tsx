@@ -107,7 +107,7 @@ function BookingContent() {
   // ── Prefill customer info from logged-in user ──
   useEffect(() => {
     if (user && step === 3) {
-      if (!customerName && user.name) setCustomerName(user.name);
+      if (!customerName && user.full_name) setCustomerName(user.full_name);
       if (!customerPhone && user.phone) setCustomerPhone(user.phone);
     }
   }, [user, step]); // eslint-disable-line react-hooks/exhaustive-deps

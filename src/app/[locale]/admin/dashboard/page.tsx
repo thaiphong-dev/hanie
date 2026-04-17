@@ -170,11 +170,11 @@ export default function DashboardPage() {
   const changeTrend = changePct == null ? undefined : changePct >= 0 ? 'up' : 'down';
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 ">
       <h2 className="font-display text-xl text-text-primary">{t('dashboard')}</h2>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
         ) : (
