@@ -322,6 +322,7 @@ export interface Database {
           image_url: string;
           alt_text: Record<string, string>;
           category: 'nail' | 'mi' | 'long_may' | 'goi_dau' | 'studio';
+          category_id: string | null;
           sort_order: number;
           is_active: boolean;
           created_at: string;

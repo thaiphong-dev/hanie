@@ -4,20 +4,23 @@ import { createServerClient } from '@/lib/supabase/server';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
-    const category = searchParams.get('category');
+    const categoryId = searchParams.get('category_id');
+    const categoryEnum = searchParams.get('category');
 
     const supabase = createServerClient();
 
     let query = supabase
       .from('gallery_images')
-      .select('id, image_url, alt_text, category, sort_order')
+      .select('id, image_url, alt_text, category, category_id, sort_order, categories(id, name, name_i18n, slug)')
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
 
-    if (category && category !== 'all') {
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    } else if (categoryEnum && categoryEnum !== 'all') {
       query = query.eq(
         'category',
-        category as 'nail' | 'mi' | 'long_may' | 'goi_dau' | 'studio',
+        categoryEnum as 'nail' | 'mi' | 'long_may' | 'goi_dau' | 'studio',
       );
     }
 

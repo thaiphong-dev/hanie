@@ -119,7 +119,17 @@
     "filter_hair_wash": "헤어 워시",
     "filter_studio": "스튜디오",
     "empty": "이 카테고리에 사진이 없습니다",
-    "book_this": "이 서비스 예약"
+    "book_this": "이 서비스 예약",
+    "hero_eyebrow": "아름다운 순간",
+    "hero_title": "Hanie Studio 포트폴리오",
+    "hero_subtitle": "모든 사진은 세심함과 독특한 매력에 대한 이야기입니다.",
+    "featured_title": "추천",
+    "featured_subtitle": "Hanie Studio에서 가장 사랑받는 작품들",
+    "tab_all": "전체",
+    "lightbox_book": "이 서비스 예약",
+    "cta_title": "이 아름다움을 소유하고 싶으신가요?",
+    "cta_desc": "오늘 예약하여 숙련된 팀의 상담과 시술을 받으세요.",
+    "cta_button": "지금 예약하기"
   },
   "location": {
     "title": "Hanie Studio 찾아오기",

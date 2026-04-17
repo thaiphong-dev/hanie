@@ -119,7 +119,17 @@
     "filter_hair_wash": "Gội đầu",
     "filter_studio": "Studio",
     "empty": "Chưa có ảnh trong mục này",
-    "book_this": "Đặt dịch vụ này"
+    "book_this": "Đặt dịch vụ này",
+    "hero_eyebrow": "KHOẢNH KHẮC ĐẸP",
+    "hero_title": "Tác Phẩm Của Hanie Studio",
+    "hero_subtitle": "Mỗi bức ảnh là một câu chuyện về sự tỉ mỉ và nét duyên dáng riêng biệt.",
+    "featured_title": "Nổi Bật",
+    "featured_subtitle": "Những tác phẩm được yêu thích nhất tại Hanie Studio",
+    "tab_all": "Tất cả",
+    "lightbox_book": "Đặt dịch vụ này",
+    "cta_title": "Bạn Muốn Sở Hữu Vẻ Đẹp Này?",
+    "cta_desc": "Đặt lịch ngay hôm nay để được tư vấn và thực hiện bởi đội ngũ giàu kinh nghiệm.",
+    "cta_button": "Đặt Lịch Ngay"
   },
   "location": {
     "title": "Tìm đường đến Hanie Studio",

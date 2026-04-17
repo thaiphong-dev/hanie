@@ -119,7 +119,17 @@
     "filter_hair_wash": "Hair Wash",
     "filter_studio": "Studio",
     "empty": "No photos in this category yet",
-    "book_this": "Book this service"
+    "book_this": "Book this service",
+    "hero_eyebrow": "BEAUTIFUL MOMENTS",
+    "hero_title": "Hanie Studio Portfolio",
+    "hero_subtitle": "Every photo is a story of meticulousness and distinct charm.",
+    "featured_title": "Featured",
+    "featured_subtitle": "Our most loved works at Hanie Studio",
+    "tab_all": "All",
+    "lightbox_book": "Book this service",
+    "cta_title": "Want to Own This Beauty?",
+    "cta_desc": "Book an appointment today to be advised and performed by our experienced team.",
+    "cta_button": "Book Now"
   },
   "location": {
     "title": "Find Hanie Studio",
