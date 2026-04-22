@@ -28,6 +28,22 @@ export async function PATCH(
     const supabase = createServerClient();
     const { status, note } = parsed.data;
 
+    // Staff can only confirm/update bookings assigned to them or unassigned
+    if (user!.role === 'staff') {
+      const { data: booking } = await supabase
+        .from('bookings')
+        .select('staff_id')
+        .eq('id', params.id)
+        .single();
+
+      if (booking && booking.staff_id !== null && booking.staff_id !== user!.id) {
+        return NextResponse.json(
+          { data: null, error: { code: 'FORBIDDEN', message: 'Bạn không thể thay đổi lịch của nhân viên khác' } },
+          { status: 403 },
+        );
+      }
+    }
+
     const updatePayload: Record<string, unknown> = { status };
     if (note) updatePayload.internal_notes = note;
     if (status === 'cancelled') {

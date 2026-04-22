@@ -60,7 +60,13 @@ export async function POST(req: NextRequest) {
       // Find qualifying customers
       let query = supabase.from('users').select('id').eq('role', 'customer').eq('is_active', true);
 
-      if (distributeType === 'regular_plus') {
+      if (distributeType === 'all') {
+        // no additional filter — all active customers
+      } else if (distributeType === 'new_only') {
+        query = query.eq('member_tier', 'new');
+      } else if (distributeType === 'regular_only') {
+        query = query.eq('member_tier', 'regular');
+      } else if (distributeType === 'regular_plus') {
         query = query.in('member_tier', ['regular', 'vip']);
       } else if (distributeType === 'vip') {
         query = query.eq('member_tier', 'vip');

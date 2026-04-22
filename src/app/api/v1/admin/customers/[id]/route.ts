@@ -14,7 +14,7 @@ export async function GET(
 
     const { data: customer, error: cErr } = await supabase
       .from('users')
-      .select('id, full_name, phone, member_tier, total_spent, avatar_url, birthday, notes, created_at')
+      .select('id, full_name, phone, member_tier, total_spent, loyalty_points, avatar_url, birthday, notes, created_at')
       .eq('id', params.id)
       .eq('role', 'customer')
       .single();

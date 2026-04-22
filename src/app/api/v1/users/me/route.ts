@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supabase
       .from('users')
-      .select('id, full_name, phone, avatar_url, member_tier, total_spent')
+      .select('id, full_name, phone, avatar_url, member_tier, total_spent, loyalty_points')
       .eq('id', userId)
       .single();
 

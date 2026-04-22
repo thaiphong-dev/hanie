@@ -31,7 +31,7 @@ const PUBLIC_API_PATTERNS = [
   /^\/api\/v1\/gallery(\/.*)?$/,
   /^\/api\/v1\/categories(\/.*)?$/,
   /^\/api\/v1\/booking-categories(\/.*)?$/,
-  /^\/api\/v1\/staff(\/.*)?$/,
+  /^\/api\/v1\/staff$/, // public staff listing for booking flow
   /^\/api\/v1\/auth\/login$/,
   /^\/api\/v1\/auth\/register$/,
   /^\/api\/v1\/auth\/refresh$/,
@@ -140,12 +140,13 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL(`/${locale}`, req.url));
     }
 
-    // Role-based access within admin: Staff only allowed in bookings and pos
+    // Role-based access within admin: Staff only allowed in bookings, pos, invoices, and leave
     if (payload.role === 'staff') {
       const allowedPatterns = [
         /^\/[^/]+\/admin\/bookings(\/.*)?$/,
         /^\/[^/]+\/admin\/pos(\/.*)?$/,
         /^\/[^/]+\/admin\/invoices(\/.*)?$/,
+        /^\/[^/]+\/admin\/staff\/leave(\/.*)?$/,
       ];
 
       const isAllowed = allowedPatterns.some((p) => p.test(pathname));

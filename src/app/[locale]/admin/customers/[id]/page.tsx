@@ -15,7 +15,7 @@ interface BookingRow {
 }
 interface CustomerDetail {
   id: string; full_name: string; phone: string; member_tier: string;
-  total_spent: number; birthday: string | null; created_at: string;
+  total_spent: number; loyalty_points: number; birthday: string | null; created_at: string;
   booking_count: number; bookings: BookingRow[]; notes_list: Note[];
 }
 
@@ -114,7 +114,7 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         <div className="bg-white rounded-xl border border-bg-secondary p-3 text-center">
           <p className="font-body text-xs text-text-muted">{t('total_spent_label')}</p>
           <p className="font-display text-base text-text-primary mt-1">{formatVND(data.total_spent)}</p>
@@ -122,6 +122,10 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
         <div className="bg-white rounded-xl border border-bg-secondary p-3 text-center">
           <p className="font-body text-xs text-text-muted">{t('booking_count_label')}</p>
           <p className="font-display text-base text-text-primary mt-1">{data.booking_count}</p>
+        </div>
+        <div className="bg-white rounded-xl border border-bg-secondary p-3 text-center">
+          <p className="font-body text-xs text-text-muted">Điểm tích lũy</p>
+          <p className="font-display text-base text-accent mt-1">⭐ {data.loyalty_points ?? 0}</p>
         </div>
         <div className="bg-white rounded-xl border border-bg-secondary p-3 text-center">
           <p className="font-body text-xs text-text-muted">Từ ngày</p>

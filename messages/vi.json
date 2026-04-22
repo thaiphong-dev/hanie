@@ -35,7 +35,9 @@
     "gallery": "Thư viện ảnh",
     "location": "Địa chỉ",
     "invoices": "Hoá đơn",
-    "login_register": "Đăng nhập / Đăng ký"
+    "login_register": "Đăng nhập / Đăng ký",
+    "leave": "Xin nghỉ",
+    "settings": "Cài đặt"
   },
   "home": {
     "hero_eyebrow": "Hanie in Quy Nhon · Studio Làm Đẹp",
@@ -170,6 +172,23 @@
     "active": "Còn hiệu lực",
     "use_now": "Đặt lịch ngay →"
   },
+  "payments": {
+    "title": "Lịch sử thanh toán",
+    "empty": "Chưa có lịch sử thanh toán",
+    "empty_desc": "Các hoá đơn POS sẽ hiển thị ở đây sau khi thanh toán",
+    "detail_title": "Chi tiết hoá đơn",
+    "method_cash": "Tiền mặt",
+    "method_transfer": "Chuyển khoản",
+    "method_card": "Thẻ",
+    "subtotal": "Tạm tính",
+    "discount": "Giảm giá",
+    "total": "Tổng cộng",
+    "items_label": "Dịch vụ",
+    "qty_label": "SL",
+    "amount_label": "Thành tiền",
+    "close": "Đóng",
+    "voucher_used": "Voucher: {code}"
+  },
   "profile": {
     "title": "Hồ sơ cá nhân",
     "member_tier": "Hạng thành viên",
@@ -207,7 +226,35 @@
     "send_zalo": "Gửi Zalo",
     "thank_you": "Cảm ơn bạn đã tin tưởng Hanie ✦",
     "walk_in": "Walk-in",
-    "from_booking": "Từ lịch hẹn"
+    "from_booking": "Từ lịch hẹn",
+    "select_placeholder": "Chọn...",
+    "no_options": "Không có lựa chọn",
+    "walk_in_customer": "Khách vãng lai",
+    "new_customer_badge": "Khách mới",
+    "search_placeholder": "Tìm theo tên hoặc số điện thoại...",
+    "no_results_create": "Không tìm thấy — tạo khách mới:",
+    "customer_name_placeholder": "Tên khách hàng",
+    "confirm_new_customer": "Xác nhận",
+    "all_categories": "Tất cả loại",
+    "select_service_placeholder": "Chọn dịch vụ",
+    "price_label": "Giá",
+    "price_out_of_range": "Ngoài khoảng {min}–{max}",
+    "quantity_nails": "Số ngón",
+    "quantity_label": "Số lượng",
+    "new_order": "Tạo đơn mới",
+    "loading": "Đang tải...",
+    "no_services_error": "Chưa có dịch vụ nào",
+    "service_fallback": "Dịch vụ",
+    "section_customer": "Khách hàng",
+    "section_services": "Dịch vụ",
+    "select_customer_for_voucher": "Chọn khách hàng để xem voucher",
+    "no_vouchers": "Không có voucher khả dụng",
+    "select_staff_placeholder": "Chọn nhân viên",
+    "no_service_lines": "Chưa có dịch vụ",
+    "processing": "Đang xử lý...",
+    "section_staff": "Người thực hiện",
+    "commission_note_admin": "Nhân viên này sẽ được tính hoa hồng cho đơn hàng này.",
+    "commission_note_staff": "Đơn hàng sẽ tự động ghi nhận hoa hồng cho bạn."
   },
   "auth": {
     "login_title": "Đăng nhập",
@@ -356,7 +403,25 @@
     "time": "Giờ",
     "booking_staff": "Kỹ thuật viên",
     "cancel": "Huỷ",
-    "confirm": "Xác nhận"
+    "confirm": "Xác nhận",
+    "settings_title": "Cài đặt hệ thống",
+    "settings_desc": "Cấu hình tham số vận hành",
+    "settings_empty": "Không có cài đặt nào",
+    "auto_distribute": "Phát tự động",
+    "auto_distribute_preview": "Xem trước",
+    "auto_distribute_confirm": "Xác nhận phát",
+    "auto_distribute_result": "Đã phát {count} voucher",
+    "voucher_rule_title": "Điều kiện phát tự động",
+    "voucher_rule_none": "Không tự động",
+    "voucher_rule_birthday": "Sinh nhật trong tháng",
+    "voucher_rule_points": "Điểm ≥ {threshold} điểm",
+    "voucher_rule_tier": "Hạng {tier}",
+    "voucher_rule_spent": "Chi tiêu ≥ {amount}",
+    "settings_save": "Lưu",
+    "settings_saved": "Đã lưu",
+    "settings_error": "Lỗi",
+    "settings_error_connection": "Lỗi kết nối",
+    "settings_current_value": "Hiện tại"
   },
   "errors": {
     "INVALID_PHONE": "Số điện thoại không hợp lệ",
@@ -385,6 +450,34 @@
     "chat_greeting_vi": "Xin chào! Hanie có thể giúp gì cho bạn?",
     "chat_greeting_en": "Hello! How can Hanie help you?",
     "chat_greeting_ko": "안녕하세요! Hanie가 어떻게 도와드릴까요?"
+  },
+  "loyalty": {
+    "points": "{count} điểm",
+    "points_label": "Điểm tích lũy",
+    "threshold_info": "Mỗi hóa đơn từ {amount} → +1 điểm"
+  },
+  "leave_request": {
+    "submit_title": "Xin nghỉ phép",
+    "date_label": "Ngày nghỉ",
+    "reason_label": "Lý do",
+    "submit_btn": "Gửi đơn",
+    "status_pending": "Chờ duyệt",
+    "status_approved": "Đã duyệt",
+    "status_rejected": "Từ chối",
+    "subtitle": "Gửi đơn và theo dõi trạng thái",
+    "sent_requests": "Đơn đã gửi",
+    "empty_state": "Chưa có đơn nào",
+    "success_msg": "Đã gửi đơn thành công!",
+    "review_note_label": "Ghi chú",
+    "error_connection": "Lỗi kết nối",
+    "error_generic": "Có lỗi xảy ra",
+    "reason_placeholder": "Nhập lý do xin nghỉ..."
+  },
+  "new_account_notice": {
+    "title": "Tài khoản đã được tạo",
+    "phone": "Số điện thoại: {phone}",
+    "password": "Mật khẩu mặc định: hanie2020xinchao",
+    "login_hint": "Đăng nhập để xem lịch sử và tích điểm"
   },
   "footer": {
     "tagline": "Studio làm đẹp tại Quy Nhơn. Nối mi · Lông mày · Gội đầu · Nail.",

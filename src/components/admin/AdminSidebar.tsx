@@ -15,22 +15,26 @@ import {
   ImageIcon,
   LogOut,
   Receipt,
+  CalendarOff,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 
 const NAV_ITEMS = [
-  { key: 'dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-  { key: 'bookings', icon: CalendarDays, href: '/admin/bookings' },
-  { key: 'pos', icon: ShoppingBag, href: '/admin/pos' },
-  { key: 'invoices', icon: Receipt, href: '/admin/invoices' },
-  { key: 'customers', icon: Users, href: '/admin/customers' },
-  { key: 'staff', icon: UserCheck, href: '/admin/staff' },
-  { key: 'services', icon: Scissors, href: '/admin/services' },
-  { key: 'vouchers', icon: Ticket, href: '/admin/vouchers' },
-  { key: 'reports', icon: BarChart3, href: '/admin/reports' },
-  { key: 'gallery', icon: ImageIcon, href: '/admin/gallery' },
+  { key: 'dashboard', icon: LayoutDashboard, href: '/admin/dashboard', roles: ['admin'] },
+  { key: 'bookings', icon: CalendarDays, href: '/admin/bookings', roles: ['admin', 'staff'] },
+  { key: 'pos', icon: ShoppingBag, href: '/admin/pos', roles: ['admin', 'staff'] },
+  { key: 'invoices', icon: Receipt, href: '/admin/invoices', roles: ['admin', 'staff'] },
+  { key: 'leave', icon: CalendarOff, href: '/admin/staff/leave', roles: ['staff'] },
+  { key: 'customers', icon: Users, href: '/admin/customers', roles: ['admin'] },
+  { key: 'staff', icon: UserCheck, href: '/admin/staff', roles: ['admin'] },
+  { key: 'services', icon: Scissors, href: '/admin/services', roles: ['admin'] },
+  { key: 'vouchers', icon: Ticket, href: '/admin/vouchers', roles: ['admin'] },
+  { key: 'reports', icon: BarChart3, href: '/admin/reports', roles: ['admin'] },
+  { key: 'gallery', icon: ImageIcon, href: '/admin/gallery', roles: ['admin'] },
+  { key: 'settings', icon: Settings, href: '/admin/settings', roles: ['admin'] },
 ] as const;
 
 interface AdminSidebarProps {
@@ -70,12 +74,7 @@ export function AdminSidebar({ userName, userRole }: AdminSidebarProps) {
 
       {/* Nav links */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.filter(({ key }) => {
-          if (userRole === 'staff') {
-            return key === 'bookings' || key === 'pos' || key === 'invoices';
-          }
-          return true;
-        }).map(({ key, icon: Icon, href }) => {
+        {NAV_ITEMS.filter(({ roles }) => (roles as readonly string[]).includes(userRole)).map(({ key, icon: Icon, href }) => {
           const localHref = `/${locale}${href}`;
           const isActive = pathname === localHref || pathname.startsWith(`${localHref}/`);
           return (

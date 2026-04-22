@@ -52,20 +52,29 @@ export async function POST(req: NextRequest) {
     const subtotal = items.reduce((s, item) => s + item.price * item.quantity, 0);
     let discountAmount = 0;
     let voucherId: string | null = null;
+    let customerVoucherId: string | null = null;
 
     // Validate + apply voucher
     if (voucher_code && customer_id) {
-      const { data: cv } = await supabase
-        .from('customer_vouchers')
-        .select('id, voucher_id, status, vouchers(discount_type, discount_value, min_order_amount, expires_at, status)')
-        .eq('status', 'available')
-        .eq('customer_id', customer_id)
-        .eq('vouchers.code', voucher_code)
+      // Step 1: find voucher by code
+      const { data: voucher } = await supabase
+        .from('vouchers')
+        .select('id, discount_type, discount_value, min_order_amount, expires_at, status')
+        .eq('code', voucher_code)
+        .eq('status', 'active')
         .single();
 
-      if (cv && cv.vouchers) {
-        const voucher = Array.isArray(cv.vouchers) ? cv.vouchers[0] : cv.vouchers;
-        if (voucher && voucher.status === 'active') {
+      if (voucher) {
+        // Step 2: check customer owns this voucher and it's available
+        const { data: cv } = await supabase
+          .from('customer_vouchers')
+          .select('id, voucher_id, status')
+          .eq('customer_id', customer_id)
+          .eq('voucher_id', voucher.id)
+          .eq('status', 'available')
+          .single();
+
+        if (cv) {
           const expired = voucher.expires_at ? new Date(voucher.expires_at) < new Date() : false;
           const meetsMin = subtotal >= (voucher.min_order_amount ?? 0);
           if (!expired && meetsMin) {
@@ -74,7 +83,8 @@ export async function POST(req: NextRequest) {
             } else {
               discountAmount = Math.min(voucher.discount_value, subtotal);
             }
-            voucherId = cv.voucher_id;
+            voucherId = voucher.id;
+            customerVoucherId = cv.id; // store specific customer_voucher row id
           }
         }
       }
@@ -145,14 +155,45 @@ export async function POST(req: NextRequest) {
         .update({ total_spent: newTotal, member_tier: newTier })
         .eq('id', customer_id);
 
-      // Mark voucher as used
-      if (voucherId && customer_id) {
+      // Mark voucher as used — use exact customer_vouchers.id for precision
+      // Note: used_in_payment_id references payments(id) (booking flow), not orders.
+      // So we only update status + used_at here; used_in_payment_id stays null.
+      if (customerVoucherId) {
         await supabase
           .from('customer_vouchers')
-          .update({ status: 'used', used_at: new Date().toISOString(), used_in_payment_id: order.id })
-          .eq('customer_id', customer_id)
-          .eq('voucher_id', voucherId);
+          .update({ status: 'used', used_at: new Date().toISOString() })
+          .eq('id', customerVoucherId);
       }
+
+      // Auto-assign order_amount_gte vouchers: find rules where threshold <= order total
+      // and voucher is still active/not expired, then gift to customer if not already held
+      void (async () => {
+        try {
+          const now = new Date().toISOString();
+          const { data: rules } = await supabase
+            .from('voucher_rules')
+            .select('voucher_id, threshold, vouchers!inner(id, status, expires_at)')
+            .eq('rule_type', 'order_amount_gte')
+            .eq('is_active', true)
+            .lte('threshold', total)           // rule threshold <= this order's total
+            .eq('vouchers.status', 'active');
+
+          for (const rule of rules ?? []) {
+            const v = Array.isArray(rule.vouchers) ? rule.vouchers[0] : rule.vouchers;
+            const expired = (v as { expires_at: string | null })?.expires_at
+              ? new Date((v as { expires_at: string }).expires_at) < new Date(now)
+              : false;
+            if (expired) continue;
+            await supabase
+              .from('customer_vouchers')
+              .insert({ voucher_id: rule.voucher_id, customer_id, status: 'available' })
+              .select('id');
+            // 23505 duplicate → customer already has it, skip silently
+          }
+        } catch {
+          // Non-critical — order already created successfully
+        }
+      })();
     }
 
     return NextResponse.json({

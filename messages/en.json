@@ -35,7 +35,9 @@
     "gallery": "Gallery",
     "location": "Location",
     "invoices": "Invoices",
-    "login_register": "Login / Register"
+    "login_register": "Login / Register",
+    "leave": "Leave Request",
+    "settings": "Settings"
   },
   "home": {
     "hero_eyebrow": "Hanie in Quy Nhon · Beauty Studio",
@@ -170,6 +172,23 @@
     "active": "Active",
     "use_now": "Book now →"
   },
+  "payments": {
+    "title": "Payment History",
+    "empty": "No payment history yet",
+    "empty_desc": "Your POS invoices will appear here after checkout",
+    "detail_title": "Invoice Details",
+    "method_cash": "Cash",
+    "method_transfer": "Transfer",
+    "method_card": "Card",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "total": "Total",
+    "items_label": "Service",
+    "qty_label": "Qty",
+    "amount_label": "Amount",
+    "close": "Close",
+    "voucher_used": "Voucher: {code}"
+  },
   "profile": {
     "title": "My Profile",
     "member_tier": "Member tier",
@@ -207,7 +226,35 @@
     "send_zalo": "Send via Zalo",
     "thank_you": "Thank you for choosing Hanie ✦",
     "walk_in": "Walk-in",
-    "from_booking": "From booking"
+    "from_booking": "From booking",
+    "select_placeholder": "Select...",
+    "no_options": "No options",
+    "walk_in_customer": "Walk-in",
+    "new_customer_badge": "New",
+    "search_placeholder": "Search by name or phone...",
+    "no_results_create": "Not found — create new:",
+    "customer_name_placeholder": "Customer name",
+    "confirm_new_customer": "Confirm",
+    "all_categories": "All types",
+    "select_service_placeholder": "Select service",
+    "price_label": "Price",
+    "price_out_of_range": "Out of range {min}–{max}",
+    "quantity_nails": "Nails",
+    "quantity_label": "Quantity",
+    "new_order": "New order",
+    "loading": "Loading...",
+    "no_services_error": "No services added",
+    "service_fallback": "Service",
+    "section_customer": "Customer",
+    "section_services": "Services",
+    "select_customer_for_voucher": "Select customer to view vouchers",
+    "no_vouchers": "No vouchers available",
+    "select_staff_placeholder": "Select staff",
+    "no_service_lines": "No services",
+    "processing": "Processing...",
+    "section_staff": "Technician",
+    "commission_note_admin": "This staff will earn commission on this order.",
+    "commission_note_staff": "Commission will be automatically credited to you."
   },
   "auth": {
     "login_title": "Log in",
@@ -356,7 +403,25 @@
     "time": "Time",
     "booking_staff": "Technician",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "settings_title": "System Settings",
+    "settings_desc": "Configure operational parameters",
+    "settings_empty": "No settings found",
+    "auto_distribute": "Auto Distribute",
+    "auto_distribute_preview": "Preview",
+    "auto_distribute_confirm": "Confirm Distribute",
+    "auto_distribute_result": "Distributed {count} vouchers",
+    "voucher_rule_title": "Auto-distribution Conditions",
+    "voucher_rule_none": "No auto-trigger",
+    "voucher_rule_birthday": "Birthday this month",
+    "voucher_rule_points": "Points ≥ {threshold} pts",
+    "voucher_rule_tier": "Tier: {tier}",
+    "voucher_rule_spent": "Total spent ≥ {amount}",
+    "settings_save": "Save",
+    "settings_saved": "Saved",
+    "settings_error": "Error",
+    "settings_error_connection": "Connection error",
+    "settings_current_value": "Current"
   },
   "errors": {
     "INVALID_PHONE": "Invalid phone number",
@@ -385,6 +450,34 @@
     "chat_greeting_vi": "Xin chào! Hanie có thể giúp gì cho bạn?",
     "chat_greeting_en": "Hello! How can Hanie help you?",
     "chat_greeting_ko": "안녕하세요! Hanie가 어떻게 도와드릴까요?"
+  },
+  "loyalty": {
+    "points": "{count} points",
+    "points_label": "Loyalty Points",
+    "threshold_info": "Every bill from {amount} → +1 point"
+  },
+  "leave_request": {
+    "submit_title": "Request Leave",
+    "date_label": "Leave Date",
+    "reason_label": "Reason",
+    "submit_btn": "Submit Request",
+    "status_pending": "Pending",
+    "status_approved": "Approved",
+    "status_rejected": "Rejected",
+    "subtitle": "Submit and track your leave requests",
+    "sent_requests": "Submitted requests",
+    "empty_state": "No requests yet",
+    "success_msg": "Request submitted successfully!",
+    "review_note_label": "Note",
+    "error_connection": "Connection error",
+    "error_generic": "Something went wrong",
+    "reason_placeholder": "Enter reason for leave..."
+  },
+  "new_account_notice": {
+    "title": "Account Created",
+    "phone": "Phone: {phone}",
+    "password": "Default password: hanie2020xinchao",
+    "login_hint": "Login to view booking history and earn points"
   },
   "footer": {
     "tagline": "Beauty studio in Quy Nhon. Lashes · Eyebrows · Hair Wash · Nail.",

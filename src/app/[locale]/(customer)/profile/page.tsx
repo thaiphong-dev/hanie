@@ -12,6 +12,10 @@ import {
   Ticket,
   CalendarX,
   CheckCircle,
+  Receipt,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { AuthGuard } from '@/components/shared/AuthGuard';
 import { Link } from '@/lib/navigation';
@@ -26,7 +30,7 @@ import type { Locale } from '@/lib/navigation';
 type UserRow = Database['public']['Tables']['users']['Row'];
 type ProfileData = Pick<
   UserRow,
-  'id' | 'full_name' | 'phone' | 'avatar_url' | 'member_tier' | 'total_spent'
+  'id' | 'full_name' | 'phone' | 'avatar_url' | 'member_tier' | 'total_spent' | 'loyalty_points'
 >;
 
 type BookingRow = Database['public']['Tables']['bookings']['Row'];
@@ -64,9 +68,31 @@ interface CustomerVoucher {
   > | null;
 }
 
+// ── Payment History Types ─────────────────────────────────────────────────────
+
+interface OrderItem {
+  id: string;
+  service_name: string;
+  price: number;
+  quantity: number;
+  unit: string;
+}
+
+interface CustomerOrder {
+  id: string;
+  status: string;
+  subtotal: number;
+  discount_amount: number;
+  total: number;
+  method: 'cash' | 'transfer' | 'card';
+  voucher_code: string | null;
+  created_at: string;
+  order_items: OrderItem[];
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-type TabKey = 'history' | 'vouchers' | 'account';
+type TabKey = 'history' | 'payments' | 'vouchers' | 'account';
 
 type BookingTabKey = 'upcoming' | 'completed' | 'cancelled';
 const TAB_STATUSES: Record<BookingTabKey, BookingStatus[]> = {
@@ -109,6 +135,7 @@ function ProfileContent() {
 
   const TABS: Array<{ key: TabKey; label: string; icon: React.ElementType }> = [
     { key: 'history', label: t('history.title'), icon: Clock },
+    { key: 'payments', label: t('payments.title'), icon: Receipt },
     { key: 'vouchers', label: t('vouchers.title'), icon: Tag },
     { key: 'account', label: t('profile.title'), icon: User },
   ];
@@ -158,6 +185,7 @@ function ProfileContent() {
       {/* Tab content */}
       <div className="mx-auto max-w-2xl px-4 py-8">
         {activeTab === 'history' && <HistoryTab />}
+        {activeTab === 'payments' && <PaymentsTab />}
         {activeTab === 'vouchers' && <VouchersTab />}
         {activeTab === 'account' && <AccountTab />}
       </div>
@@ -325,6 +353,279 @@ function HistoryTab() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ── Payments Tab ──────────────────────────────────────────────────────────────
+
+function OrderDetailModal({
+  order,
+  onClose,
+}: {
+  order: CustomerOrder;
+  onClose: () => void;
+}) {
+  const t = useTranslations();
+  const locale = useLocale() as Locale;
+
+  const METHOD_LABEL: Record<CustomerOrder['method'], string> = {
+    cash: t('payments.method_cash'),
+    transfer: t('payments.method_transfer'),
+    card: t('payments.method_card'),
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full sm:max-w-lg bg-bg-primary rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+          <h2 className="font-display text-base text-text-primary">{t('payments.detail_title')}</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 hover:bg-bg-secondary rounded-lg text-text-muted transition-colors"
+            aria-label={t('payments.close')}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Meta */}
+          <div className="flex items-center justify-between text-xs font-body text-text-muted">
+            <span>
+              {new Date(order.created_at).toLocaleDateString(locale, {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
+            <span
+              className={cn(
+                'px-2 py-0.5 rounded-md font-medium uppercase text-[10px]',
+                order.method === 'cash'
+                  ? 'bg-orange-100 text-orange-700'
+                  : order.method === 'transfer'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-purple-100 text-purple-700',
+              )}
+            >
+              {METHOD_LABEL[order.method]}
+            </span>
+          </div>
+
+          {/* Items */}
+          <div className="border border-border rounded-2xl overflow-hidden">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-bg-secondary/50 border-b border-border">
+                  <th className="px-4 py-2.5 text-left font-body text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                    {t('payments.items_label')}
+                  </th>
+                  <th className="px-3 py-2.5 text-center font-body text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                    {t('payments.qty_label')}
+                  </th>
+                  <th className="px-4 py-2.5 text-right font-body text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                    {t('payments.amount_label')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {order.order_items.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-4 py-3 font-body text-sm text-text-primary">{item.service_name}</td>
+                    <td className="px-3 py-3 text-center font-body text-sm text-text-secondary">
+                      {item.quantity}
+                    </td>
+                    <td className="px-4 py-3 text-right font-body text-sm font-semibold text-text-primary">
+                      {formatPrice(item.price * item.quantity, locale)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Totals */}
+          <div className="space-y-2 border-t border-border pt-4">
+            <div className="flex justify-between font-body text-sm text-text-secondary">
+              <span>{t('payments.subtotal')}</span>
+              <span>{formatPrice(order.subtotal, locale)}</span>
+            </div>
+            {order.discount_amount > 0 && (
+              <div className="flex justify-between font-body text-sm text-green-600">
+                <span>{t('payments.discount')}</span>
+                <span>-{formatPrice(order.discount_amount, locale)}</span>
+              </div>
+            )}
+            {order.voucher_code && (
+              <p className="font-body text-xs text-text-muted">
+                {t('payments.voucher_used', { code: order.voucher_code })}
+              </p>
+            )}
+            <div className="flex justify-between font-display text-base text-text-primary border-t border-border pt-2">
+              <span>{t('payments.total')}</span>
+              <span className="text-accent">{formatPrice(order.total, locale)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentsTab() {
+  const t = useTranslations();
+  const locale = useLocale() as Locale;
+
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState<CustomerOrder | null>(null);
+  const limit = 20;
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('access_token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    const params = new URLSearchParams({ page: page.toString() });
+    fetch(`/api/v1/orders/mine?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then(
+        (json: {
+          data: CustomerOrder[] | null;
+          meta: { total: number } | null;
+        }) => {
+          setOrders(Array.isArray(json.data) ? json.data : []);
+          setTotalCount(json.meta?.total ?? 0);
+        },
+      )
+      .catch(() => setOrders([]))
+      .finally(() => setLoading(false));
+  }, [page]);
+
+  const METHOD_LABEL: Record<CustomerOrder['method'], string> = {
+    cash: t('payments.method_cash'),
+    transfer: t('payments.method_transfer'),
+    card: t('payments.method_card'),
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="skeleton h-24 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <Receipt size={48} className="mx-auto mb-4 text-text-muted opacity-40" />
+        <p className="font-display text-xl text-text-muted mb-2">{t('payments.empty')}</p>
+        <p className="font-body text-sm text-text-muted">{t('payments.empty_desc')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {orders.map((order) => {
+        const serviceNames = order.order_items.map((i) => i.service_name).join(', ');
+        return (
+          <button
+            key={order.id}
+            onClick={() => setSelectedOrder(order)}
+            className="w-full text-left bg-bg-primary border border-border rounded-2xl p-5 hover:border-accent/50 transition-colors"
+          >
+            <div className="flex items-start justify-between mb-2">
+              <p className="font-body text-xs text-text-muted">
+                {new Date(order.created_at).toLocaleDateString(locale, {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })}
+                {' '}
+                {new Date(order.created_at).toLocaleTimeString(locale, {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </p>
+              <span
+                className={cn(
+                  'px-2 py-0.5 rounded-md text-[10px] font-medium uppercase shrink-0',
+                  order.method === 'cash'
+                    ? 'bg-orange-100 text-orange-700'
+                    : order.method === 'transfer'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-purple-100 text-purple-700',
+                )}
+              >
+                {METHOD_LABEL[order.method]}
+              </span>
+            </div>
+            <p className="font-body text-sm text-text-primary truncate mb-3">{serviceNames || '—'}</p>
+            <div className="flex items-center justify-between">
+              <p className="font-body text-xs text-text-muted">
+                {order.order_items.length} {order.order_items.length === 1 ? 'dịch vụ' : 'dịch vụ'}
+                {order.discount_amount > 0 && (
+                  <span className="ml-2 text-green-600">
+                    -{formatPrice(order.discount_amount, locale)}
+                  </span>
+                )}
+              </p>
+              <p className="font-display text-base text-accent">
+                {formatPrice(order.total, locale)}
+              </p>
+            </div>
+          </button>
+        );
+      })}
+
+      {/* Pagination */}
+      {totalCount > limit && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="font-body text-xs text-text-muted">
+            {orders.length}/{totalCount}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+              className="p-2 border border-border rounded-lg disabled:opacity-30 transition-opacity"
+              aria-label="previous"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <span className="font-body text-sm font-medium">{page}</span>
+            <button
+              disabled={page * limit >= totalCount}
+              onClick={() => setPage((p) => p + 1)}
+              className="p-2 border border-border rounded-lg disabled:opacity-30 transition-opacity"
+              aria-label="next"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {selectedOrder && (
+        <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+      )}
     </div>
   );
 }
@@ -512,6 +813,7 @@ function AccountTab() {
       avatar_url: null,
       member_tier: 'new',
       total_spent: 0,
+      loyalty_points: 0,
     });
 
     const token = sessionStorage.getItem('access_token');
@@ -636,11 +938,19 @@ function AccountTab() {
             >
               {tierLabel[tier] ?? tier}
             </span>
-            <div className="text-right">
-              <p className="font-body text-xs text-text-muted">{t('profile.total_spent')}</p>
-              <p className="font-display text-base text-accent">
-                {formatPrice(profile?.total_spent ?? 0, locale)}
-              </p>
+            <div className="text-right space-y-1">
+              <div>
+                <p className="font-body text-xs text-text-muted">{t('profile.total_spent')}</p>
+                <p className="font-display text-base text-accent">
+                  {formatPrice(profile?.total_spent ?? 0, locale)}
+                </p>
+              </div>
+              <div>
+                <p className="font-body text-xs text-text-muted">{t('loyalty.points_label')}</p>
+                <p className="font-display text-base text-accent">
+                  ⭐ {t('loyalty.points', { count: profile?.loyalty_points ?? 0 })}
+                </p>
+              </div>
             </div>
           </div>
         </div>

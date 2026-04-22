@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { X, Calendar as CalendarIcon, Clock, User, Phone, Scissors, UserCheck } from "lucide-react";
+import { X, Clock, User, Phone, Scissors, UserCheck, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { DatePicker } from "@/components/shared/DatePicker";
 import { StaffUser } from "./page";
 
 interface BookingCategory {
@@ -148,34 +149,35 @@ export function AdminBookingModal({ isOpen, onClose, onSuccess, staffList }: Adm
             {/* Date */}
             <div className="space-y-1.5">
               <label className="flex items-center gap-2 font-body text-xs text-text-muted uppercase tracking-wider">
-                <CalendarIcon className="w-3.5 h-3.5" />
+                <Clock className="w-3.5 h-3.5" />
                 {t("date")}
               </label>
-              <input
-                type="date"
-                required
+              <DatePicker
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-bg-secondary bg-white font-body text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
+                onChange={(d) => setSelectedDate(d)}
+                placeholder="Chọn ngày..."
               />
             </div>
 
-            {/* Time */}
+            {/* Time — custom styled select */}
             <div className="space-y-1.5">
               <label className="flex items-center gap-2 font-body text-xs text-text-muted uppercase tracking-wider">
                 <Clock className="w-3.5 h-3.5" />
                 {t("time")}
               </label>
-              <select
-                required
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-bg-secondary bg-white font-body text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all appearance-none"
-              >
-                {timeOptions.map(time => (
-                  <option key={time} value={time}>{time}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  required
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  className="w-full appearance-none px-4 py-2.5 rounded-xl border border-bg-secondary bg-white font-body text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all pr-9"
+                >
+                  {timeOptions.map(time => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              </div>
             </div>
           </div>
 

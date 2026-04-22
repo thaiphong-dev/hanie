@@ -100,15 +100,22 @@ export async function POST(req: NextRequest) {
 
     const supabase = createServerClient();
 
-    // 1. Create User (Note: In a real app, you'd use Auth service to create accounts. 
-    // Here we just insert into users table if they don't exist, as a placeholder)
+    // Generate default password: Hanie@ + last 6 digits of phone
+    const { hashPassword } = await import('@/lib/password');
+    const digits = phone.replace(/\D/g, '');
+    const last6 = digits.slice(-6).padStart(6, '0');
+    const defaultPassword = `Hanie@${last6}`;
+    const passwordHash = await hashPassword(defaultPassword);
+
+    // 1. Create User
     const { data: newUser, error: userErr } = await supabase
       .from('users')
       .insert({
         full_name,
         phone,
         role,
-        is_active: true
+        is_active: true,
+        password_hash: passwordHash,
       })
       .select('id')
       .single();

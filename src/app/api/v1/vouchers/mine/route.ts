@@ -4,11 +4,21 @@ import { createServerClient } from '@/lib/supabase/server';
 export async function GET(req: NextRequest) {
   try {
     const userId = req.headers.get('x-user-id');
+    const userRole = req.headers.get('x-user-role');
     if (!userId) {
       return NextResponse.json(
         { data: null, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
         { status: 401 },
       );
+    }
+
+    const { searchParams } = req.nextUrl;
+    const queryCustomerId = searchParams.get('customer_id');
+
+    // Admin/staff can query any customer's vouchers; customers can only query their own
+    let targetCustomerId = userId;
+    if (queryCustomerId && (userRole === 'admin' || userRole === 'staff')) {
+      targetCustomerId = queryCustomerId;
     }
 
     const supabase = createServerClient();
@@ -17,7 +27,8 @@ export async function GET(req: NextRequest) {
     const { data: cvRows, error: cvErr } = await supabase
       .from('customer_vouchers')
       .select('id, status, used_at, created_at, voucher_id')
-      .eq('customer_id', userId)
+      .eq('customer_id', targetCustomerId)
+      .eq('status', 'available')       // POS only needs available vouchers
       .order('created_at', { ascending: false });
 
     if (cvErr) throw new Error(cvErr.message);

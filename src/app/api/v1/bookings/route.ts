@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve guest customer (find or create)
-    const customerId = await resolveGuestCustomer(customer_phone, customer_name);
+    const { customerId, isNewAccount } = await resolveGuestCustomer(customer_phone, customer_name);
 
     // Create booking
     const { data: booking, error: bookErr } = await supabase
@@ -152,6 +152,8 @@ export async function POST(req: NextRequest) {
           scheduled_at: booking.scheduled_at,
           customer_name: booking.customer_name,
           status: booking.status,
+          is_new_account: isNewAccount,
+          customer_phone: isNewAccount ? customer_phone : undefined,
         },
         error: null,
       },

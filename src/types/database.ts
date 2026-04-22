@@ -1,6 +1,7 @@
 // database.ts — Supabase types khớp với migration.sql
 // Cập nhật: 2026-04-15 — Thêm booking_categories; booking_services: thêm
 //           booking_category_id, làm service_id nullable, bỏ service_name
+// Cập nhật: 2026-04-20 — Thêm loyalty_points vào users; app_settings; voucher_rules
 
 export interface Database {
   public: {
@@ -18,6 +19,7 @@ export interface Database {
           avatar_url: string | null;
           member_tier: 'new' | 'regular' | 'vip';
           total_spent: number;
+          loyalty_points: number;          // Phase 7: tích điểm thưởng
           notes: string | null;
           is_active: boolean;
           last_login_at: string | null;
@@ -381,6 +383,34 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['order_items']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['order_items']['Insert']>;
+      };
+
+      // ── APP_SETTINGS ────────────────────────────────────────────────────────
+      app_settings: {
+        Row: {
+          key: string;
+          value: string;
+          label: string;
+          type: 'number' | 'text' | 'boolean';
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['app_settings']['Row'], 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['app_settings']['Insert']>;
+      };
+
+      // ── VOUCHER_RULES ────────────────────────────────────────────────────────
+      voucher_rules: {
+        Row: {
+          id: string;
+          voucher_id: string;
+          rule_type: 'birthday_month' | 'points_gte' | 'member_tier' | 'total_spent_gte' | 'manual' | 'new_register' | 'order_amount_gte';
+          threshold: number | null;    // points_gte (điểm), total_spent_gte (VNĐ), order_amount_gte (VNĐ/hóa đơn)
+          tier_value: string | null;   // for member_tier: 'new'|'regular'|'vip'
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['voucher_rules']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['voucher_rules']['Insert']>;
       };
 
       // ── INVENTORY (PENDING — schema giữ chỗ) ─────────────────────────────────

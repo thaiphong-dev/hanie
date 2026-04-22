@@ -18,17 +18,19 @@ import {
   X,
   LogOut,
   Receipt,
+  CalendarOff,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 
 const MAIN_NAV = [
-  { key: 'dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-  { key: 'bookings', icon: CalendarDays, href: '/admin/bookings' },
-  { key: 'pos', icon: ShoppingBag, href: '/admin/pos' },
-  { key: 'invoices', icon: Receipt, href: '/admin/invoices' },
-  { key: 'customers', icon: Users, href: '/admin/customers' },
+  { key: 'dashboard', icon: LayoutDashboard, href: '/admin/dashboard', roles: ['admin'] },
+  { key: 'bookings', icon: CalendarDays, href: '/admin/bookings', roles: ['admin', 'staff'] },
+  { key: 'pos', icon: ShoppingBag, href: '/admin/pos', roles: ['admin', 'staff'] },
+  { key: 'invoices', icon: Receipt, href: '/admin/invoices', roles: ['admin', 'staff'] },
+  { key: 'leave', icon: CalendarOff, href: '/admin/staff/leave', roles: ['staff'] },
+  { key: 'customers', icon: Users, href: '/admin/customers', roles: ['admin'] },
 ] as const;
 
 const MORE_NAV = [
@@ -80,12 +82,7 @@ export function AdminMobileNav({ userRole }: { userRole: string }) {
       {/* Bottom tab bar */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-bg-dark border-t border-white/10 z-40 safe-area-inset-bottom">
         <div className="flex items-center">
-          {MAIN_NAV.filter(({ key }) => {
-            if (userRole === 'staff') {
-              return key === 'bookings' || key === 'pos' || key === 'invoices';
-            }
-            return key !== 'customers'; // For admin, dashboard, bookings, pos, invoices are in MAIN_NAV
-          }).map(({ key, icon: Icon, href }) => {
+          {MAIN_NAV.filter(({ roles }) => (roles as readonly string[]).includes(userRole)).map(({ key, icon: Icon, href }) => {
             const active = isActive(href);
             return (
               <Link

@@ -35,7 +35,9 @@
     "gallery": "갤러리",
     "location": "위치",
     "invoices": "송장",
-    "login_register": "로그인 / 회원가입"
+    "login_register": "로그인 / 회원가입",
+    "leave": "휴가 신청",
+    "settings": "설정"
   },
   "home": {
     "hero_eyebrow": "Hanie in Quy Nhon · 뷰티 스튜디오",
@@ -169,6 +171,23 @@
     "expired": "만료됨",
     "active": "사용 가능",
     "use_now": "지금 예약 →"
+  },
+  "payments": {
+    "title": "결제 내역",
+    "empty": "결제 내역이 없습니다",
+    "empty_desc": "POS 청구서가 결제 후 여기에 표시됩니다",
+    "detail_title": "청구서 상세",
+    "method_cash": "현금",
+    "method_transfer": "계좌이체",
+    "method_card": "카드",
+    "subtotal": "소계",
+    "discount": "할인",
+    "total": "합계",
+    "items_label": "서비스",
+    "qty_label": "수량",
+    "amount_label": "금액",
+    "close": "닫기",
+    "voucher_used": "바우처: {code}"
   },
   "profile": {
     "title": "내 프로필",
@@ -356,7 +375,19 @@
     "time": "시간",
     "booking_staff": "테크니션",
     "cancel": "취소",
-    "confirm": "확인"
+    "confirm": "확인",
+    "settings_title": "시스템 설정",
+    "settings_desc": "운영 매개변수 구성",
+    "settings_empty": "설정 없음",
+    "auto_distribute": "자동 배포",
+    "auto_distribute_preview": "미리보기",
+    "auto_distribute_confirm": "배포 확인",
+    "auto_distribute_result": "{count}개 쿠폰 배포됨",
+    "voucher_rule_title": "자동 배포 조건",
+    "voucher_rule_none": "자동 트리거 없음",
+    "voucher_rule_points": "포인트 ≥ {threshold}점",
+    "voucher_rule_tier": "등급: {tier}",
+    "voucher_rule_spent": "총 지출 ≥ {amount}"
   },
   "errors": {
     "INVALID_PHONE": "유효하지 않은 전화번호",
@@ -385,6 +416,26 @@
     "chat_greeting_vi": "Xin chào! Hanie có thể giúp gì cho bạn?",
     "chat_greeting_en": "Hello! How can Hanie help you?",
     "chat_greeting_ko": "안녕하세요! Hanie가 어떻게 도와드릴까요?"
+  },
+  "loyalty": {
+    "points": "{count}점",
+    "points_label": "적립 포인트",
+    "threshold_info": "{amount} 이상 결제 시 → +1점"
+  },
+  "leave_request": {
+    "submit_title": "휴가 신청",
+    "date_label": "휴가 날짜",
+    "reason_label": "사유",
+    "submit_btn": "신청서 제출",
+    "status_pending": "검토 중",
+    "status_approved": "승인됨",
+    "status_rejected": "거절됨"
+  },
+  "new_account_notice": {
+    "title": "계정이 생성되었습니다",
+    "phone": "전화번호: {phone}",
+    "password": "기본 비밀번호: hanie2020xinchao",
+    "login_hint": "로그인하여 예약 기록 확인 및 포인트 적립"
   },
   "footer": {
     "tagline": "귀닌의 뷰티 스튜디오. 속눈썹 · 눈썹 · 헤어워시 · 네일.",

@@ -7,11 +7,17 @@ const DEFAULT_GUEST_PASSWORD = 'hanie2020xinchao';
 // Regex SĐT Việt Nam
 const PHONE_REGEX = /^(0[35789])+([0-9]{8})$/;
 
+export interface ResolveResult {
+  customerId: string;
+  isNewAccount: boolean;
+}
+
 /**
  * Tìm user theo SĐT — nếu có trả về id, nếu chưa có tạo mới.
  * Booking không cần đăng nhập — hàm này xử lý hoàn toàn server-side.
+ * Returns { customerId, isNewAccount } để caller biết có hiện thông báo tài khoản mới không.
  */
-export async function resolveGuestCustomer(phone: string, fullName: string): Promise<string> {
+export async function resolveGuestCustomer(phone: string, fullName: string): Promise<ResolveResult> {
   // Validate SĐT
   if (!PHONE_REGEX.test(phone)) {
     throw new Error('INVALID_PHONE');
@@ -26,7 +32,7 @@ export async function resolveGuestCustomer(phone: string, fullName: string): Pro
     .eq('phone', phone)
     .single();
 
-  if (existing) return existing.id; // Đã có tài khoản → dùng luôn
+  if (existing) return { customerId: existing.id, isNewAccount: false };
 
   // 2. Chưa có → tạo tài khoản mới với default password
   // Dynamic import để tránh Edge Runtime (password.ts dùng bcryptjs — Node.js only)
@@ -48,5 +54,5 @@ export async function resolveGuestCustomer(phone: string, fullName: string): Pro
   if (error) throw new Error(`CREATE_USER_FAILED: ${error.message}`);
   if (!newUser) throw new Error('CREATE_USER_FAILED: No data returned');
 
-  return newUser.id;
+  return { customerId: newUser.id, isNewAccount: true };
 }

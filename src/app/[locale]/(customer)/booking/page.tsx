@@ -76,6 +76,8 @@ function BookingContent() {
 
   // Success
   const [, setBookingId] = useState('');
+  const [isNewAccount, setIsNewAccount] = useState(false);
+  const [newAccountPhone, setNewAccountPhone] = useState('');
 
   // ── Load booking categories ──
   useEffect(() => {
@@ -169,7 +171,7 @@ function BookingContent() {
       });
 
       const json = (await res.json()) as {
-        data: { booking_id: string } | null;
+        data: { booking_id: string; is_new_account?: boolean; customer_phone?: string } | null;
         error: { code: string; message: string } | null;
       };
 
@@ -180,6 +182,10 @@ function BookingContent() {
       }
 
       setBookingId(json.data?.booking_id ?? '');
+      if (json.data?.is_new_account) {
+        setIsNewAccount(true);
+        setNewAccountPhone(json.data.customer_phone ?? customerPhone);
+      }
       setDirection(1);
       setStep(4);
     } finally {
@@ -635,9 +641,27 @@ function BookingContent() {
               <h2 className="font-display text-3xl text-text-primary mb-4">
                 {t('booking.success_title')}
               </h2>
-              <p className="font-body text-sm text-text-muted mb-10 max-w-sm mx-auto">
+              <p className="font-body text-sm text-text-muted mb-6 max-w-sm mx-auto">
                 {t('booking.success_sub')}
               </p>
+
+              {/* New account notice */}
+              {isNewAccount && (
+                <div className="mb-8 mx-auto max-w-sm text-left rounded-2xl border border-accent/40 bg-accent/5 p-4 space-y-1">
+                  <p className="font-body text-xs font-semibold text-accent uppercase tracking-wider mb-2">
+                    {t('new_account_notice.title')}
+                  </p>
+                  <p className="font-body text-sm text-text-primary">
+                    📱 {t('new_account_notice.phone', { phone: newAccountPhone })}
+                  </p>
+                  <p className="font-body text-sm text-text-primary">
+                    🔑 {t('new_account_notice.password')}
+                  </p>
+                  <p className="font-body text-xs text-text-muted mt-2">
+                    {t('new_account_notice.login_hint')}
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <Link

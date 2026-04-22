@@ -35,6 +35,21 @@ interface VoucherForm {
   status: 'active' | 'draft' | 'disabled';
 }
 
+interface VoucherRule {
+  id: string;
+  voucher_id: string;
+  rule_type: 'birthday_month' | 'points_gte' | 'member_tier' | 'total_spent_gte' | 'manual' | 'new_register' | 'order_amount_gte';
+  threshold: number | null;
+  tier_value: string | null;
+  is_active: boolean;
+}
+
+interface RuleForm {
+  rule_type: 'none' | 'birthday_month' | 'points_gte' | 'member_tier' | 'total_spent_gte' | 'new_register' | 'order_amount_gte';
+  threshold: string;
+  tier_value: string;
+}
+
 const EMPTY_FORM: VoucherForm = {
   code: '', name: '', discount_type: 'percent',
   discount_value: 10, min_order_amount: 0,
@@ -50,19 +65,30 @@ export default function VouchersPage() {
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [distributeId, setDistributeId] = useState<string | null>(null);
-  const [distributeTo, setDistributeTo] = useState('regular_plus');
+  const [distributeTo, setDistributeTo] = useState('all');
   const [distributing, setDistributing] = useState(false);
   const [distributeResult, setDistributeResult] = useState<number | null>(null);
   const [form, setForm] = useState<VoucherForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [ruleForm, setRuleForm] = useState<RuleForm>({ rule_type: 'none', threshold: '', tier_value: '' });
+  const [voucherRules, setVoucherRules] = useState<Record<string, VoucherRule | null>>({});
 
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'expired' | 'disabled'>('all');
 
   const fetchVouchers = useCallback(async () => {
     setLoading(true);
-    const res = await fetch('/api/v1/admin/vouchers');
-    const json = await res.json() as { data: Voucher[] };
-    setVouchers(json.data ?? []);
+    const [vRes, rRes] = await Promise.all([
+      fetch('/api/v1/admin/vouchers'),
+      fetch('/api/v1/admin/voucher-rules'),
+    ]);
+    const vJson = await vRes.json() as { data: Voucher[] };
+    const rJson = await rRes.json() as { data: VoucherRule[] };
+    setVouchers(vJson.data ?? []);
+    const byVoucher: Record<string, VoucherRule> = {};
+    for (const rule of rJson.data ?? []) {
+      byVoucher[rule.voucher_id] = rule;
+    }
+    setVoucherRules(byVoucher);
     setLoading(false);
   }, []);
 
@@ -93,19 +119,43 @@ export default function VouchersPage() {
       expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
       required_member_tier: form.required_member_tier || null,
     };
-    
-    // Determine if we're editing or creating
+
     const isEditing = !!(form as any).id;
     const url = isEditing ? `/api/v1/admin/vouchers/${(form as any).id}` : '/api/v1/admin/vouchers';
     const method = isEditing ? 'PATCH' : 'POST';
 
-    await fetch(url, {
+    const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+    const json = await res.json() as { data: { id: string } | null };
+    const voucherId = (form as any).id ?? json.data?.id;
+
+    // Save voucher rule if applicable
+    if (voucherId && ruleForm.rule_type !== 'none') {
+      const needsThreshold = ['points_gte', 'total_spent_gte', 'order_amount_gte'].includes(ruleForm.rule_type);
+      await fetch('/api/v1/admin/voucher-rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          voucher_id: voucherId,
+          rule_type: ruleForm.rule_type,
+          threshold: needsThreshold ? Number(ruleForm.threshold) : null,
+          tier_value: ruleForm.rule_type === 'member_tier' ? ruleForm.tier_value : null,
+        }),
+      });
+    } else if (voucherId && ruleForm.rule_type === 'none') {
+      // Delete existing rule if switching to "none"
+      const existing = voucherRules[voucherId];
+      if (existing) {
+        await fetch(`/api/v1/admin/voucher-rules/${existing.id}`, { method: 'DELETE' });
+      }
+    }
+
     setSaving(false);
     setSheetOpen(false);
+    setRuleForm({ rule_type: 'none', threshold: '', tier_value: '' });
     void fetchVouchers();
   }
 
@@ -138,7 +188,7 @@ export default function VouchersPage() {
           <p className="font-body text-sm text-text-muted mt-1">Quản lý và phát hành chương trình ưu đãi</p>
         </div>
         <button
-          onClick={() => { setForm(EMPTY_FORM); setSheetOpen(true); }}
+          onClick={() => { setForm(EMPTY_FORM); setRuleForm({ rule_type: 'none', threshold: '', tier_value: '' }); setSheetOpen(true); }}
           className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-accent text-bg-dark font-body text-sm font-medium hover:bg-accent-dark transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -199,12 +249,22 @@ export default function VouchersPage() {
                       </span>
                     </div>
                     <p className="font-body text-xs text-text-secondary font-medium">{v.name}</p>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
                        <p className="font-body text-[11px] text-text-primary font-bold bg-bg-secondary px-2 py-0.5 rounded">
                          Giảm {v.discount_type === 'percent' ? `${v.discount_value}%` : formatVND(v.discount_value)}
                        </p>
                        {v.min_order_amount > 0 && (
                          <p className="font-body text-[11px] text-text-muted italic">Đơn từ {formatVND(v.min_order_amount)}</p>
+                       )}
+                       {voucherRules[v.id] && (
+                         <span className="font-body text-[10px] bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+                           {voucherRules[v.id]?.rule_type === 'new_register' && '🎁 Thành viên mới'}
+                           {voucherRules[v.id]?.rule_type === 'order_amount_gte' && `🧾 Đơn ≥${formatVND(voucherRules[v.id]?.threshold ?? 0)}`}
+                           {voucherRules[v.id]?.rule_type === 'birthday_month' && '🎂 Sinh nhật'}
+                           {voucherRules[v.id]?.rule_type === 'points_gte' && `⭐≥${voucherRules[v.id]?.threshold}đ`}
+                           {voucherRules[v.id]?.rule_type === 'member_tier' && `👑 ${voucherRules[v.id]?.tier_value?.toUpperCase()}`}
+                           {voucherRules[v.id]?.rule_type === 'total_spent_gte' && `💰≥${formatVND(voucherRules[v.id]?.threshold ?? 0)}`}
+                         </span>
                        )}
                     </div>
                   </div>
@@ -226,6 +286,12 @@ export default function VouchersPage() {
                           max_issue: v.max_issue ?? '',
                         };
                         setForm(existing as any);
+                        const rule = voucherRules[v.id];
+                        setRuleForm(rule ? {
+                          rule_type: rule.rule_type === 'manual' ? 'none' : rule.rule_type,
+                          threshold: rule.threshold != null ? String(rule.threshold) : '',
+                          tier_value: rule.tier_value ?? '',
+                        } : { rule_type: 'none', threshold: '', tier_value: '' });
                         setSheetOpen(true);
                       }}
                       className="p-2.5 hover:bg-bg-secondary rounded-xl text-text-muted hover:text-text-primary transition-all"
@@ -342,6 +408,80 @@ export default function VouchersPage() {
                   onChange={(e) => setForm((f) => ({ ...f, expires_at: e.target.value }))}
                   className="w-full border border-bg-secondary rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:border-accent" />
               </div>
+
+              {/* Auto-distribution rule */}
+              <div className="border-t border-bg-secondary pt-4 space-y-3">
+                <p className="font-body text-xs font-semibold text-text-primary uppercase tracking-wider">{t('voucher_rule_title')}</p>
+                <select
+                  value={ruleForm.rule_type}
+                  onChange={(e) => setRuleForm((r) => ({ ...r, rule_type: e.target.value as RuleForm['rule_type'] }))}
+                  className="w-full border border-bg-secondary rounded-xl px-3 py-2 font-body text-sm bg-white focus:outline-none focus:border-accent"
+                >
+                  <option value="none">{t('voucher_rule_none')}</option>
+                  <option value="new_register">🎁 Chào mừng thành viên mới (tự động khi đăng ký)</option>
+                  <option value="order_amount_gte">🧾 Hóa đơn ≥ ngưỡng (tự động khi thanh toán)</option>
+                  <option value="birthday_month">🎂 Sinh nhật trong tháng</option>
+                  <option value="points_gte">⭐ Điểm tích lũy ≥ ngưỡng</option>
+                  <option value="member_tier">👑 Đạt cấp bậc thành viên</option>
+                  <option value="total_spent_gte">💰 Tổng chi tiêu ≥ ngưỡng</option>
+                </select>
+
+                {/* new_register: no extra config needed */}
+                {ruleForm.rule_type === 'new_register' && (
+                  <p className="font-body text-xs text-text-muted bg-bg-secondary rounded-xl px-3 py-2">
+                    Voucher sẽ tự động gửi cho khách khi họ đăng ký tài khoản mới (trong thời hạn hiệu lực voucher).
+                  </p>
+                )}
+
+                {/* order_amount_gte: threshold = min order amount */}
+                {ruleForm.rule_type === 'order_amount_gte' && (
+                  <div className="space-y-2">
+                    <div>
+                      <label className="font-body text-xs text-text-muted block mb-1">
+                        Giá trị hóa đơn tối thiểu (VND)
+                      </label>
+                      <input
+                        type="number" min={0} step={10000} value={ruleForm.threshold}
+                        onChange={(e) => setRuleForm((r) => ({ ...r, threshold: e.target.value }))}
+                        className="w-full border border-bg-secondary rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:border-accent"
+                        placeholder="500000"
+                      />
+                    </div>
+                    <p className="font-body text-xs text-text-muted bg-bg-secondary rounded-xl px-3 py-2">
+                      Voucher tự động gửi cho khách khi hóa đơn POS ≥ ngưỡng trên (trong thời hạn hiệu lực voucher).
+                    </p>
+                  </div>
+                )}
+
+                {(ruleForm.rule_type === 'points_gte' || ruleForm.rule_type === 'total_spent_gte') && (
+                  <div>
+                    <label className="font-body text-xs text-text-muted block mb-1">
+                      Ngưỡng {ruleForm.rule_type === 'points_gte' ? '(điểm)' : '(VND)'}
+                    </label>
+                    <input
+                      type="number" min={0} value={ruleForm.threshold}
+                      onChange={(e) => setRuleForm((r) => ({ ...r, threshold: e.target.value }))}
+                      className="w-full border border-bg-secondary rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:border-accent"
+                      placeholder="0"
+                    />
+                  </div>
+                )}
+                {ruleForm.rule_type === 'member_tier' && (
+                  <div>
+                    <label className="font-body text-xs text-text-muted block mb-1">Cấp bậc</label>
+                    <select
+                      value={ruleForm.tier_value}
+                      onChange={(e) => setRuleForm((r) => ({ ...r, tier_value: e.target.value }))}
+                      className="w-full border border-bg-secondary rounded-xl px-3 py-2 font-body text-sm bg-white focus:outline-none focus:border-accent"
+                    >
+                      <option value="">-- Chọn cấp --</option>
+                      <option value="new">Khách mới (New)</option>
+                      <option value="regular">Regular</option>
+                      <option value="vip">VIP</option>
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="sticky bottom-0 bg-white border-t border-bg-secondary px-5 py-4">
@@ -374,9 +514,12 @@ export default function VouchersPage() {
               <>
                 <div className="space-y-2">
                   {[
+                    { value: 'all', label: 'Tất cả khách hàng' },
+                    { value: 'new_only', label: 'Chỉ khách hàng mới (New)' },
+                    { value: 'regular_only', label: 'Chỉ Regular' },
                     { value: 'regular_plus', label: t('distribute_regular_plus') },
-                    { value: 'birthday', label: t('distribute_birthday') },
                     { value: 'vip', label: 'Chỉ VIP' },
+                    { value: 'birthday', label: t('distribute_birthday') },
                   ].map((opt) => (
                     <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-bg-secondary cursor-pointer hover:bg-bg-secondary transition-colors">
                       <input type="radio" name="distribute_to" value={opt.value}

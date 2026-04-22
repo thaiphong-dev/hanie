@@ -78,6 +78,35 @@ export async function POST(req: NextRequest) {
     if (createErr) throw new Error(createErr.message);
     if (!user) throw new Error('User not created');
 
+    // Auto-assign new_register vouchers
+    void (async () => {
+      try {
+        const now = new Date().toISOString();
+        // Find all active new_register rules whose voucher is still valid
+        const { data: rules } = await supabase
+          .from('voucher_rules')
+          .select('voucher_id, vouchers!inner(id, status, expires_at)')
+          .eq('rule_type', 'new_register')
+          .eq('is_active', true)
+          .eq('vouchers.status', 'active');
+
+        for (const rule of rules ?? []) {
+          const v = Array.isArray(rule.vouchers) ? rule.vouchers[0] : rule.vouchers;
+          const expired = (v as { expires_at: string | null })?.expires_at
+            ? new Date((v as { expires_at: string }).expires_at) < new Date(now)
+            : false;
+          if (expired) continue;
+          await supabase
+            .from('customer_vouchers')
+            .insert({ voucher_id: rule.voucher_id, customer_id: user.id, status: 'available' })
+            .select('id');
+          // ignore duplicate errors (23505) — user somehow already has it
+        }
+      } catch {
+        // Non-critical — don't fail registration if voucher assignment fails
+      }
+    })();
+
     // Auto-login: issue tokens
     const [accessToken, refreshToken] = await Promise.all([
       signAccessToken({ sub: user.id, role: user.role, phone: user.phone, name: user.full_name }),

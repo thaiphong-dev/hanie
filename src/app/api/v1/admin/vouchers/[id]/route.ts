@@ -22,7 +22,7 @@ export async function PATCH(
     if (discount_value !== undefined) updates.discount_value = Number(discount_value);
     if (min_order_amount !== undefined) updates.min_order_amount = Number(min_order_amount);
     if (required_member_tier !== undefined) updates.required_member_tier = required_member_tier || null;
-    if (max_issue !== undefined) updates.max_issue = max_issue === '' ? null : Number(max_issue);
+    if (max_issue !== undefined) updates.max_issue = (max_issue === '' || max_issue === null) ? null : Number(max_issue);
     if (expires_at !== undefined) updates.expires_at = expires_at ? new Date(expires_at).toISOString() : null;
     if (status !== undefined) updates.status = status;
 
