@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { getCurrentUser, requireRole } from '@/lib/get-current-user';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const user = getCurrentUser();
     requireRole(user, 'admin');

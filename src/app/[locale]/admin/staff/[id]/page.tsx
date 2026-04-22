@@ -1,8 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useLocale } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import { ArrowLeft, Save, Calendar, BarChart3, User, CheckCircle, AlertCircle, CalendarOff, Clock } from 'lucide-react';
@@ -75,7 +75,6 @@ const LEAVE_STATUS: Record<string, { label: string; color: string }> = {
 export default function StaffDetailPage() {
   const params = useParams();
   const id = params?.id as string;
-  const locale = useLocale();
 
   const [data, setData] = useState<StaffDetail | null>(null);
   const [loading, setLoading] = useState(true);
