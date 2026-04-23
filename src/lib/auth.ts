@@ -10,7 +10,7 @@ export async function signAccessToken(payload: JWTPayload): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime(process.env.JWT_ACCESS_EXPIRES_IN ?? '15m')
+    .setExpirationTime(process.env.JWT_ACCESS_EXPIRES_IN ?? '1d')
     .sign(ACCESS_SECRET);
 }
 

@@ -6,7 +6,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY:     z.string().min(1),
   JWT_SECRET:                    z.string().min(32),
   JWT_REFRESH_SECRET:            z.string().min(32),
-  JWT_ACCESS_EXPIRES_IN:         z.string().default('15m'),
+  JWT_ACCESS_EXPIRES_IN:         z.string().default('1d'),
   JWT_REFRESH_EXPIRES_IN:        z.string().default('30d'),
   NEXT_PUBLIC_ZALO_OA_ID:        z.string().default(''),
   ZALO_OA_ACCESS_TOKEN:          z.string().default(''),

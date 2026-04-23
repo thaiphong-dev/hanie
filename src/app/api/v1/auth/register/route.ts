@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
       {
         data: {
           access_token: accessToken,
-          expires_in: 900,
+           expires_in: 86400, // 1 day
           user: { id: user.id, phone: user.phone, role: user.role, full_name: user.full_name },
         },
         error: null,
