@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Upload, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { CustomSelect } from '@/components/shared/CustomSelect';
 
 interface GalleryImage {
   id: string; image_url: string; alt_text: Record<string, string>;
@@ -139,15 +140,12 @@ export default function GalleryAdminPage() {
 
         {/* Upload controls */}
         <div className="flex items-center gap-2 ml-auto">
-          <select
+          <CustomSelect
             value={uploadCategory}
-            onChange={(e) => setUploadCategory(e.target.value as typeof uploadCategory)}
-            className="border border-bg-secondary rounded-xl px-3 py-1.5 font-body text-sm bg-white text-text-primary focus:outline-none focus:border-accent"
-          >
-            {CATEGORIES.slice(1).map((cat) => (
-              <option key={cat.value} value={cat.value}>{cat.label}</option>
-            ))}
-          </select>
+            onChange={(v) => setUploadCategory(v as typeof uploadCategory)}
+            options={CATEGORIES.slice(1).map((cat) => ({ value: cat.value, label: cat.label }))}
+            className="w-36"
+          />
 
           <button
             onClick={() => fileRef.current?.click()}

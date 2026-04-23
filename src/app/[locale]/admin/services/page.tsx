@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Plus, X, Pencil, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CustomSelect } from '@/components/shared/CustomSelect';
 
 interface Category { id: string; name: string; slug: string; }
 interface Service {
@@ -296,13 +297,16 @@ export default function ServicesPage() {
               {/* Unit */}
               <div>
                 <label className="font-body text-xs text-text-muted block mb-1">{t('service_form_unit')}</label>
-                <select value={form.unit} onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
-                  className="w-full border border-bg-secondary rounded-xl px-3 py-2 font-body text-sm focus:outline-none focus:border-accent bg-white">
-                  <option value="fixed">Cố định</option>
-                  <option value="per_nail">Mỗi móng</option>
-                  <option value="per_piece">Mỗi cái</option>
-                  <option value="per_set">Mỗi bộ</option>
-                </select>
+                <CustomSelect
+                  value={form.unit}
+                  onChange={(v) => setForm((f) => ({ ...f, unit: v }))}
+                  options={[
+                    { value: 'fixed', label: 'Cố định' },
+                    { value: 'per_nail', label: 'Mỗi móng' },
+                    { value: 'per_piece', label: 'Mỗi cái' },
+                    { value: 'per_set', label: 'Mỗi bộ' },
+                  ]}
+                />
               </div>
 
               {/* Active toggle */}

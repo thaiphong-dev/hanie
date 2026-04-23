@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronRight, Zap, User, CalendarDays, Clock } from 'lucide-react';
 import { Link } from '@/lib/navigation';
+import { DatePicker } from '@/components/shared/DatePicker';
 import { getLocaleText, formatDate } from '@/lib/i18n-helpers';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
@@ -358,17 +359,16 @@ function BookingContent() {
                 <label className="font-body text-sm text-text-muted block mb-2">
                   {t('booking.select_date')}
                 </label>
-                <input
-                  type="date"
+                <DatePicker
                   value={selectedDate}
-                  min={new Date(Date.now() + 3600 * 1000).toISOString().slice(0, 10)}
-                  max={new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString().slice(0, 10)}
-                  onChange={(e) => {
-                    setSelectedDate(e.target.value);
+                  minDate={new Date(Date.now() + 3600 * 1000).toISOString().slice(0, 10)}
+                  maxDate={new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString().slice(0, 10)}
+                  onChange={(d) => {
+                    setSelectedDate(d);
                     setSelectedTime('');
                     setSlots([]);
                   }}
-                  className="w-full font-body text-sm border border-border rounded-xl px-4 py-3 bg-bg-primary focus:outline-none focus:border-accent"
+                  placeholder={t('booking.select_date')}
                 />
               </div>
 

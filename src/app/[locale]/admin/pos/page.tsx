@@ -4,12 +4,22 @@ import { useEffect, useState, Suspense, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
-  Plus, Trash2, X, CheckCircle2, UserCheck, Tag, ChevronDown, Search, User,
+  Plus,
+  Trash2,
+  X,
+  CheckCircle2,
+  UserCheck,
+  Tag,
+  ChevronDown,
+  Search,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useAuthStore } from "@/stores/authStore";
 import { Database } from "@/types/database";
+import { CustomSelect } from "@/components/shared/CustomSelect";
+import type { SelectOption } from "@/components/shared/CustomSelect";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -55,7 +65,12 @@ interface CustomerVoucher {
 
 type ServiceRow = Database["public"]["Tables"]["services"]["Row"];
 interface ServiceWithCategory extends ServiceRow {
-  category?: { id: string; name: string; name_i18n: Record<string, string>; slug: string } | null;
+  category?: {
+    id: string;
+    name: string;
+    name_i18n: Record<string, string>;
+    slug: string;
+  } | null;
 }
 type CategoryRow = Database["public"]["Tables"]["categories"]["Row"];
 
@@ -84,84 +99,7 @@ const TIER_COLORS: Record<string, string> = {
   vvip: "bg-amber-50 text-amber-700",
 };
 
-// ── Custom Select ─────────────────────────────────────────────────────────────
-
-interface SelectOption { value: string; label: string; sub?: string }
-
-function CustomSelect({
-  value, onChange, options, placeholder, disabled,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: SelectOption[];
-  placeholder?: string;
-  disabled?: boolean;
-}) {
-  const t = useTranslations("pos");
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const selected = options.find((o) => o.value === value);
-
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setOpen((o) => !o)}
-        className={cn(
-          "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl border font-body text-sm transition-colors",
-          open ? "border-accent bg-white" : "border-bg-secondary bg-white hover:border-accent/50",
-          disabled && "opacity-50 cursor-not-allowed",
-          selected ? "text-text-primary" : "text-text-muted",
-        )}
-      >
-        <span className="truncate">{selected ? selected.label : (placeholder ?? t("select_placeholder"))}</span>
-        <ChevronDown className={cn("w-3.5 h-3.5 shrink-0 text-text-muted transition-transform", open && "rotate-180")} />
-      </button>
-
-      {open && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-border rounded-xl shadow-lg overflow-hidden max-h-56 overflow-y-auto">
-          {placeholder && (
-            <button
-              type="button"
-              onClick={() => { onChange(""); setOpen(false); }}
-              className="w-full text-left px-3 py-2.5 font-body text-sm text-text-muted hover:bg-bg-secondary transition-colors"
-            >
-              {placeholder}
-            </button>
-          )}
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={cn(
-                "w-full text-left px-3 py-2.5 font-body text-sm transition-colors",
-                opt.value === value
-                  ? "bg-accent/10 text-accent font-medium"
-                  : "text-text-primary hover:bg-bg-secondary",
-              )}
-            >
-              <span>{opt.label}</span>
-              {opt.sub && <span className="block text-xs text-text-muted">{opt.sub}</span>}
-            </button>
-          ))}
-          {options.length === 0 && (
-            <p className="px-3 py-3 font-body text-xs text-text-muted text-center">{t("no_options")}</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+// CustomSelect imported from @/components/shared/CustomSelect
 
 // ── Customer Search Combobox ──────────────────────────────────────────────────
 
@@ -188,7 +126,10 @@ function CustomerSearchBox({
 
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -197,10 +138,16 @@ function CustomerSearchBox({
   }, []);
 
   const doSearch = useCallback(async (q: string) => {
-    if (!q.trim()) { setResults([]); setShowNew(false); return; }
+    if (!q.trim()) {
+      setResults([]);
+      setShowNew(false);
+      return;
+    }
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/admin/customers?search=${encodeURIComponent(q.trim())}`);
+      const res = await fetch(
+        `/api/v1/admin/customers?search=${encodeURIComponent(q.trim())}`,
+      );
       const json = (await res.json()) as { data: CustomerInfo[] };
       setResults(json.data ?? []);
       setShowNew((json.data ?? []).length === 0);
@@ -231,7 +178,12 @@ function CustomerSearchBox({
 
   function confirmNew() {
     if (!newName.trim()) return;
-    onSelect({ id: null, full_name: newName.trim(), phone: query, member_tier: "new" });
+    onSelect({
+      id: null,
+      full_name: newName.trim(),
+      phone: query,
+      member_tier: "new",
+    });
     setQuery("");
     setNewName("");
     setResults([]);
@@ -253,12 +205,22 @@ function CustomerSearchBox({
             {customer.full_name || t("walk_in_customer")}
           </p>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="font-body text-xs text-text-muted">{customer.phone}</span>
-            <span className={cn("font-body text-[10px] px-1.5 py-0.5 rounded-full font-semibold uppercase", TIER_COLORS[customer.member_tier] ?? "bg-gray-100 text-gray-600")}>
+            <span className="font-body text-xs text-text-muted">
+              {customer.phone}
+            </span>
+            <span
+              className={cn(
+                "font-body text-[10px] px-1.5 py-0.5 rounded-full font-semibold uppercase",
+                TIER_COLORS[customer.member_tier] ??
+                  "bg-gray-100 text-gray-600",
+              )}
+            >
               {customer.member_tier}
             </span>
             {!customer.id && (
-              <span className="font-body text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">{t("new_customer_badge")}</span>
+              <span className="font-body text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                {t("new_customer_badge")}
+              </span>
             )}
           </div>
         </div>
@@ -285,9 +247,17 @@ function CustomerSearchBox({
           placeholder={placeholder ?? t("search_placeholder")}
           className="flex-1 font-body text-sm text-text-primary bg-transparent outline-none placeholder-text-muted"
         />
-        {loading && <span className="text-xs text-text-muted animate-pulse">...</span>}
+        {loading && (
+          <span className="text-xs text-text-muted animate-pulse">...</span>
+        )}
         {query && !loading && (
-          <button onClick={() => { setQuery(""); setResults([]); setShowNew(false); }}>
+          <button
+            onClick={() => {
+              setQuery("");
+              setResults([]);
+              setShowNew(false);
+            }}
+          >
             <X className="w-3.5 h-3.5 text-text-muted" />
           </button>
         )}
@@ -308,10 +278,17 @@ function CustomerSearchBox({
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-body text-sm text-text-primary font-medium truncate">{c.full_name}</p>
+                <p className="font-body text-sm text-text-primary font-medium truncate">
+                  {c.full_name}
+                </p>
                 <p className="font-body text-xs text-text-muted">{c.phone}</p>
               </div>
-              <span className={cn("font-body text-[10px] px-1.5 py-0.5 rounded-full font-semibold uppercase shrink-0", TIER_COLORS[c.member_tier] ?? "bg-gray-100 text-gray-600")}>
+              <span
+                className={cn(
+                  "font-body text-[10px] px-1.5 py-0.5 rounded-full font-semibold uppercase shrink-0",
+                  TIER_COLORS[c.member_tier] ?? "bg-gray-100 text-gray-600",
+                )}
+              >
                 {c.member_tier}
               </span>
             </button>
@@ -321,7 +298,9 @@ function CustomerSearchBox({
             <div className="border-t border-bg-secondary p-3 space-y-2">
               <div className="flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-text-muted" />
-                <p className="font-body text-xs text-text-muted">{t("no_results_create")}</p>
+                <p className="font-body text-xs text-text-muted">
+                  {t("no_results_create")}
+                </p>
               </div>
               <input
                 type="text"
@@ -350,7 +329,10 @@ function CustomerSearchBox({
 // ── Voucher Picker ────────────────────────────────────────────────────────────
 
 function VoucherPicker({
-  customerVouchers, selectedCvId, subtotal, onSelect,
+  customerVouchers,
+  selectedCvId,
+  subtotal,
+  onSelect,
 }: {
   customerVouchers: CustomerVoucher[];
   selectedCvId: string | null;
@@ -362,13 +344,16 @@ function VoucherPicker({
       {customerVouchers.map((cv) => {
         if (!cv.voucher) return null;
         const v = cv.voucher;
-        const belowMin = v.min_order_amount != null && subtotal < v.min_order_amount;
-        const expired = v.expires_at != null && new Date(v.expires_at) < new Date();
+        const belowMin =
+          v.min_order_amount != null && subtotal < v.min_order_amount;
+        const expired =
+          v.expires_at != null && new Date(v.expires_at) < new Date();
         const disabled = belowMin || expired;
         const isSelected = selectedCvId === cv.id;
-        const discLabel = v.discount_type === "percent"
-          ? `-${v.discount_value}%`
-          : `-${formatVND(v.discount_value)}`;
+        const discLabel =
+          v.discount_type === "percent"
+            ? `-${v.discount_value}%`
+            : `-${formatVND(v.discount_value)}`;
 
         return (
           <button
@@ -381,31 +366,48 @@ function VoucherPicker({
               isSelected
                 ? "border-accent bg-accent/5 shadow-sm"
                 : disabled
-                ? "border-bg-secondary bg-bg-secondary/30 opacity-50 cursor-not-allowed"
-                : "border-bg-secondary hover:border-accent/40 hover:bg-bg-secondary/50",
+                  ? "border-bg-secondary bg-bg-secondary/30 opacity-50 cursor-not-allowed"
+                  : "border-bg-secondary hover:border-accent/40 hover:bg-bg-secondary/50",
             )}
           >
-            <div className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-              isSelected ? "bg-accent text-bg-dark" : "bg-bg-secondary text-text-muted",
-            )}>
+            <div
+              className={cn(
+                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                isSelected
+                  ? "bg-accent text-bg-dark"
+                  : "bg-bg-secondary text-text-muted",
+              )}
+            >
               <Tag className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-body text-sm font-semibold text-text-primary">{v.code}</p>
-              <p className="font-body text-xs text-text-muted truncate">{v.name}</p>
+              <p className="font-body text-sm font-semibold text-text-primary">
+                {v.code}
+              </p>
+              <p className="font-body text-xs text-text-muted truncate">
+                {v.name}
+              </p>
             </div>
             <div className="text-right shrink-0">
-              <p className={cn("font-body text-sm font-bold", isSelected ? "text-accent" : "text-text-secondary")}>
+              <p
+                className={cn(
+                  "font-body text-sm font-bold",
+                  isSelected ? "text-accent" : "text-text-secondary",
+                )}
+              >
                 {discLabel}
               </p>
               {disabled && (
                 <p className="font-body text-[10px] text-red-500">
-                  {expired ? "Hết hạn" : `Min ${formatVND(v.min_order_amount ?? 0)}`}
+                  {expired
+                    ? "Hết hạn"
+                    : `Min ${formatVND(v.min_order_amount ?? 0)}`}
                 </p>
               )}
               {!disabled && v.min_order_amount && (
-                <p className="font-body text-[10px] text-text-muted">min {formatVND(v.min_order_amount)}</p>
+                <p className="font-body text-[10px] text-text-muted">
+                  min {formatVND(v.min_order_amount)}
+                </p>
               )}
             </div>
           </button>
@@ -418,7 +420,12 @@ function VoucherPicker({
 // ── Order Line Row ────────────────────────────────────────────────────────────
 
 function OrderLineRow({
-  line, index, onChange, onRemove, services, categories,
+  line,
+  index,
+  onChange,
+  onRemove,
+  services,
+  categories,
 }: {
   line: OrderLine;
   index: number;
@@ -430,13 +437,16 @@ function OrderLineRow({
   const t = useTranslations("pos");
   const matched = services.find((s) => s.id === line.service_id);
 
-  const catOptions: SelectOption[] = categories.map((c) => ({ value: c.id, label: c.name }));
+  const catOptions: SelectOption[] = categories.map((c) => ({
+    value: c.id,
+    label: c.name,
+  }));
   const svcOptions: SelectOption[] = services
     .filter((s) => !line.category_id || s.category_id === line.category_id)
     .map((s) => ({ value: s.id, label: s.name }));
 
   return (
-    <div className="border border-bg-secondary rounded-xl p-3 space-y-2.5">
+    <div className="border border-bg-secondary rounded-xl p-3 space-y-2.5 w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         {/* Category */}
         <div className="w-full sm:w-40">
@@ -444,11 +454,17 @@ function OrderLineRow({
             value={line.category_id ?? ""}
             placeholder={t("all_categories")}
             options={catOptions}
-            onChange={(v) => onChange(index, { ...line, category_id: v || null, service_id: null })}
+            onChange={(v) =>
+              onChange(index, {
+                ...line,
+                category_id: v || null,
+                service_id: null,
+              })
+            }
           />
         </div>
         {/* Service */}
-        <div className="flex-1 w-full">
+        <div className=" w-full">
           <CustomSelect
             value={line.service_id ?? ""}
             placeholder={t("select_service_placeholder")}
@@ -481,7 +497,12 @@ function OrderLineRow({
             {t("price_label")}
             {matched && (
               <span className="ml-1">
-                ({t("suggested_price", { min: formatVND(matched.price_min), max: formatVND(matched.price_max) })})
+                (
+                {t("suggested_price", {
+                  min: formatVND(matched.price_min),
+                  max: formatVND(matched.price_max),
+                })}
+                )
               </span>
             )}
           </label>
@@ -489,30 +510,46 @@ function OrderLineRow({
             type="number"
             min={0}
             value={line.price}
-            onChange={(e) => onChange(index, { ...line, price: parseInt(e.target.value) || 0 })}
+            onChange={(e) =>
+              onChange(index, { ...line, price: parseInt(e.target.value) || 0 })
+            }
             className={cn(
               "w-full mt-1 border rounded-xl px-3 py-2 font-body text-sm text-text-primary focus:outline-none transition-colors",
-              matched && (line.price < matched.price_min || line.price > matched.price_max)
+              matched &&
+                (line.price < matched.price_min ||
+                  line.price > matched.price_max)
                 ? "border-red-400 bg-red-50 focus:border-red-500"
                 : "border-bg-secondary focus:border-accent",
             )}
           />
-          {matched && (line.price < matched.price_min || line.price > matched.price_max) && (
-            <p className="font-body text-[10px] text-red-500 mt-0.5">
-              {t("price_out_of_range", { min: formatVND(matched.price_min), max: formatVND(matched.price_max) })}
-            </p>
-          )}
+          {matched &&
+            (line.price < matched.price_min ||
+              line.price > matched.price_max) && (
+              <p className="font-body text-[10px] text-red-500 mt-0.5">
+                {t("price_out_of_range", {
+                  min: formatVND(matched.price_min),
+                  max: formatVND(matched.price_max),
+                })}
+              </p>
+            )}
         </div>
         <div>
           <label className="font-body text-xs text-text-muted">
-            {line.unit === "per_nail" ? t("quantity_nails") : t("quantity_label")}
+            {line.unit === "per_nail"
+              ? t("quantity_nails")
+              : t("quantity_label")}
           </label>
           <input
             type="number"
             min={1}
             max={line.unit === "per_nail" ? 10 : undefined}
             value={line.quantity}
-            onChange={(e) => onChange(index, { ...line, quantity: parseInt(e.target.value) || 1 })}
+            onChange={(e) =>
+              onChange(index, {
+                ...line,
+                quantity: parseInt(e.target.value) || 1,
+              })
+            }
             className="w-full mt-1 border border-bg-secondary rounded-xl px-3 py-2 font-body text-sm text-text-primary focus:outline-none focus:border-accent transition-colors"
           />
         </div>
@@ -529,17 +566,33 @@ function OrderLineRow({
 
 // ── Success Screen ────────────────────────────────────────────────────────────
 
-function SuccessScreen({ total, method, onReset }: { total: number; method: PaymentMethod; onReset: () => void }) {
+function SuccessScreen({
+  total,
+  method,
+  onReset,
+}: {
+  total: number;
+  method: PaymentMethod;
+  onReset: () => void;
+}) {
   const t = useTranslations("pos");
-  const labels: Record<PaymentMethod, string> = { cash: t("pay_cash"), transfer: t("pay_transfer"), card: t("pay_card") };
+  const labels: Record<PaymentMethod, string> = {
+    cash: t("pay_cash"),
+    transfer: t("pay_transfer"),
+    card: t("pay_card"),
+  };
   return (
     <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center gap-6 p-8">
       <CheckCircle2 className="w-20 h-20 text-green-500" />
       <div className="text-center">
-        <p className="font-display text-2xl text-text-primary mb-2">{formatVND(total)}</p>
+        <p className="font-display text-2xl text-text-primary mb-2">
+          {formatVND(total)}
+        </p>
         <p className="font-body text-sm text-text-muted">{labels[method]}</p>
       </div>
-      <p className="font-display text-base text-text-secondary text-center">{t("thank_you")}</p>
+      <p className="font-display text-base text-text-secondary text-center">
+        {t("thank_you")}
+      </p>
       <button
         onClick={onReset}
         className="px-8 py-3 rounded-xl bg-accent text-bg-dark font-body text-sm font-medium hover:bg-accent-dark transition-colors"
@@ -554,7 +607,13 @@ function SuccessScreen({ total, method, onReset }: { total: number; method: Paym
 
 export default function POSPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center font-body text-sm text-text-muted animate-pulse">...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-center font-body text-sm text-text-muted animate-pulse">
+          ...
+        </div>
+      }
+    >
       <POSContent />
     </Suspense>
   );
@@ -572,7 +631,9 @@ function POSContent() {
 
   const [lines, setLines] = useState<OrderLine[]>([]);
   const [customer, setCustomer] = useState<CustomerInfo | null>(null);
-  const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>([]);
+  const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>(
+    [],
+  );
   const [vouchersLoading, setVouchersLoading] = useState(false);
   const [selectedCvId, setSelectedCvId] = useState<string | null>(null);
   const [voucherCode, setVoucherCode] = useState("");
@@ -583,7 +644,10 @@ function POSContent() {
 
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState<{ total: number; method: PaymentMethod } | null>(null);
+  const [success, setSuccess] = useState<{
+    total: number;
+    method: PaymentMethod;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Load services + categories
@@ -591,7 +655,12 @@ function POSContent() {
     void fetch("/api/v1/services?active=true")
       .then((r) => r.json())
       .then((j: { data: ServiceWithCategory[] }) => {
-        setServices((j.data ?? []).map((s) => ({ ...s, category_id: s.category?.id ?? s.category_id })));
+        setServices(
+          (j.data ?? []).map((s) => ({
+            ...s,
+            category_id: s.category?.id ?? s.category_id,
+          })),
+        );
       });
     void fetch("/api/v1/categories")
       .then((r) => r.json())
@@ -624,7 +693,9 @@ function POSContent() {
     setVouchersLoading(true);
     void fetch(`/api/v1/vouchers/mine?customer_id=${customer.id}`)
       .then((r) => r.json())
-      .then((j: { data: CustomerVoucher[] }) => setCustomerVouchers(j.data ?? []))
+      .then((j: { data: CustomerVoucher[] }) =>
+        setCustomerVouchers(j.data ?? []),
+      )
       .finally(() => setVouchersLoading(false));
   }, [customer?.id]);
 
@@ -641,10 +712,16 @@ function POSContent() {
         .then((j: { data: CustomerInfo[] }) => {
           const found = j.data?.[0];
           if (found) setCustomer(found);
-          else setCustomer({ id: null, full_name: searchParams.get("customer_name") ?? "", phone: cPhone, member_tier: "new" });
+          else
+            setCustomer({
+              id: null,
+              full_name: searchParams.get("customer_name") ?? "",
+              phone: cPhone,
+              member_tier: "new",
+            });
         });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const subtotal = lines.reduce((s, l) => s + l.price * l.quantity, 0);
@@ -655,7 +732,7 @@ function POSContent() {
     const cv = customerVouchers.find((v) => v.id === selectedCvId);
     if (!cv?.voucher) return;
     if (cv.voucher.discount_type === "percent") {
-      setDiscount(Math.round(subtotal * cv.voucher.discount_value / 100));
+      setDiscount(Math.round((subtotal * cv.voucher.discount_value) / 100));
     }
   }, [subtotal, selectedCvId, customerVouchers]);
 
@@ -663,19 +740,34 @@ function POSContent() {
 
   function selectVoucher(cvId: string | null) {
     setSelectedCvId(cvId);
-    if (!cvId) { setDiscount(0); setVoucherCode(""); return; }
+    if (!cvId) {
+      setDiscount(0);
+      setVoucherCode("");
+      return;
+    }
     const cv = customerVouchers.find((v) => v.id === cvId);
     if (!cv?.voucher) return;
     setVoucherCode(cv.voucher.code);
     if (cv.voucher.discount_type === "percent") {
-      setDiscount(Math.round(subtotal * cv.voucher.discount_value / 100));
+      setDiscount(Math.round((subtotal * cv.voucher.discount_value) / 100));
     } else {
       setDiscount(cv.voucher.discount_value);
     }
   }
 
   function addLine() {
-    setLines((p) => [...p, { category_id: null, service_id: null, service_name: "", price: 0, quantity: 1, unit: "fixed", note: "" }]);
+    setLines((p) => [
+      ...p,
+      {
+        category_id: null,
+        service_id: null,
+        service_name: "",
+        price: 0,
+        quantity: 1,
+        unit: "fixed",
+        note: "",
+      },
+    ]);
   }
   function updateLine(i: number, l: OrderLine) {
     setLines((p) => p.map((item, idx) => (idx === i ? l : item)));
@@ -685,7 +777,10 @@ function POSContent() {
   }
 
   async function submit() {
-    if (lines.length === 0) { setError(t("no_services_error")); return; }
+    if (lines.length === 0) {
+      setError(t("no_services_error"));
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -707,8 +802,12 @@ function POSContent() {
           voucher_code: voucherCode || undefined,
         }),
       });
-      const json = (await res.json()) as { data: { total: number } | null; error: { message: string } | null };
-      if (!res.ok || json.error) throw new Error(json.error?.message ?? "Error");
+      const json = (await res.json()) as {
+        data: { total: number } | null;
+        error: { message: string } | null;
+      };
+      if (!res.ok || json.error)
+        throw new Error(json.error?.message ?? "Error");
       setSuccess({ total: json.data?.total ?? total, method });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
@@ -729,7 +828,14 @@ function POSContent() {
     setBookingId(null);
   }
 
-  if (success) return <SuccessScreen total={success.total} method={success.method} onReset={reset} />;
+  if (success)
+    return (
+      <SuccessScreen
+        total={success.total}
+        method={success.method}
+        onReset={reset}
+      />
+    );
 
   const staffOptions: SelectOption[] = allStaff.map((s) => ({
     value: s.id,
@@ -744,7 +850,9 @@ function POSContent() {
 
         {/* Customer */}
         <div className="bg-white rounded-2xl border border-bg-secondary p-4 space-y-3">
-          <p className="font-body text-xs font-semibold text-text-muted uppercase tracking-wide">{t("section_customer")}</p>
+          <p className="font-body text-xs font-semibold text-text-muted uppercase tracking-wide">
+            {t("section_customer")}
+          </p>
           <CustomerSearchBox
             customer={customer}
             onSelect={setCustomer}
@@ -755,7 +863,9 @@ function POSContent() {
 
         {/* Services */}
         <div className="bg-white rounded-2xl border border-bg-secondary p-4 space-y-3">
-          <p className="font-body text-xs font-semibold text-text-muted uppercase tracking-wide">{t("section_services")}</p>
+          <p className="font-body text-xs font-semibold text-text-muted uppercase tracking-wide">
+            {t("section_services")}
+          </p>
           {lines.map((line, i) => (
             <OrderLineRow
               key={i}
@@ -780,20 +890,28 @@ function POSContent() {
         <div className="bg-white rounded-2xl border border-bg-secondary p-4 space-y-3">
           <div className="flex items-center gap-2">
             <Tag className="w-3.5 h-3.5 text-text-muted" />
-            <p className="font-body text-xs font-semibold text-text-muted uppercase tracking-wide">Voucher</p>
+            <p className="font-body text-xs font-semibold text-text-muted uppercase tracking-wide">
+              Voucher
+            </p>
             {selectedCvId && discount > 0 && (
-              <span className="ml-auto font-body text-xs text-green-600 font-semibold">-{formatVND(discount)}</span>
+              <span className="ml-auto font-body text-xs text-green-600 font-semibold">
+                -{formatVND(discount)}
+              </span>
             )}
           </div>
           {!customer?.id ? (
-            <p className="font-body text-xs text-text-muted italic">{t("select_customer_for_voucher")}</p>
+            <p className="font-body text-xs text-text-muted italic">
+              {t("select_customer_for_voucher")}
+            </p>
           ) : vouchersLoading ? (
             <div className="flex gap-2 items-center py-1">
               <div className="h-10 bg-bg-secondary rounded-xl flex-1 animate-pulse" />
               <div className="h-10 bg-bg-secondary rounded-xl w-24 animate-pulse" />
             </div>
           ) : customerVouchers.length === 0 ? (
-            <p className="font-body text-xs text-text-muted italic">{t("no_vouchers")}</p>
+            <p className="font-body text-xs text-text-muted italic">
+              {t("no_vouchers")}
+            </p>
           ) : (
             <VoucherPicker
               customerVouchers={customerVouchers}
@@ -806,7 +924,9 @@ function POSContent() {
 
         {/* Staff */}
         <div className="bg-white rounded-2xl border border-bg-secondary p-4 space-y-3">
-          <p className="font-body text-xs font-semibold text-text-muted uppercase tracking-wide">{t("section_staff")}</p>
+          <p className="font-body text-xs font-semibold text-text-muted uppercase tracking-wide">
+            {t("section_staff")}
+          </p>
           {user?.role === "admin" ? (
             <CustomSelect
               value={assignedStaffId ?? ""}
@@ -817,11 +937,16 @@ function POSContent() {
           ) : (
             <div className="flex items-center gap-2 px-3 py-2 bg-bg-secondary rounded-xl">
               <UserCheck className="w-4 h-4 text-accent" />
-              <span className="font-body text-sm text-text-primary">{user?.full_name || user?.phone}</span>
+              <span className="font-body text-sm text-text-primary">
+                {user?.full_name || user?.phone}
+              </span>
             </div>
           )}
           <p className="font-body text-[10px] text-text-muted italic">
-            * {user?.role === "admin" ? t("commission_note_admin") : t("commission_note_staff")}
+            *{" "}
+            {user?.role === "admin"
+              ? t("commission_note_admin")
+              : t("commission_note_staff")}
           </p>
         </div>
       </div>
@@ -830,20 +955,33 @@ function POSContent() {
       <div className="lg:w-72 xl:w-80 shrink-0">
         <div className="bg-white rounded-2xl border border-bg-secondary p-5 space-y-4 sticky top-4">
           <div className="text-center border-b border-bg-secondary pb-4">
-            <p className="font-display text-base text-text-primary">Hanie Studio</p>
-            <p className="font-body text-xs text-text-muted">55 Nguyễn Nhạc, Quy Nhơn</p>
-            <p className="font-body text-xs text-text-muted mt-1">{format(new Date(), "dd/MM/yyyy HH:mm")}</p>
-            {customer && <p className="font-body text-xs text-text-secondary mt-1">{customer.full_name}</p>}
+            <p className="font-display text-base text-text-primary">
+              Hanie Studio
+            </p>
+            <p className="font-body text-xs text-text-muted">
+              55 Nguyễn Nhạc, Quy Nhơn
+            </p>
+            <p className="font-body text-xs text-text-muted mt-1">
+              {format(new Date(), "dd/MM/yyyy HH:mm")}
+            </p>
+            {customer && (
+              <p className="font-body text-xs text-text-secondary mt-1">
+                {customer.full_name}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2 min-h-[60px]">
             {lines.length === 0 && (
-              <p className="font-body text-xs text-text-muted text-center py-4">{t("no_service_lines")}</p>
+              <p className="font-body text-xs text-text-muted text-center py-4">
+                {t("no_service_lines")}
+              </p>
             )}
             {lines.map((l, i) => (
               <div key={i} className="flex items-center justify-between gap-2">
                 <span className="font-body text-sm text-text-primary truncate">
-                  {l.service_name || t("service_fallback")}{l.quantity > 1 ? ` ×${l.quantity}` : ""}
+                  {l.service_name || t("service_fallback")}
+                  {l.quantity > 1 ? ` ×${l.quantity}` : ""}
                 </span>
                 <span className="font-body text-sm text-text-secondary shrink-0">
                   {formatVND(l.price * l.quantity)}
@@ -854,15 +992,18 @@ function POSContent() {
 
           <div className="border-t border-bg-secondary pt-3 space-y-1">
             <div className="flex justify-between font-body text-sm text-text-secondary">
-              <span>{t("subtotal")}</span><span>{formatVND(subtotal)}</span>
+              <span>{t("subtotal")}</span>
+              <span>{formatVND(subtotal)}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between font-body text-sm text-green-600">
-                <span>{t("discount")}</span><span>-{formatVND(discount)}</span>
+                <span>{t("discount")}</span>
+                <span>-{formatVND(discount)}</span>
               </div>
             )}
             <div className="flex justify-between font-display text-lg text-text-primary pt-1">
-              <span>{t("total")}</span><span>{formatVND(total)}</span>
+              <span>{t("total")}</span>
+              <span>{formatVND(total)}</span>
             </div>
           </div>
 
@@ -878,12 +1019,20 @@ function POSContent() {
                     : "border-bg-secondary text-text-secondary hover:bg-bg-secondary",
                 )}
               >
-                {m === "cash" ? t("pay_cash") : m === "transfer" ? t("pay_transfer") : t("pay_card")}
+                {m === "cash"
+                  ? t("pay_cash")
+                  : m === "transfer"
+                    ? t("pay_transfer")
+                    : t("pay_card")}
               </button>
             ))}
           </div>
 
-          {error && <p className="font-body text-xs text-red-600 text-center">{error}</p>}
+          {error && (
+            <p className="font-body text-xs text-red-600 text-center">
+              {error}
+            </p>
+          )}
 
           <button
             onClick={() => void submit()}

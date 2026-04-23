@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { X, Clock, User, Phone, Scissors, UserCheck, ChevronDown } from "lucide-react";
+import { X, Clock, User, Phone, Scissors, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/shared/DatePicker";
+import { CustomSelect } from "@/components/shared/CustomSelect";
 import { StaffUser } from "./page";
 
 interface BookingCategory {
@@ -159,25 +160,17 @@ export function AdminBookingModal({ isOpen, onClose, onSuccess, staffList }: Adm
               />
             </div>
 
-            {/* Time — custom styled select */}
+            {/* Time */}
             <div className="space-y-1.5">
               <label className="flex items-center gap-2 font-body text-xs text-text-muted uppercase tracking-wider">
                 <Clock className="w-3.5 h-3.5" />
                 {t("time")}
               </label>
-              <div className="relative">
-                <select
-                  required
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 rounded-xl border border-bg-secondary bg-white font-body text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all pr-9"
-                >
-                  {timeOptions.map(time => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-              </div>
+              <CustomSelect
+                value={selectedTime}
+                onChange={setSelectedTime}
+                options={timeOptions.map(slot => ({ value: slot, label: slot }))}
+              />
             </div>
           </div>
 
@@ -226,16 +219,14 @@ export function AdminBookingModal({ isOpen, onClose, onSuccess, staffList }: Adm
               <UserCheck className="w-3.5 h-3.5" />
               {t("booking_staff")}
             </label>
-            <select
+            <CustomSelect
               value={selectedStaffId}
-              onChange={(e) => setSelectedStaffId(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-bg-secondary bg-white font-body text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all appearance-none"
-            >
-              <option value="">-- {t("select_staff")} (Any) --</option>
-              {staffList.map(s => (
-                <option key={s.id} value={s.id}>{s.full_name}</option>
-              ))}
-            </select>
+              onChange={setSelectedStaffId}
+              options={[
+                { value: '', label: `-- ${t("select_staff")} (Any) --` },
+                ...staffList.map(s => ({ value: s.id, label: s.full_name })),
+              ]}
+            />
           </div>
 
           {/* Parallel Service Toggle */}

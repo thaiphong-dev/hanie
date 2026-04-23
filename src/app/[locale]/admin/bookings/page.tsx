@@ -8,7 +8,8 @@ import {
 } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AdminBookingModal } from './AdminBookingModal';
-import { ChevronLeft, ChevronRight, Plus, X, Check, PlayCircle,  Receipt } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Check, PlayCircle, Receipt } from 'lucide-react';
+import { CustomSelect } from '@/components/shared/CustomSelect';
 import { cn } from '@/lib/utils';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -489,16 +490,15 @@ export default function BookingsPage() {
           {t('today')}
         </button>
 
-        <select
+        <CustomSelect
           value={filterStaffId}
-          onChange={(e) => setFilterStaffId(e.target.value)}
-          className="px-3 py-1.5 rounded-lg border border-bg-secondary font-body text-sm text-text-primary bg-white"
-        >
-          <option value="">{t('all_staff')}</option>
-          {staffList.map((s) => (
-            <option key={s.id} value={s.id}>{s.full_name}</option>
-          ))}
-        </select>
+          onChange={setFilterStaffId}
+          options={[
+            { value: '', label: t('all_staff') },
+            ...staffList.map((s) => ({ value: s.id, label: s.full_name })),
+          ]}
+          className="w-44"
+        />
 
         <button
           onClick={() => setIsNewBookingModalOpen(true)}
