@@ -43,7 +43,7 @@
     "hero_eyebrow": "Hanie in Quy Nhon · 뷰티 스튜디오",
     "hero_title": "매일 아침\n아름답게 눈뜨세요",
     "hero_title_accent": "아름답게 눈뜨세요",
-    "hero_sub": "속눈썹 연장 · 눈썹 · 헤어 · 네일\n베트남 귀닌 응우옌냑 55번지",
+    "hero_sub": "속눈썹 연장 · 눈썹 · 헤어 · 네일\n베트남 자라이성 귀년남 응우옌딘투 09A번지",
     "services_eyebrow": "서비스",
     "services_title": "프리미엄 뷰티\n경험",
     "services_desc": "숙련된 전문가 팀과 함께 최고의 뷰티 서비스를 제공합니다.",
@@ -62,7 +62,7 @@
     "open_hours_title": "영업 시간",
     "open_hours_value": "매일 08:00 – 20:00",
     "address_title": "주소",
-    "address_value": "베트남 귀닌 응우옌냑 55번지",
+    "address_value": "베트남 자라이성 귀년남 응우옌딘투 09A번지",
     "cta_book": "지금 예약",
     "cta_services": "서비스 보기"
   },
@@ -137,11 +137,11 @@
     "title": "Hanie Studio 찾아오기",
     "eyebrow": "스튜디오 위치",
     "address_label": "주소",
-    "address_value": "55 Nguyen Nhac, Quy Nhon",
+    "address_value": "베트남 자라이성 귀년남 응우옌딘투 09A번지",
     "hours_label": "영업시간",
     "hours_value": "월 – 일: 08:00 – 20:00",
     "phone_label": "연락처",
-    "phone_value": "0901234567",
+    "phone_value": "0967273066",
     "call_btn": "전화하기",
     "zalo_btn": "Zalo로 메시지",
     "maps_btn": "Google Maps 열기",
@@ -438,12 +438,12 @@
     "login_hint": "로그인하여 예약 기록 확인 및 포인트 적립"
   },
   "footer": {
-    "tagline": "귀닌의 뷰티 스튜디오. 속눈썹 · 눈썹 · 헤어워시 · 네일.",
+    "tagline": "자라이의 뷰티 스튜디오. 속눈썹 · 눈썹 · 헤어워시 · 네일.",
     "services": "서비스",
     "info": "정보",
     "quick_book": "빠른 예약",
-    "address": "베트남 귀닌 응우옌냑 55번지",
-    "phone": "0901 234 567",
+    "address": "베트남 자라이성 귀년남 응우옌딘투 09A번지",
+    "phone": "0967 273 066",
     "hours": "매일 08:00 – 20:00"
   }
 }

@@ -43,7 +43,7 @@
     "hero_eyebrow": "Hanie in Quy Nhon · Beauty Studio",
     "hero_title": "Wake up beautiful\nevery morning",
     "hero_title_accent": "every morning",
-    "hero_sub": "Lash Extensions · Brows · Hair Wash · Nail\n55 Nguyen Nhac, Quy Nhon",
+    "hero_sub": "Lash Extensions · Brows · Hair Wash · Nail\n09A Nguyen Dinh Thu, Quy Nhon Nam, Gia Lai",
     "services_eyebrow": "SERVICES",
     "services_title": "Premium beauty\nexperiences",
     "services_desc": "We deliver professional beauty services with a team of skilled technicians.",
@@ -62,7 +62,7 @@
     "open_hours_title": "Opening Hours",
     "open_hours_value": "08:00 – 20:00 daily",
     "address_title": "Address",
-    "address_value": "55 Nguyen Nhac, Quy Nhon",
+    "address_value": "09A Nguyen Dinh Thu, Quy Nhon Nam, Gia Lai",
     "cta_book": "Book Now",
     "cta_services": "View Services"
   },
@@ -137,11 +137,11 @@
     "title": "Find Hanie Studio",
     "eyebrow": "STUDIO LOCATION",
     "address_label": "Address",
-    "address_value": "55 Nguyen Nhac, Quy Nhon",
+    "address_value": "09A Nguyen Dinh Thu, Quy Nhon Nam, Gia Lai",
     "hours_label": "Hours",
     "hours_value": "Mon – Sun: 08:00 – 20:00",
     "phone_label": "Contact",
-    "phone_value": "0901234567",
+    "phone_value": "0967273066",
     "call_btn": "Call now",
     "zalo_btn": "Message on Zalo",
     "maps_btn": "Open Google Maps",
@@ -480,12 +480,12 @@
     "login_hint": "Login to view booking history and earn points"
   },
   "footer": {
-    "tagline": "Beauty studio in Quy Nhon. Lashes · Eyebrows · Hair Wash · Nail.",
+    "tagline": "Beauty studio in Gia Lai. Lashes · Eyebrows · Hair Wash · Nail.",
     "services": "Services",
     "info": "Information",
     "quick_book": "Quick Book",
-    "address": "55 Nguyen Nhac, Quy Nhon",
-    "phone": "0901 234 567",
+    "address": "09A Nguyen Dinh Thu, Quy Nhon Nam, Gia Lai",
+    "phone": "0967 273 066",
     "hours": "08:00 – 20:00 daily"
   }
 }

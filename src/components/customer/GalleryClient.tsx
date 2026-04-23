@@ -1,33 +1,33 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { 
-  Navigation, 
-  Pagination, 
-  Autoplay, 
-  EffectCoverflow, 
-  EffectFade 
-} from 'swiper/modules';
-import { ZoomIn, ArrowRight } from 'lucide-react';
-import { Link } from '@/lib/navigation';
-import { getLocaleText } from '@/lib/i18n-helpers';
-import { cn } from '@/lib/utils';
-import { ImageWithSkeleton } from '@/components/shared/ImageWithSkeleton';
-import { GalleryLightbox } from '@/components/shared/GalleryLightbox';
-import type { Database } from '@/types/database';
+import { useState, useMemo, useCallback } from "react";
+import { useTranslations } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion";
+import { Swiper, SwiperSlide } from "swiper/react";
+import {
+  Navigation,
+  Pagination,
+  Autoplay,
+  EffectCoverflow,
+  EffectFade,
+} from "swiper/modules";
+import { ZoomIn, ArrowRight } from "lucide-react";
+import { Link } from "@/lib/navigation";
+import { getLocaleText } from "@/lib/i18n-helpers";
+import { cn } from "@/lib/utils";
+import { ImageWithSkeleton } from "@/components/shared/ImageWithSkeleton";
+import { GalleryLightbox } from "@/components/shared/GalleryLightbox";
+import type { Database } from "@/types/database";
 
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-coverflow';
-import 'swiper/css/effect-fade';
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/effect-coverflow";
+import "swiper/css/effect-fade";
 
-type GalleryImage = Database['public']['Tables']['gallery_images']['Row'];
-type CategoryFilter = 'all' | 'nail' | 'mi' | 'long_may' | 'goi_dau' | 'studio';
+type GalleryImage = Database["public"]["Tables"]["gallery_images"]["Row"];
+type CategoryFilter = "all" | "nail" | "mi" | "long_may" | "goi_dau" | "studio";
 
 interface GalleryClientProps {
   initialImages: GalleryImage[];
@@ -35,45 +35,48 @@ interface GalleryClientProps {
 }
 
 export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
-  const t = useTranslations('gallery');
-  const [activeTab, setActiveTab] = useState<CategoryFilter>('all');
+  const t = useTranslations("gallery");
+  const [activeTab, setActiveTab] = useState<CategoryFilter>("all");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const filteredImages = useMemo(() => {
-    if (activeTab === 'all') return initialImages;
-    return initialImages.filter(img => img.category === activeTab);
+    if (activeTab === "all") return initialImages;
+    return initialImages.filter((img) => img.category === activeTab);
   }, [initialImages, activeTab]);
 
   const featuredImages = useMemo(() => {
     return initialImages.slice(0, 8); // Top 8 images for the coverflow
   }, [initialImages]);
 
-  const openLightbox = useCallback((id: string) => {
-    const idx = filteredImages.findIndex(img => img.id === id);
-    if (idx !== -1) setLightboxIndex(idx);
-  }, [filteredImages]);
+  const openLightbox = useCallback(
+    (id: string) => {
+      const idx = filteredImages.findIndex((img) => img.id === id);
+      if (idx !== -1) setLightboxIndex(idx);
+    },
+    [filteredImages],
+  );
 
   const tabs: { id: CategoryFilter; label: string }[] = [
-    { id: 'all', label: t('tab_all') },
-    { id: 'nail', label: t('filter_nail') },
-    { id: 'mi', label: t('filter_lash') },
-    { id: 'long_may', label: t('filter_brow') },
-    { id: 'goi_dau', label: t('filter_hair_wash') },
-    { id: 'studio', label: t('filter_studio') },
+    { id: "all", label: t("tab_all") },
+    { id: "nail", label: t("filter_nail") },
+    { id: "mi", label: t("filter_lash") },
+    { id: "long_may", label: t("filter_brow") },
+    { id: "goi_dau", label: t("filter_hair_wash") },
+    { id: "studio", label: t("filter_studio") },
   ];
 
   return (
     <div className="flex flex-col gap-16 md:gap-24 pb-20">
       {/* Featured Carousel - Only on 'all' tab or as a top section */}
-      {activeTab === 'all' && featuredImages.length > 0 && (
+      {featuredImages.length > 0 && (
         <section className="px-4 overflow-hidden">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-10 md:mb-16">
               <span className="font-body text-xs font-semibold tracking-[0.2em] text-accent uppercase mb-3 block">
-                {t('featured_title')}
+                {t("featured_title")}
               </span>
               <h2 className="font-display text-3xl md:text-5xl text-text-primary">
-                {t('featured_subtitle')}
+                {t("featured_subtitle")}
               </h2>
             </div>
 
@@ -100,14 +103,19 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
               className="featured-swiper pb-12 !px-4"
             >
               {featuredImages.map((img) => (
-                <SwiperSlide key={img.id} className="max-w-[300px] md:max-w-[450px]">
-                  <div 
+                <SwiperSlide
+                  key={img.id}
+                  className="max-w-[300px] md:max-w-[450px]"
+                >
+                  <div
                     className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl group cursor-pointer"
                     onClick={() => openLightbox(img.id)}
                   >
                     <ImageWithSkeleton
                       src={img.image_url}
-                      alt={getLocaleText(img.alt_text, locale) || 'Featured work'}
+                      alt={
+                        getLocaleText(img.alt_text, locale) || "Featured work"
+                      }
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
                       sizes="(max-width: 768px) 300px, 450px"
@@ -117,7 +125,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
                         {getLocaleText(img.alt_text, locale)}
                       </p>
                       <p className="text-accent-light font-body text-xs uppercase tracking-widest">
-                        {img.category.replace('_', ' ')}
+                        {img.category.replace("_", " ")}
                       </p>
                     </div>
                   </div>
@@ -138,7 +146,9 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
                   "relative h-full flex items-center font-body text-sm font-medium tracking-widest uppercase transition-colors whitespace-nowrap",
-                  activeTab === tab.id ? "text-text-primary" : "text-text-muted hover:text-text-primary"
+                  activeTab === tab.id
+                    ? "text-text-primary"
+                    : "text-text-muted hover:text-text-primary",
                 )}
               >
                 {tab.label}
@@ -146,7 +156,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
                   <motion.div
                     layoutId="activeTab"
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
               </button>
@@ -169,9 +179,11 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
             >
               {filteredImages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
-                  <p className="font-display text-2xl text-text-muted mb-4">{t('empty')}</p>
+                  <p className="font-display text-2xl text-text-muted mb-4">
+                    {t("empty")}
+                  </p>
                   <Link href="/booking" className="btn-ghost">
-                    {t('cta_button')}
+                    {t("cta_button")}
                   </Link>
                 </div>
               ) : (
@@ -194,16 +206,16 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
             Hanie Studio
           </span>
           <h2 className="font-display text-3xl md:text-5xl mb-8 leading-tight">
-            {t('cta_title')}
+            {t("cta_title")}
           </h2>
           <p className="font-body text-text-inverse/70 max-w-xl mx-auto mb-12 text-sm md:text-base leading-relaxed">
-            {t('cta_desc')}
+            {t("cta_desc")}
           </p>
           <Link
             href="/booking"
             className="inline-flex items-center gap-3 px-10 py-4 bg-accent hover:bg-accent-dark text-text-inverse rounded-full font-body text-sm font-semibold tracking-widest uppercase transition-all hover:scale-105"
           >
-            {t('cta_button')}
+            {t("cta_button")}
             <ArrowRight size={18} />
           </Link>
         </div>
@@ -223,13 +235,13 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
   function renderTabContent() {
     // Dynamic layouts based on category
     switch (activeTab) {
-      case 'nail':
+      case "nail":
         return renderNailLayout();
-      case 'mi':
+      case "mi":
         return renderLashLayout();
-      case 'long_may':
+      case "long_may":
         return renderMasonryLayout();
-      case 'studio':
+      case "studio":
         return renderStudioLayout();
       default:
         return renderMasonryLayout();
@@ -252,7 +264,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
           >
             {filteredImages.map((img) => (
               <SwiperSlide key={`v-${img.id}`}>
-                <div 
+                <div
                   className="relative h-full rounded-2xl overflow-hidden group cursor-pointer"
                   onClick={() => openLightbox(img.id)}
                 >
@@ -281,7 +293,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
           >
             {[...filteredImages].reverse().map((img) => (
               <SwiperSlide key={`f-${img.id}`}>
-                <div 
+                <div
                   className="relative h-full rounded-2xl overflow-hidden group cursor-pointer"
                   onClick={() => openLightbox(img.id)}
                 >
@@ -293,7 +305,9 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
                     sizes="(max-width: 1024px) 100vw, 60vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/80 via-transparent to-transparent flex flex-col justify-end p-10">
-                    <p className="font-display text-2xl text-text-inverse mb-2">Beautiful Nail Design</p>
+                    <p className="font-display text-2xl text-text-inverse mb-2">
+                      Beautiful Nail Design
+                    </p>
                     <div className="w-12 h-px bg-accent" />
                   </div>
                 </div>
@@ -327,7 +341,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
           >
             {filteredImages.map((img) => (
               <SwiperSlide key={`l-${img.id}`}>
-                <div 
+                <div
                   className="relative h-full cursor-pointer"
                   onClick={() => openLightbox(img.id)}
                 >
@@ -346,7 +360,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
           {filteredImages.slice(0, 2).map((img) => (
-            <div 
+            <div
               key={`ls-${img.id}`}
               className="relative h-[240px] md:h-full lg:h-[285px] rounded-2xl overflow-hidden group cursor-pointer"
               onClick={() => openLightbox(img.id)}
@@ -370,7 +384,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filteredImages.map((img) => (
-          <div 
+          <div
             key={img.id}
             className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer shadow-lg"
             onClick={() => openLightbox(img.id)}

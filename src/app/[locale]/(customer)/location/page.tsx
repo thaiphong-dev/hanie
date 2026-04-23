@@ -1,38 +1,38 @@
-import { getTranslations, getLocale } from 'next-intl/server';
-import { Phone, MapPin, Clock, ExternalLink } from 'lucide-react';
-import { ImageWithSkeleton } from '@/components/shared/ImageWithSkeleton';
-import { Link } from '@/lib/navigation';
-import type { Metadata } from 'next';
+import { getTranslations, getLocale } from "next-intl/server";
+import { Phone, MapPin, Clock, ExternalLink } from "lucide-react";
+import { ImageWithSkeleton } from "@/components/shared/ImageWithSkeleton";
+import { Link } from "@/lib/navigation";
+import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const titles: Record<string, string> = {
-    vi: 'Địa chỉ & Bản đồ | Hanie Studio Quy Nhơn',
-    en: 'Location & Map | Hanie Studio Quy Nhon',
-    ko: '위치 & 지도 | Hanie Studio Quy Nhon',
+    vi: "Địa chỉ & Bản đồ | Hanie Studio Quy Nhơn",
+    en: "Location & Map | Hanie Studio Quy Nhon",
+    ko: "위치 & 지도 | Hanie Studio Quy Nhon",
   };
-  return { title: titles[locale] ?? titles['vi'] };
+  return { title: titles[locale] ?? titles["vi"] };
 }
 
 export default async function LocationPage() {
   const t = await getTranslations();
 
-  const PHONE_NUMBER = '0901234567';
-  const ZALO_OA_ID = process.env.NEXT_PUBLIC_ZALO_OA_ID ?? '';
+  const PHONE_NUMBER = "0967273066";
+  const ZALO_OA_ID = process.env.NEXT_PUBLIC_ZALO_OA_ID ?? "";
   const GOOGLE_MAPS_URL =
-    'https://maps.google.com/?q=55+Nguy%E1%BB%85n+Nh%E1%BA%A1c+Quy+Nh%C6%A1n';
+    "https://maps.google.com/?q=09A+Nguy%E1%BB%85n+%C4%90%C3%ACnh+Th%E1%BB%A5%2C+Quy+Nh%C6%A1n+Nam%2C+Gia+Lai";
   const GOOGLE_MAPS_EMBED =
-    'https://maps.google.com/maps?q=55+Nguy%E1%BB%85n+Nh%E1%BA%A1c,+Quy+Nh%C6%A1n&output=embed';
+    "https://maps.google.com/maps?q=09A+Nguy%E1%BB%85n+%C4%90%C3%ACnh+Th%E1%BB%A5%2C+Quy+Nh%C6%A1n+Nam%2C+Gia+Lai&output=embed";
 
   return (
     <div className="min-h-screen bg-bg-primary">
       {/* Header */}
       <div className="pt-24 pb-10 px-4 text-center bg-bg-secondary">
         <p className="font-body text-xs tracking-widest uppercase text-accent mb-3">
-          {t('location.eyebrow')}
+          {t("location.eyebrow")}
         </p>
         <h1 className="font-display text-3xl md:text-4xl text-text-primary">
-          {t('location.title')}
+          {t("location.title")}
         </h1>
       </div>
 
@@ -48,10 +48,10 @@ export default async function LocationPage() {
               </div>
               <div>
                 <p className="font-body text-xs uppercase tracking-wider text-text-muted mb-1">
-                  {t('location.address_label')}
+                  {t("location.address_label")}
                 </p>
                 <p className="font-display text-lg text-text-primary">
-                  {t('location.address_value')}
+                  {t("location.address_value")}
                 </p>
               </div>
             </div>
@@ -63,10 +63,10 @@ export default async function LocationPage() {
               </div>
               <div>
                 <p className="font-body text-xs uppercase tracking-wider text-text-muted mb-1">
-                  {t('location.hours_label')}
+                  {t("location.hours_label")}
                 </p>
                 <p className="font-display text-lg text-text-primary">
-                  {t('location.hours_value')}
+                  {t("location.hours_value")}
                 </p>
               </div>
             </div>
@@ -78,10 +78,10 @@ export default async function LocationPage() {
               </div>
               <div>
                 <p className="font-body text-xs uppercase tracking-wider text-text-muted mb-1">
-                  {t('location.phone_label')}
+                  {t("location.phone_label")}
                 </p>
                 <p className="font-display text-lg text-text-primary">
-                  {t('location.phone_value')}
+                  {t("location.phone_value")}
                 </p>
               </div>
             </div>
@@ -95,7 +95,7 @@ export default async function LocationPage() {
                   bg-accent hover:bg-accent-dark text-text-inverse transition-colors"
               >
                 <Phone size={16} />
-                {t('location.call_btn')}
+                {t("location.call_btn")}
               </a>
 
               {ZALO_OA_ID && (
@@ -107,7 +107,7 @@ export default async function LocationPage() {
                     tracking-widest uppercase px-6 py-3.5 rounded-full border border-accent
                     text-accent hover:bg-accent hover:text-text-inverse transition-colors"
                 >
-                  {t('location.zalo_btn')}
+                  {t("location.zalo_btn")}
                 </a>
               )}
 
@@ -119,7 +119,7 @@ export default async function LocationPage() {
                   text-text-muted hover:text-text-primary transition-colors py-2"
               >
                 <ExternalLink size={14} />
-                {t('location.maps_btn')}
+                {t("location.maps_btn")}
               </a>
 
               <Link
@@ -128,7 +128,7 @@ export default async function LocationPage() {
                   tracking-widest uppercase px-6 py-3.5 rounded-full
                   bg-bg-secondary hover:bg-bg-secondary/80 text-text-primary transition-colors border border-border"
               >
-                {t('common.book_now')}
+                {t("common.book_now")}
               </Link>
             </div>
           </div>
@@ -151,11 +151,14 @@ export default async function LocationPage() {
         {/* Studio photos */}
         <div className="mt-16">
           <h2 className="font-display text-2xl text-text-primary mb-6">
-            {t('location.studio_photos')}
+            {t("location.studio_photos")}
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+              <div
+                key={i}
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden"
+              >
                 <ImageWithSkeleton
                   src={null}
                   alt={`Studio ${i + 1}`}
