@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   UserCheck,
   Tag,
-  ChevronDown,
   Search,
   User,
 } from "lucide-react";
