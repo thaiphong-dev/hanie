@@ -98,9 +98,19 @@
     "slot_unavailable": "No slots",
     "notes_placeholder": "Additional notes (optional)",
     "success_title": "Booking confirmed!",
-    "success_sub": "We will confirm via Zalo within a few minutes.",
+    "success_sub": "Your appointment has been received. We will contact you to confirm.",
     "your_name": "Your name",
-    "your_phone": "Phone number"
+    "your_phone": "Phone number",
+    "summary_service": "Service",
+    "summary_date": "Date",
+    "summary_time": "Time",
+    "summary_duration": "~{duration} min",
+    "summary_name": "Customer",
+    "summary_phone": "Phone",
+    "summary_notes": "Notes",
+    "summary_copy": "Copy details",
+    "summary_copied": "Copied!",
+    "summary_calendar": "Add to Google Calendar"
   },
   "booking_status": {
     "pending": "Pending",

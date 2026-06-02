@@ -622,6 +622,8 @@ export default function POSPage() {
 function POSContent() {
   const t = useTranslations("pos");
   const tAdmin = useTranslations("admin");
+  const tf = useTranslations("footer");
+
   const user = useAuthStore((s) => s.user);
   const searchParams = useSearchParams();
 
@@ -958,9 +960,7 @@ function POSContent() {
             <p className="font-display text-base text-text-primary">
               Hanie Studio
             </p>
-            <p className="font-body text-xs text-text-muted">
-              55 Nguyễn Nhạc, Quy Nhơn
-            </p>
+            <p className="font-body text-xs text-text-muted">{tf("address")}</p>
             <p className="font-body text-xs text-text-muted mt-1">
               {format(new Date(), "dd/MM/yyyy HH:mm")}
             </p>

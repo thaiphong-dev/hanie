@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ChevronRight, Zap, User, CalendarDays, Clock } from 'lucide-react';
+import { Check, ChevronRight, Zap, User, CalendarDays, Clock, Copy, CalendarPlus } from 'lucide-react';
 import { Link } from '@/lib/navigation';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { getLocaleText, formatDate } from '@/lib/i18n-helpers';
@@ -76,9 +76,18 @@ function BookingContent() {
   const [submitError, setSubmitError] = useState('');
 
   // Success
-  const [, setBookingId] = useState('');
   const [isNewAccount, setIsNewAccount] = useState(false);
   const [newAccountPhone, setNewAccountPhone] = useState('');
+  const [bookingSummary, setBookingSummary] = useState<{
+    services: string[];
+    date: string;
+    time: string;
+    duration: number;
+    customerName: string;
+    customerPhone: string;
+    notes: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // ── Load booking categories ──
   useEffect(() => {
@@ -182,11 +191,19 @@ function BookingContent() {
         return;
       }
 
-      setBookingId(json.data?.booking_id ?? '');
       if (json.data?.is_new_account) {
         setIsNewAccount(true);
         setNewAccountPhone(json.data.customer_phone ?? customerPhone);
       }
+      setBookingSummary({
+        services: selectedCategories.map((c) => getLocaleText(c.name_i18n, locale) || c.name),
+        date: selectedDate,
+        time: selectedTime,
+        duration: totalDuration,
+        customerName,
+        customerPhone,
+        notes,
+      });
       setDirection(1);
       setStep(4);
     } finally {
@@ -621,33 +638,106 @@ function BookingContent() {
           )}
 
           {/* ── Step 4: Success ── */}
-          {step === 4 && (
+          {step === 4 && bookingSummary && (
             <motion.div
               key="step4"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="text-center py-16"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+              className="py-10"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', delay: 0.1, stiffness: 200 }}
-                className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-8"
-              >
-                <Check size={36} className="text-accent" />
-              </motion.div>
+              {/* Check icon + title */}
+              <div className="text-center mb-8">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', delay: 0.1, stiffness: 200 }}
+                  className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-5"
+                >
+                  <Check size={28} className="text-accent" />
+                </motion.div>
+                <h2 className="font-display text-2xl text-text-primary mb-1">
+                  {t('booking.success_title')}
+                </h2>
+                <p className="font-body text-sm text-text-muted">
+                  {t('booking.success_sub')}
+                </p>
+              </div>
 
-              <h2 className="font-display text-3xl text-text-primary mb-4">
-                {t('booking.success_title')}
-              </h2>
-              <p className="font-body text-sm text-text-muted mb-6 max-w-sm mx-auto">
-                {t('booking.success_sub')}
-              </p>
+              {/* Booking summary card */}
+              <div className="bg-bg-secondary rounded-2xl p-5 space-y-4 mb-5">
+                {/* Services */}
+                <div className="flex gap-3">
+                  <Check size={15} className="text-accent mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
+                      {t('booking.summary_service')}
+                    </p>
+                    {bookingSummary.services.map((s, i) => (
+                      <p key={i} className="font-body text-sm text-text-primary">{s}</p>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-border" />
+
+                {/* Date */}
+                <div className="flex gap-3">
+                  <CalendarDays size={15} className="text-accent mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
+                      {t('booking.summary_date')}
+                    </p>
+                    <p className="font-body text-sm text-text-primary">
+                      {formatDate(new Date(bookingSummary.date), locale)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Time */}
+                <div className="flex gap-3">
+                  <Clock size={15} className="text-accent mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
+                      {t('booking.summary_time')}
+                    </p>
+                    <p className="font-body text-sm text-text-primary">
+                      {bookingSummary.time}
+                      <span className="text-text-muted ml-2">
+                        {t('booking.summary_duration', { duration: bookingSummary.duration })}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t border-border" />
+
+                {/* Customer */}
+                <div className="flex gap-3">
+                  <User size={15} className="text-accent mt-0.5 flex-shrink-0" />
+                  <div className="space-y-0.5">
+                    <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
+                      {t('booking.summary_name')}
+                    </p>
+                    <p className="font-body text-sm text-text-primary">{bookingSummary.customerName}</p>
+                    <p className="font-body text-sm text-text-muted">{bookingSummary.customerPhone}</p>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {bookingSummary.notes && (
+                  <div className="bg-white rounded-xl px-4 py-3">
+                    <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
+                      {t('booking.summary_notes')}
+                    </p>
+                    <p className="font-body text-sm text-text-primary">{bookingSummary.notes}</p>
+                  </div>
+                )}
+              </div>
 
               {/* New account notice */}
               {isNewAccount && (
-                <div className="mb-8 mx-auto max-w-sm text-left rounded-2xl border border-accent/40 bg-accent/5 p-4 space-y-1">
+                <div className="mb-5 rounded-2xl border border-accent/40 bg-accent/5 p-4 space-y-1">
                   <p className="font-body text-xs font-semibold text-accent uppercase tracking-wider mb-2">
                     {t('new_account_notice.title')}
                   </p>
@@ -663,18 +753,65 @@ function BookingContent() {
                 </div>
               )}
 
+              {/* Action buttons */}
               <div className="space-y-3">
+                {/* Copy */}
+                <button
+                  onClick={() => {
+                    const text = [
+                      '🏪 Hanie Studio',
+                      `📅 ${formatDate(new Date(bookingSummary.date), locale)}`,
+                      `⏰ ${bookingSummary.time} (~${bookingSummary.duration} phút)`,
+                      `✨ ${bookingSummary.services.join(', ')}`,
+                      `👤 ${bookingSummary.customerName}`,
+                      `📱 ${bookingSummary.customerPhone}`,
+                      '📍 09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai',
+                      ...(bookingSummary.notes ? [`📝 ${bookingSummary.notes}`] : []),
+                    ].join('\n');
+                    void navigator.clipboard.writeText(text).then(() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2500);
+                    });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 font-body text-sm
+                    border border-border rounded-full py-3.5 hover:bg-bg-secondary transition-colors text-text-primary"
+                >
+                  <Copy size={15} />
+                  {copied ? t('booking.summary_copied') : t('booking.summary_copy')}
+                </button>
+
+                {/* Google Calendar */}
+                <a
+                  href={(() => {
+                    const start = new Date(`${bookingSummary.date}T${bookingSummary.time}:00+07:00`);
+                    const end   = new Date(start.getTime() + bookingSummary.duration * 60_000);
+                    const fmt   = (d: Date) => d.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+                    const title = encodeURIComponent(`Hanie Studio – ${bookingSummary.services.join(', ')}`);
+                    const loc   = encodeURIComponent('09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai');
+                    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&location=${loc}`;
+                  })()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 font-body text-sm
+                    border border-border rounded-full py-3.5 hover:bg-bg-secondary transition-colors text-text-primary"
+                >
+                  <CalendarPlus size={15} />
+                  {t('booking.summary_calendar')}
+                </a>
+
+                {/* Home */}
                 <Link
                   href="/"
-                  className="block font-body text-sm font-medium tracking-widest uppercase
+                  className="block text-center font-body text-sm font-medium tracking-widest uppercase
                     bg-accent hover:bg-accent-dark text-text-inverse
                     px-8 py-4 rounded-full transition-colors duration-200"
                 >
                   {t('nav.home')}
                 </Link>
+
                 <Link
                   href="/history"
-                  className="block font-body text-sm text-accent hover:text-accent-dark transition-colors py-2"
+                  className="block text-center font-body text-sm text-accent hover:text-accent-dark transition-colors py-2"
                 >
                   {t('nav.history')}
                 </Link>

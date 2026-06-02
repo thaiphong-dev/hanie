@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperType } from "swiper";
 import {
   Navigation,
   Pagination,
@@ -19,7 +20,6 @@ import { ImageWithSkeleton } from "@/components/shared/ImageWithSkeleton";
 import { GalleryLightbox } from "@/components/shared/GalleryLightbox";
 import type { Database } from "@/types/database";
 
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -34,19 +34,73 @@ interface GalleryClientProps {
   locale: string;
 }
 
+const BATCH_SIZE = 10;
+const ROTATION_MS = 10_000;
+const STAGGER_MS = 150;
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
   const t = useTranslations("gallery");
   const [activeTab, setActiveTab] = useState<CategoryFilter>("all");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [activeNailIndex, setActiveNailIndex] = useState(0);
+  const nailSwiperRef = useRef<SwiperType | null>(null);
+  const staggerTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // "Tất cả" tab — 10-image rotating batch
+  const [displayBatch, setDisplayBatch] = useState<GalleryImage[]>(() =>
+    shuffleArray(initialImages).slice(
+      0,
+      Math.min(BATCH_SIZE, initialImages.length),
+    ),
+  );
 
   const filteredImages = useMemo(() => {
     if (activeTab === "all") return initialImages;
     return initialImages.filter((img) => img.category === activeTab);
   }, [initialImages, activeTab]);
 
-  const featuredImages = useMemo(() => {
-    return initialImages.slice(0, 8); // Top 8 images for the coverflow
-  }, [initialImages]);
+  const featuredImages = useMemo(
+    () => initialImages.slice(0, 8),
+    [initialImages],
+  );
+
+  // Staggered per-slot rotation — only active on "Tất cả" tab
+  useEffect(() => {
+    if (activeTab !== "all" || initialImages.length <= BATCH_SIZE) return;
+
+    const doRotate = () => {
+      staggerTimersRef.current.forEach(clearTimeout);
+      staggerTimersRef.current = [];
+
+      const newBatch = shuffleArray(initialImages).slice(0, BATCH_SIZE);
+
+      newBatch.forEach((img, idx) => {
+        const timer = setTimeout(() => {
+          setDisplayBatch((prev) => {
+            const next = [...prev];
+            next[idx] = img;
+            return next;
+          });
+        }, idx * STAGGER_MS);
+        staggerTimersRef.current.push(timer);
+      });
+    };
+
+    const interval = setInterval(doRotate, ROTATION_MS);
+    return () => {
+      clearInterval(interval);
+      staggerTimersRef.current.forEach(clearTimeout);
+    };
+  }, [activeTab, initialImages]);
 
   const openLightbox = useCallback(
     (id: string) => {
@@ -61,13 +115,11 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
     { id: "nail", label: t("filter_nail") },
     { id: "mi", label: t("filter_lash") },
     { id: "long_may", label: t("filter_brow") },
-    { id: "goi_dau", label: t("filter_hair_wash") },
-    { id: "studio", label: t("filter_studio") },
   ];
 
   return (
     <div className="flex flex-col gap-16 md:gap-24 pb-20">
-      {/* Featured Carousel - Only on 'all' tab or as a top section */}
+      {/* Featured Coverflow — only "Tất cả" tab */}
       {featuredImages.length > 0 && (
         <section className="px-4 overflow-hidden">
           <div className="max-w-7xl mx-auto">
@@ -83,10 +135,10 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
             <Swiper
               modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
               effect="coverflow"
-              grabCursor={true}
-              centeredSlides={true}
+              grabCursor
+              centeredSlides
               slidesPerView="auto"
-              loop={true}
+              loop
               coverflowEffect={{
                 rotate: 35,
                 stretch: 0,
@@ -94,12 +146,9 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
                 modifier: 1,
                 slideShadows: true,
               }}
-              autoplay={{
-                delay: 3500,
-                disableOnInteraction: false,
-              }}
+              autoplay={{ delay: 3500, disableOnInteraction: false }}
               pagination={{ clickable: true, dynamicBullets: true }}
-              navigation={true}
+              navigation
               className="featured-swiper pb-12 !px-4"
             >
               {featuredImages.map((img) => (
@@ -139,7 +188,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
       {/* Sticky Filter Tabs */}
       <section className="sticky top-[64px] z-40 bg-bg-primary/90 backdrop-blur-md border-y border-border">
         <div className="max-w-7xl mx-auto px-4 overflow-x-auto no-scrollbar">
-          <div className="flex justify-center md:justify-center items-center h-16 gap-8 md:gap-12">
+          <div className="flex justify-center items-center h-16 gap-8 md:gap-12">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -165,7 +214,7 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
         </div>
       </section>
 
-      {/* Main Gallery Display */}
+      {/* Main Gallery */}
       <section className="px-4">
         <div className="max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
@@ -194,14 +243,12 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="px-4">
         <div className="max-w-4xl mx-auto rounded-[2.5rem] bg-bg-dark text-text-inverse p-8 md:p-20 text-center relative overflow-hidden">
-          {/* Decorative element */}
           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <span className="font-display text-[10rem] leading-none">H</span>
           </div>
-
           <span className="font-body text-xs font-semibold tracking-[0.3em] text-accent-light uppercase mb-6 block">
             Hanie Studio
           </span>
@@ -221,7 +268,6 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
         </div>
       </section>
 
-      {/* Lightbox Overlay */}
       <GalleryLightbox
         images={filteredImages}
         currentIndex={lightboxIndex}
@@ -233,102 +279,188 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
   );
 
   function renderTabContent() {
-    // Dynamic layouts based on category
     switch (activeTab) {
       case "nail":
         return renderNailLayout();
       case "mi":
         return renderLashLayout();
       case "long_may":
-        return renderMasonryLayout();
-      case "studio":
-        return renderStudioLayout();
+        return renderBrowLayout();
       default:
-        return renderMasonryLayout();
+        return renderAllLayout();
     }
   }
 
-  function renderNailLayout() {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-auto lg:h-[700px]">
-        {/* Left: Vertical Carousel */}
-        <div className="lg:col-span-5 h-[500px] lg:h-full">
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            direction="vertical"
-            spaceBetween={20}
-            slidesPerView={2}
-            autoplay={{ delay: 3000 }}
-            pagination={{ clickable: true }}
-            className="h-full rounded-2xl overflow-hidden"
-          >
-            {filteredImages.map((img) => (
-              <SwiperSlide key={`v-${img.id}`}>
-                <div
-                  className="relative h-full rounded-2xl overflow-hidden group cursor-pointer"
-                  onClick={() => openLightbox(img.id)}
-                >
-                  <ImageWithSkeleton
-                    src={img.image_url}
-                    alt="Nail art"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 40vw"
-                  />
-                  <div className="absolute inset-0 bg-bg-dark/20 group-hover:bg-bg-dark/40 transition-colors" />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
+  // ─── Tab "Tất cả": 10-slot grid, từng slot fade in/out riêng lẻ ──────────
+  function renderAllLayout() {
+    const slots =
+      initialImages.length <= BATCH_SIZE ? initialImages : displayBatch;
 
-        {/* Right: Featured Fade Carousel */}
-        <div className="lg:col-span-7 h-[500px] lg:h-full">
-          <Swiper
-            modules={[Autoplay, Pagination, EffectFade]}
-            effect="fade"
-            autoplay={{ delay: 5000 }}
-            pagination={{ clickable: true }}
-            className="h-full rounded-2xl overflow-hidden shadow-2xl"
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+        {slots.map((img, slotIdx) => (
+          <div
+            key={`slot-${slotIdx}`}
+            className="relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl group"
+            onClick={() => {
+              const idx = filteredImages.findIndex((fi) => fi.id === img.id);
+              setLightboxIndex(idx >= 0 ? idx : 0);
+            }}
           >
-            {[...filteredImages].reverse().map((img) => (
-              <SwiperSlide key={`f-${img.id}`}>
+            {/* Per-slot AnimatePresence: ảnh thay đổi theo từng slot */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={img.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.7, ease: "easeInOut" }}
+                className="absolute inset-0"
+              >
+                <ImageWithSkeleton
+                  src={img.image_url}
+                  alt={getLocaleText(img.alt_text, locale)}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-bg-dark/0 group-hover:bg-bg-dark/30 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center z-10 pointer-events-none">
+              <ZoomIn className="text-text-inverse w-7 h-7" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // ─── Tab "Nail": hero constrained + blur backdrop + thumbnail strip ───────
+  function renderNailLayout() {
+    const loop = filteredImages.length > 1;
+
+    return (
+      <div className="flex flex-col gap-3">
+        {/* Hero — max-w-3xl để không bị quá rộng trên PC */}
+        <div
+          className="max-w-3xl mx-auto w-full rounded-2xl overflow-hidden shadow-2xl"
+          style={{ height: "clamp(300px, 50vw, 520px)" }}
+        >
+          <Swiper
+            modules={[Navigation, Pagination, Autoplay, EffectFade]}
+            effect="fade"
+            loop={loop}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            navigation
+            onSwiper={(s) => {
+              nailSwiperRef.current = s;
+            }}
+            onSlideChange={(s) => setActiveNailIndex(s.realIndex)}
+            className="h-full"
+          >
+            {filteredImages.map((img, idx) => (
+              <SwiperSlide key={`nm-${img.id}`} style={{ height: "100%" }}>
                 <div
-                  className="relative h-full rounded-2xl overflow-hidden group cursor-pointer"
-                  onClick={() => openLightbox(img.id)}
+                  className="relative w-full h-full cursor-pointer bg-bg-secondary"
+                  onClick={() => setLightboxIndex(idx)}
                 >
-                  <ImageWithSkeleton
-                    src={img.image_url}
-                    alt="Nail art featured"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/80 via-transparent to-transparent flex flex-col justify-end p-10">
-                    <p className="font-display text-2xl text-text-inverse mb-2">
-                      Beautiful Nail Design
+                  {/* Blurred backdrop — fill letterbox area */}
+                  <div className="absolute inset-0 overflow-hidden">
+                    <ImageWithSkeleton
+                      src={img.image_url}
+                      alt=""
+                      fill
+                      className="object-cover blur-xl scale-110 opacity-50"
+                      sizes="10px"
+                    />
+                  </div>
+
+                  {/* Main image — object-contain, không crop */}
+                  <div className="absolute inset-0">
+                    <ImageWithSkeleton
+                      src={img.image_url}
+                      alt={getLocaleText(img.alt_text, locale) || "Nail art"}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, 60vw"
+                      priority={idx === 0}
+                    />
+                  </div>
+
+                  {/* Caption */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg-dark/75 to-transparent p-5 md:p-8 z-10">
+                    <p className="font-body text-[10px] uppercase tracking-[0.3em] text-accent-light mb-1">
+                      Nail Art · Hanie Studio
                     </p>
-                    <div className="w-12 h-px bg-accent" />
+                    <p className="font-display text-lg md:text-2xl text-text-inverse">
+                      {getLocaleText(img.alt_text, locale) ||
+                        `Design #${String(idx + 1).padStart(2, "0")}`}
+                    </p>
+                    <div className="w-8 h-px bg-accent mt-2" />
                   </div>
                 </div>
               </SwiperSlide>
             ))}
           </Swiper>
         </div>
+
+        {/* Thumbnail strip */}
+        <div className="max-w-3xl mx-auto w-full flex gap-2 overflow-x-auto no-scrollbar py-1">
+          {filteredImages.map((img, idx) => (
+            <button
+              key={`nt-${img.id}`}
+              aria-label={`Nail design ${idx + 1}`}
+              onClick={() => {
+                setActiveNailIndex(idx);
+                if (loop) nailSwiperRef.current?.slideToLoop(idx);
+                else nailSwiperRef.current?.slideTo(idx);
+              }}
+              className={cn(
+                "relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden transition-all duration-200",
+                activeNailIndex === idx
+                  ? "ring-2 ring-accent ring-offset-2 opacity-100 scale-105"
+                  : "opacity-50 hover:opacity-80",
+              )}
+            >
+              <ImageWithSkeleton
+                src={img.image_url}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="80px"
+              />
+            </button>
+          ))}
+        </div>
       </div>
     );
   }
 
+  // ─── Tab "Nối mi": coverflow lớn + 2 panel cuộn dọc (lg+), mobile ẩn panel ─
   function renderLashLayout() {
+    const mid = Math.min(
+      Math.ceil(filteredImages.length / 3),
+      filteredImages.length - 1,
+    );
+    const end = Math.min(
+      Math.ceil((filteredImages.length * 2) / 3),
+      filteredImages.length - 1,
+    );
+
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main coverflow — full width on mobile */}
         <div className="lg:col-span-2 h-[500px] md:h-[600px]">
           <Swiper
             modules={[Autoplay, Pagination, EffectCoverflow]}
             effect="coverflow"
-            centeredSlides={true}
+            centeredSlides
             slidesPerView={1}
-            autoplay={{ delay: 4000 }}
+            loop={filteredImages.length > 1}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             coverflowEffect={{
               rotate: 30,
@@ -358,70 +490,98 @@ export function GalleryClient({ initialImages, locale }: GalleryClientProps) {
           </Swiper>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
-          {filteredImages.slice(0, 2).map((img) => (
-            <div
-              key={`ls-${img.id}`}
-              className="relative h-[240px] md:h-full lg:h-[285px] rounded-2xl overflow-hidden group cursor-pointer"
-              onClick={() => openLightbox(img.id)}
+        {/* Right panels — hidden on mobile, 2 vertical auto-scroll swipers */}
+        <div className="hidden lg:flex flex-col gap-6 h-[600px]">
+          {/* Top panel: cuộn xuống, bắt đầu từ 1/3 */}
+          <div className="flex-1 rounded-2xl overflow-hidden shadow-md">
+            <Swiper
+              modules={[Autoplay]}
+              direction="vertical"
+              slidesPerView={1}
+              loop={filteredImages.length > 1}
+              initialSlide={mid}
+              autoplay={{ delay: 2600, disableOnInteraction: false }}
+              className="h-full"
             >
-              <ImageWithSkeleton
-                src={img.image_url}
-                alt="Lash work"
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 1024px) 50vw, 30vw"
-              />
-              <div className="absolute inset-0 bg-bg-dark/10 group-hover:bg-bg-dark/30 transition-colors" />
-            </div>
-          ))}
+              {filteredImages.map((img) => (
+                <SwiperSlide key={`rpt-${img.id}`} style={{ height: "100%" }}>
+                  <div
+                    className="relative w-full h-full cursor-pointer group"
+                    onClick={() => openLightbox(img.id)}
+                  >
+                    <ImageWithSkeleton
+                      src={img.image_url}
+                      alt="Lash work"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="30vw"
+                    />
+                    <div className="absolute inset-0 bg-bg-dark/10 group-hover:bg-bg-dark/30 transition-colors" />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+
+          {/* Bottom panel: cuộn ngược, bắt đầu từ 2/3 */}
+          <div className="flex-1 rounded-2xl overflow-hidden shadow-md">
+            <Swiper
+              modules={[Autoplay]}
+              direction="vertical"
+              slidesPerView={1}
+              loop={filteredImages.length > 1}
+              initialSlide={end}
+              autoplay={{
+                delay: 3200,
+                disableOnInteraction: false,
+                reverseDirection: true,
+              }}
+              className="h-full"
+            >
+              {filteredImages.map((img) => (
+                <SwiperSlide key={`rpb-${img.id}`} style={{ height: "100%" }}>
+                  <div
+                    className="relative w-full h-full cursor-pointer group"
+                    onClick={() => openLightbox(img.id)}
+                  >
+                    <ImageWithSkeleton
+                      src={img.image_url}
+                      alt="Lash work"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="30vw"
+                    />
+                    <div className="absolute inset-0 bg-bg-dark/10 group-hover:bg-bg-dark/30 transition-colors" />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
         </div>
       </div>
     );
   }
 
-  function renderStudioLayout() {
+  // ─── Tab "Lông mày": masonry grid to hơn, tương tự "Tất cả" ─────────────
+  function renderBrowLayout() {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {filteredImages.map((img) => (
-          <div
-            key={img.id}
-            className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer shadow-lg"
-            onClick={() => openLightbox(img.id)}
-          >
-            <ImageWithSkeleton
-              src={img.image_url}
-              alt="Studio view"
-              fill
-              className="object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            <div className="absolute inset-0 bg-bg-dark/10 group-hover:bg-bg-dark/20 transition-colors" />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  function renderMasonryLayout() {
-    return (
-      <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-        {filteredImages.map((img) => (
+      <div className="columns-2 md:columns-3 gap-4 space-y-4">
+        {filteredImages.map((img, idx) => (
           <div
             key={img.id}
             className="relative break-inside-avoid rounded-2xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300"
-            onClick={() => openLightbox(img.id)}
+            onClick={() => setLightboxIndex(idx)}
           >
             <ImageWithSkeleton
               src={img.image_url}
               alt={getLocaleText(img.alt_text, locale)}
               width={500}
               height={700}
-              className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 640px) 50vw, 33vw"
             />
-            <div className="absolute inset-0 bg-dark/0 group-hover:bg-dark/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
-              <ZoomIn className="text-text-inverse w-8 h-8" />
+            <div className="absolute inset-0 bg-bg-dark/0 group-hover:bg-bg-dark/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+              <ZoomIn className="text-text-inverse w-7 h-7" />
             </div>
           </div>
         ))}

@@ -14,7 +14,6 @@ export interface Database {
           password_hash: string;
           role: 'admin' | 'staff' | 'customer';
           full_name: string;
-          zalo_id: string | null;
           birthday: string | null;        // date ISO string
           avatar_url: string | null;
           member_tier: 'new' | 'regular' | 'vip';
@@ -310,10 +309,9 @@ export interface Database {
           status: 'available' | 'used' | 'expired';
           used_at: string | null;
           used_in_payment_id: string | null;
-          sent_via_zalo: boolean;
           created_at: string;
         };
-        Insert: Omit<Database['public']['Tables']['customer_vouchers']['Row'], 'id' | 'created_at' | 'sent_via_zalo'>;
+        Insert: Omit<Database['public']['Tables']['customer_vouchers']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['customer_vouchers']['Insert']>;
       };
 
@@ -430,6 +428,50 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['inventory_items']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['inventory_items']['Insert']>;
       };
+
+      // ── PUSH_SUBSCRIPTIONS ───────────────────────────────────────────────────
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['push_subscriptions']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['push_subscriptions']['Insert']>;
+      };
+
+      // ── NOTIFICATIONS ────────────────────────────────────────────────────────
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: NotificationType;
+          title: string;
+          body: string;
+          data: Record<string, string | number | boolean | null>;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['notifications']['Row'], 'id' | 'created_at' | 'read'>;
+        Update: Partial<Pick<Database['public']['Tables']['notifications']['Row'], 'read'>>;
+      };
     };
   };
 }
+
+// ── NOTIFICATION TYPES ───────────────────────────────────────────────────────
+export type NotificationType =
+  | 'new_booking'
+  | 'booking_cancelled_by_customer'
+  | 'booking_confirmed'
+  | 'booking_cancelled_by_admin'
+  | 'booking_assigned'
+  | 'booking_reminder'
+  | 'leave_request_submitted'
+  | 'leave_request_approved'
+  | 'leave_request_rejected'
+  | 'voucher_received';

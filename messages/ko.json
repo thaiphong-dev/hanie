@@ -98,9 +98,19 @@
     "slot_unavailable": "슬롯 없음",
     "notes_placeholder": "추가 메모 (선택사항)",
     "success_title": "예약 완료!",
-    "success_sub": "몇 분 내에 Zalo로 확인 드리겠습니다.",
+    "success_sub": "예약이 접수되었습니다. 확인을 위해 연락드리겠습니다.",
     "your_name": "이름",
-    "your_phone": "전화번호"
+    "your_phone": "전화번호",
+    "summary_service": "서비스",
+    "summary_date": "날짜",
+    "summary_time": "시간",
+    "summary_duration": "~{duration}분",
+    "summary_name": "고객",
+    "summary_phone": "전화번호",
+    "summary_notes": "메모",
+    "summary_copy": "정보 복사",
+    "summary_copied": "복사됨!",
+    "summary_calendar": "구글 캘린더에 추가"
   },
   "booking_status": {
     "pending": "확인 대기",

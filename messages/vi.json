@@ -98,9 +98,19 @@
     "slot_unavailable": "Hết slot",
     "notes_placeholder": "Ghi chú thêm (tuỳ chọn)",
     "success_title": "Đặt lịch thành công!",
-    "success_sub": "Chúng tôi sẽ xác nhận qua Zalo trong vài phút.",
+    "success_sub": "Lịch hẹn của bạn đã được ghi nhận. Studio sẽ liên hệ để xác nhận.",
     "your_name": "Tên của bạn",
-    "your_phone": "Số điện thoại"
+    "your_phone": "Số điện thoại",
+    "summary_service": "Dịch vụ",
+    "summary_date": "Ngày",
+    "summary_time": "Giờ",
+    "summary_duration": "~{duration} phút",
+    "summary_name": "Khách hàng",
+    "summary_phone": "Điện thoại",
+    "summary_notes": "Ghi chú",
+    "summary_copy": "Sao chép thông tin",
+    "summary_copied": "Đã sao chép!",
+    "summary_calendar": "Thêm vào Google Calendar"
   },
   "booking_status": {
     "pending": "Chờ xác nhận",
