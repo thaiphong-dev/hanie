@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { getCurrentUser, requireRole } from '@/lib/get-current-user';
 import { z } from 'zod';
+import { sendNotification } from '@/lib/notifications';
 
 const ReviewSchema = z.object({
   status: z.enum(['approved', 'rejected']),
@@ -84,6 +85,18 @@ export async function PATCH(
 
       affectedBookings = affected ?? [];
     }
+
+    // Notify staff về kết quả duyệt (fire-and-forget)
+    void sendNotification({
+      userIds: leave.staff_id,
+      type: status === 'approved' ? 'leave_request_approved' : 'leave_request_rejected',
+      title: status === 'approved' ? 'Đơn nghỉ được duyệt' : 'Đơn nghỉ bị từ chối',
+      body: status === 'approved'
+        ? `Đơn nghỉ ngày ${leave.date} của bạn đã được duyệt`
+        : `Đơn nghỉ ngày ${leave.date} bị từ chối${review_note ? `: ${review_note}` : ''}`,
+      data: { leave_request_id: params.id },
+      url: `/admin/staff/leave?leave_id=${params.id}`,
+    });
 
     return NextResponse.json({
       data: { status, affected_bookings: affectedBookings },

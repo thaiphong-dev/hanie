@@ -37,9 +37,9 @@ export function uniquePhone(): string {
   return `09${suffix}`;
 }
 
-/** Admin credentials (seeded in DB) */
-export const ADMIN_PHONE = '0901234567';
-export const ADMIN_PASSWORD = 'hanie2026';
+/** Admin credentials (sau reset_and_new_admin.sql) */
+export const ADMIN_PHONE = '0967273066';
+export const ADMIN_PASSWORD = 'haokhongnho';
 
 /** Test customer (tạo bằng global.setup.ts) */
 export const CUSTOMER_PHONE = '0977000001';

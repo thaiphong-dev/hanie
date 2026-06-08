@@ -117,12 +117,13 @@ function BookingContent() {
   }, [step, selectedDate]);
 
   // ── Prefill customer info from logged-in user ──
+  // Prefill on mount (via hydrate) AND whenever user becomes available
   useEffect(() => {
-    if (user && step === 3) {
-      if (!customerName && user.full_name) setCustomerName(user.full_name);
-      if (!customerPhone && user.phone) setCustomerPhone(user.phone);
+    if (user) {
+      setCustomerName((prev) => prev || user.full_name || '');
+      setCustomerPhone((prev) => prev || user.phone || '');
     }
-  }, [user, step]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Load availability ──
   const loadSlots = useCallback(async () => {
@@ -233,7 +234,7 @@ function BookingContent() {
     0: selectedCategoryIds.length > 0,
     1: !!selectedDate && !!selectedTime,
     2: true, // staff is optional
-    3: customerName.length >= 2 && /^(0[35789])+([0-9]{8})$/.test(customerPhone),
+    3: customerName.length >= 2 && /^0[35789][0-9]{8}$/.test(customerPhone),
   };
 
   // ── Render ──
@@ -612,8 +613,18 @@ function BookingContent() {
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder={t('auth.phone_placeholder')}
-                    className="w-full font-body text-sm border border-border rounded-xl px-4 py-3 bg-bg-primary focus:outline-none focus:border-accent"
+                    className={cn(
+                      'w-full font-body text-sm border rounded-xl px-4 py-3 bg-bg-primary focus:outline-none transition-colors',
+                      customerPhone.length > 0 && !/^0[35789][0-9]{8}$/.test(customerPhone)
+                        ? 'border-red-400 focus:border-red-500'
+                        : 'border-border focus:border-accent',
+                    )}
                   />
+                  {customerPhone.length > 0 && !/^0[35789][0-9]{8}$/.test(customerPhone) && (
+                    <p className="font-body text-xs text-red-500 mt-1.5">
+                      {t('auth.invalid_phone')}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="font-body text-sm text-text-muted block mb-1.5">
@@ -765,7 +776,7 @@ function BookingContent() {
                       `✨ ${bookingSummary.services.join(', ')}`,
                       `👤 ${bookingSummary.customerName}`,
                       `📱 ${bookingSummary.customerPhone}`,
-                      '📍 09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai',
+                      '📍 55 Nguyễn Nhạc, Quy Nhơn, Bình Định',
                       ...(bookingSummary.notes ? [`📝 ${bookingSummary.notes}`] : []),
                     ].join('\n');
                     void navigator.clipboard.writeText(text).then(() => {
@@ -787,7 +798,7 @@ function BookingContent() {
                     const end   = new Date(start.getTime() + bookingSummary.duration * 60_000);
                     const fmt   = (d: Date) => d.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
                     const title = encodeURIComponent(`Hanie Studio – ${bookingSummary.services.join(', ')}`);
-                    const loc   = encodeURIComponent('09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai');
+                    const loc   = encodeURIComponent('55 Nguyễn Nhạc, Quy Nhơn, Bình Định');
                     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&location=${loc}`;
                   })()}
                   target="_blank"

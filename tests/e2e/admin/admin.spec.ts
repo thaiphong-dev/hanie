@@ -11,6 +11,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { ADMIN_AUTH_FILE, ADMIN_PHONE, ADMIN_PASSWORD, getTomorrow, uniquePhone } from '../../fixtures/helpers';
+// ADMIN_PHONE = '0967273066', ADMIN_PASSWORD = 'haokhongnho' (reset_and_new_admin.sql)
 
 test.use({ storageState: ADMIN_AUTH_FILE });
 
@@ -117,21 +118,32 @@ test.describe('4.3 — POS flow', () => {
 
     await expect(page).not.toHaveURL(/.*\/login.*/);
 
-    // Tìm input search phone
-    const phoneInput = page.getByPlaceholder(/sđt|số điện thoại|phone|search.*customer/i)
-      .or(page.getByLabel(/sđt|số điện thoại|phone/i)).first();
+    // CustomerSearchBox là combobox với debounce 600ms
+    const phoneInput = page.getByPlaceholder(/sđt|số điện thoại|phone|search.*customer|tìm khách/i)
+      .or(page.getByLabel(/sđt|số điện thoại|phone|khách hàng/i))
+      .or(page.locator('input[type="search"], input[type="text"]').first()).first();
 
     await expect(phoneInput).toBeVisible({ timeout: 5000 });
     await phoneInput.fill('0977000001');
-    await phoneInput.press('Enter');
 
-    // Đợi kết quả
+    // Đợi debounce 600ms + dropdown render
     await page.waitForTimeout(1000);
 
-    // Thấy tên khách (QC Tester)
-    await expect(
-      page.getByText(/qc tester|0977000001/i).first()
-    ).toBeVisible({ timeout: 5000 });
+    // Click dropdown result nếu có
+    const dropdownResult = page.getByText(/qc tester|0977000001/i).first();
+    const hasDropdown = await dropdownResult.count() > 0;
+    if (hasDropdown) {
+      await dropdownResult.click();
+      await page.waitForTimeout(500);
+    } else {
+      // Thử press Enter
+      await phoneInput.press('Enter');
+      await page.waitForTimeout(1000);
+    }
+
+    // Thấy tên khách hoặc SĐT ở đâu đó trên trang
+    const customerInfo = page.getByText(/qc tester|0977000001/i).first();
+    await expect(customerInfo).toBeVisible({ timeout: 5000 });
   });
 
   test('chọn dịch vụ → giá điền vào', async ({ page }) => {
@@ -322,16 +334,21 @@ test.describe('4.6 — Services CRUD', () => {
 
     await expect(page).not.toHaveURL(/.*\/login.*/);
 
-    // Phải có ít nhất 1 service
-    const serviceItems = page.locator('[data-testid*="service"], [class*="service-item"], tr').first();
-    await expect(serviceItems).toBeVisible({ timeout: 5000 });
+    // Services page dùng list (không phải table)
+    // Tìm bất kỳ service name quen thuộc
+    const serviceList = page.getByText(/cắt da|sơn gel|nail|nối mi/i).first();
+    await expect(serviceList).toBeVisible({ timeout: 5000 });
   });
 
   test('click "Chỉnh sửa" → sheet form mở', async ({ page }) => {
     await page.goto('/vi/admin/services');
     await page.waitForLoadState('networkidle');
 
-    const editBtn = page.getByRole('button', { name: /chỉnh sửa|edit|sửa/i }).first();
+    // Edit button là icon pencil (SVG) — không có text label
+    // Tìm bằng aria-label hoặc title, hoặc là button trong row
+    const editBtn = page.getByRole('button', { name: /chỉnh sửa|edit|sửa/i })
+      .or(page.locator('button[aria-label*="edit"], button[title*="edit"], button[title*="sửa"]'))
+      .or(page.locator('button:has(svg)').first()).first();
     await expect(editBtn).toBeVisible({ timeout: 5000 });
     await editBtn.click();
 

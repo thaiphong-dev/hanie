@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { CalendarDays, Send, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
@@ -26,6 +27,8 @@ const STATUS_CONFIG = {
 
 export default function StaffLeavePage() {
   const t = useTranslations('leave_request');
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('leave_id');
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,6 +54,13 @@ export default function StaffLeavePage() {
   }, []);
 
   useEffect(() => { void fetchRequests(); }, [fetchRequests]);
+
+  useEffect(() => {
+    if (!highlightId || loading || requests.length === 0) return;
+    setTimeout(() => {
+      document.getElementById(`leave-${highlightId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }, [highlightId, loading, requests]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -171,7 +181,14 @@ export default function StaffLeavePage() {
             const cfg = STATUS_CONFIG[req.status];
             const Icon = cfg.icon;
             return (
-              <div key={req.id} className="bg-bg-primary border border-border rounded-2xl p-4">
+              <div
+                key={req.id}
+                id={`leave-${req.id}`}
+                className={cn(
+                  'bg-bg-primary border rounded-2xl p-4 transition-shadow',
+                  req.id === highlightId ? 'border-accent ring-2 ring-accent/30 shadow-md' : 'border-border',
+                )}
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">

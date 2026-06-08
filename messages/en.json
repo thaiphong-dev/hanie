@@ -43,7 +43,7 @@
     "hero_eyebrow": "Hanie in Quy Nhon · Beauty Studio",
     "hero_title": "Wake up beautiful\nevery morning",
     "hero_title_accent": "every morning",
-    "hero_sub": "Lash Extensions · Brows · Hair Wash · Nail\n09A Nguyen Dinh Thu, Quy Nhon Nam, Gia Lai",
+    "hero_sub": "Lash Extensions · Brows · Hair Wash · Nail\n55 Nguyen Nhac, Quy Nhon, Binh Dinh",
     "services_eyebrow": "SERVICES",
     "services_title": "Premium beauty\nexperiences",
     "services_desc": "We deliver professional beauty services with a team of skilled technicians.",
@@ -62,7 +62,7 @@
     "open_hours_title": "Opening Hours",
     "open_hours_value": "08:00 – 20:00 daily",
     "address_title": "Address",
-    "address_value": "09A Nguyen Dinh Thu, Quy Nhon Nam, Gia Lai",
+    "address_value": "55 Nguyen Nhac, Quy Nhon, Binh Dinh",
     "cta_book": "Book Now",
     "cta_services": "View Services"
   },
@@ -147,7 +147,7 @@
     "title": "Find Hanie Studio",
     "eyebrow": "STUDIO LOCATION",
     "address_label": "Address",
-    "address_value": "09A Nguyen Dinh Thu, Quy Nhon Nam, Gia Lai",
+    "address_value": "55 Nguyen Nhac, Quy Nhon, Binh Dinh",
     "hours_label": "Hours",
     "hours_value": "Mon – Sun: 08:00 – 20:00",
     "phone_label": "Contact",
@@ -280,7 +280,8 @@
     "have_account": "Already have an account?",
     "no_account": "Don't have an account?",
     "login_link": "Log in",
-    "register_link": "Sign up"
+    "register_link": "Sign up",
+    "invalid_phone": "Invalid phone number (e.g. 0901234567)"
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -490,11 +491,11 @@
     "login_hint": "Login to view booking history and earn points"
   },
   "footer": {
-    "tagline": "Beauty studio in Gia Lai. Lashes · Eyebrows · Hair Wash · Nail.",
+    "tagline": "Beauty studio in Quy Nhon. Lashes · Eyebrows · Hair Wash · Nail.",
     "services": "Services",
     "info": "Information",
     "quick_book": "Quick Book",
-    "address": "09A Nguyen Dinh Thu, Quy Nhon Nam, Gia Lai",
+    "address": "55 Nguyen Nhac, Quy Nhon, Binh Dinh",
     "phone": "0967 273 066",
     "hours": "08:00 – 20:00 daily"
   }

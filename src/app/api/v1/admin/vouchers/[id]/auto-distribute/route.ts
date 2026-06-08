@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { getCurrentUser, requireRole } from '@/lib/get-current-user';
+import { sendNotification } from '@/lib/notifications';
 
 export async function POST(
   req: NextRequest,
@@ -91,6 +92,18 @@ export async function POST(
       }
 
       result = { total_issued: distributed, total_skipped: skipped };
+
+      // Notify từng customer nhận voucher (fire-and-forget)
+      if (customers.length > 0) {
+        void sendNotification({
+          userIds: customers.map((c) => c.id),
+          type: 'voucher_received',
+          title: 'Bạn nhận được voucher mới!',
+          body: 'Hanie vừa tặng bạn một voucher ưu đãi. Xem ngay!',
+          data: { voucher_id: params.id },
+          url: '/profile?tab=vouchers',
+        });
+      }
     }
 
     return NextResponse.json({

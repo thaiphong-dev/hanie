@@ -1,0 +1,665 @@
+{
+  "config": {
+    "configFile": "D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\playwright.config.ts",
+    "rootDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "global-setup",
+        "name": "global-setup",
+        "testDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/global\\.setup\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "auth-setup",
+        "name": "auth-setup",
+        "testDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/auth\\.setup\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop-chrome",
+        "name": "desktop-chrome",
+        "testDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-chrome",
+        "name": "mobile-chrome",
+        "testDir": "D:/antigravity/claude_code/hanie_claude/hanie-studio/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "tests/reports/html",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "tests/reports/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 30000
+    }
+  },
+  "suites": [
+    {
+      "title": "setup\\global.setup.ts",
+      "file": "setup/global.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "seed test accounts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "global-setup",
+              "projectName": "global-setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1339,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[global.setup] Admin exists: 0967273066/haokhongnho ✓\n"
+                    },
+                    {
+                      "text": "[global.setup] Staff exists: 0912345678 ✓\n"
+                    },
+                    {
+                      "text": "[global.setup] Staff exists: 0923456789 ✓\n"
+                    },
+                    {
+                      "text": "[global.setup] Test customer password reset: 0977000001/testpass123 ✓\n"
+                    },
+                    {
+                      "text": "[global.setup] Done ✓\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-06-02T07:09:39.149Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5e7fcc4fc03bf8830908-458542565d18365b4298",
+          "file": "setup/global.setup.ts",
+          "line": 32,
+          "column": 6
+        }
+      ]
+    },
+    {
+      "title": "setup\\auth.setup.ts",
+      "file": "setup/auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "authenticate as admin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "auth-setup",
+              "projectName": "auth-setup",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4212,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[auth.setup] Admin logged in, URL: http://localhost:3000/vi/admin/dashboard\n"
+                    },
+                    {
+                      "text": "[auth.setup] Admin auth state saved\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-06-02T07:09:41.747Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e717b06d8d484d1cd946-9d2175e8a6b4b3ddac7a",
+          "file": "setup/auth.setup.ts",
+          "line": 20,
+          "column": 6
+        },
+        {
+          "title": "authenticate as customer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "auth-setup",
+              "projectName": "auth-setup",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4681,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[auth.setup] Customer logged in, URL: http://localhost:3000/vi\n"
+                    },
+                    {
+                      "text": "[auth.setup] Customer auth state saved\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-06-02T07:09:46.441Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e717b06d8d484d1cd946-606ad4a7d35b81f16a9f",
+          "file": "setup/auth.setup.ts",
+          "line": 39,
+          "column": 6
+        }
+      ]
+    },
+    {
+      "title": "security\\security.spec.ts",
+      "file": "security/security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "5.1 — API auth guard",
+          "file": "security/security.spec.ts",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "GET /api/v1/bookings (no token) → 401 JSON, không redirect",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 70,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-02T07:09:53.736Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "383db6a520c6ba3bf4e3-36866804565ecee1bb56",
+              "file": "security/security.spec.ts",
+              "line": 15,
+              "column": 7
+            },
+            {
+              "title": "PATCH /api/v1/admin/bookings/fake-id/status (no token) → 401",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 27,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-02T07:09:53.829Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "383db6a520c6ba3bf4e3-a5dfa360c81529fa112e",
+              "file": "security/security.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "GET /api/v1/admin/dashboard (customer token) → 403",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1158,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-02T07:09:53.868Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "383db6a520c6ba3bf4e3-b008628e5ce1d04a71ca",
+              "file": "security/security.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "5.2 — SQL injection",
+          "file": "security/security.spec.ts",
+          "line": 72,
+          "column": 6,
+          "specs": [
+            {
+              "title": "name: \"'; DROP TABLE bookings; --\" → submit thành công, tên lưu literal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13717,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-02T07:09:55.471Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "383db6a520c6ba3bf4e3-eb0e2ff8cdf53cc9f0ab",
+              "file": "security/security.spec.ts",
+              "line": 73,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "5.3 — XSS",
+          "file": "security/security.spec.ts",
+          "line": 122,
+          "column": 6,
+          "specs": [
+            {
+              "title": "<script>alert() trong input → không execute, không có popup",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7980,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-02T07:10:09.212Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "383db6a520c6ba3bf4e3-6b93b8cddb0c63c413db",
+              "file": "security/security.spec.ts",
+              "line": 123,
+              "column": 7
+            },
+            {
+              "title": "XSS trong notes: admin panel hiển thị text thuần, không execute script",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Cannot create booking for XSS test: 400",
+                      "location": {
+                        "file": "D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\tests\\e2e\\security\\security.spec.ts",
+                        "line": 180,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 517,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-02T07:10:17.211Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Cannot create booking for XSS test: 400",
+                          "location": {
+                            "file": "D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\tests\\e2e\\security\\security.spec.ts",
+                            "line": 180,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "383db6a520c6ba3bf4e3-612e1bb78bcd7a52a8c1",
+              "file": "security/security.spec.ts",
+              "line": 165,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "5.4 — Rate limit login",
+          "file": "security/security.spec.ts",
+          "line": 200,
+          "column": 6,
+          "specs": [
+            {
+              "title": "6 lần login sai cùng SĐT → lần 6 trả 429",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1395,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m429\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m429\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\tests\\e2e\\security\\security.spec.ts:225:24",
+                        "location": {
+                          "file": "D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\tests\\e2e\\security\\security.spec.ts",
+                          "column": 24,
+                          "line": 225
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 223 |\u001b[39m\n \u001b[90m 224 |\u001b[39m     \u001b[90m// Lần thứ 5-6 phải là 429 (theo spec: 5/phone/15min)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 225 |\u001b[39m     expect(lastStatus)\u001b[33m.\u001b[39mtoBe(\u001b[35m429\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 226 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 227 |\u001b[39m\n \u001b[90m 228 |\u001b[39m   test(\u001b[32m'429 response có message thích hợp'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ request }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\tests\\e2e\\security\\security.spec.ts",
+                            "column": 24,
+                            "line": 225
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m429\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n  223 |\n  224 |     // Lần thứ 5-6 phải là 429 (theo spec: 5/phone/15min)\n> 225 |     expect(lastStatus).toBe(429);\n      |                        ^\n  226 |   });\n  227 |\n  228 |   test('429 response có message thích hợp', async ({ request }) => {\n    at D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\tests\\e2e\\security\\security.spec.ts:225:24"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "[5.4] Attempt 1: status 401\n"
+                        },
+                        {
+                          "text": "[5.4] Attempt 2: status 401\n"
+                        },
+                        {
+                          "text": "[5.4] Attempt 3: status 401\n"
+                        },
+                        {
+                          "text": "[5.4] Attempt 4: status 401\n"
+                        },
+                        {
+                          "text": "[5.4] Attempt 5: status 401\n"
+                        },
+                        {
+                          "text": "[5.4] Attempt 6: status 401\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-02T07:10:17.753Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\test-results\\security-security-5-4-—-Ra-fdd4e-ai-cùng-SĐT-→-lần-6-trả-429-desktop-chrome\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\antigravity\\claude_code\\hanie_claude\\hanie-studio\\tests\\e2e\\security\\security.spec.ts",
+                        "column": 24,
+                        "line": 225
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "383db6a520c6ba3bf4e3-bc2fb31d9dfd834d2e7f",
+              "file": "security/security.spec.ts",
+              "line": 201,
+              "column": 7
+            },
+            {
+              "title": "429 response có message thích hợp",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1424,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "[5.4] Rate limit not triggered within 6 attempts — rate_limit_log patch chưa chạy?\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-06-02T07:10:22.257Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "383db6a520c6ba3bf4e3-592437c89113973764b4",
+              "file": "security/security.spec.ts",
+              "line": 228,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-06-02T07:09:35.905Z",
+    "duration": 47842.247,
+    "expected": 9,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

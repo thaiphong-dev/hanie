@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Link, usePathname } from '@/lib/navigation';
 import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
+import { NotificationBell } from '@/components/shared/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
@@ -87,10 +88,10 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Right side: language + profile + CTA */}
+          {/* Right side: language + bell + profile + CTA */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageSwitcher variant={isHeroMode ? 'dark' : 'light'} />
-            
+            {user && <NotificationBell isLoggedIn={true} />}
             <Link
               href="/booking"
               className="font-body text-sm font-medium tracking-widest uppercase
@@ -193,6 +194,11 @@ export function Navbar() {
 
               <div className="mt-auto space-y-4">
                 <LanguageSwitcher variant="dark" />
+                {user && (
+                  <div className="flex justify-center">
+                    <NotificationBell isLoggedIn={true} />
+                  </div>
+                )}
                 
                 {user ? (
                   <Link

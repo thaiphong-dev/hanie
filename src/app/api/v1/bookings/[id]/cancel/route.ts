@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createServerClient } from '@/lib/supabase/server';
+import { sendNotification, getAdminIds } from '@/lib/notifications';
 
 const CancelSchema = z.object({
   reason: z.string().max(500).optional(),
@@ -35,7 +36,7 @@ export async function PATCH(
     // Fetch existing booking
     const { data: booking, error: fetchErr } = await supabase
       .from('bookings')
-      .select('id, customer_id, status, scheduled_at')
+      .select('id, customer_id, staff_id, status, scheduled_at')
       .eq('id', params.id)
       .single();
 
@@ -87,6 +88,22 @@ export async function PATCH(
       .single();
 
     if (updateErr || !updated) throw new Error(updateErr?.message ?? 'Update failed');
+
+    // Notify admin + assigned staff (fire-and-forget)
+    void (async () => {
+      const adminIds = await getAdminIds();
+      const recipients = booking.staff_id
+        ? Array.from(new Set([...adminIds, booking.staff_id as string]))
+        : adminIds;
+      await sendNotification({
+        userIds: recipients,
+        type: 'booking_cancelled_by_customer',
+        title: 'Khách hủy lịch hẹn',
+        body: `Lịch ${new Date(booking.scheduled_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} vừa bị hủy`,
+        data: { booking_id: booking.id },
+        url: `/admin/bookings?booking_id=${booking.id}`,
+      });
+    })();
 
     return NextResponse.json({ data: { booking_id: updated.id, status: updated.status }, error: null });
   } catch (err) {

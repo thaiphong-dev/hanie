@@ -179,6 +179,8 @@ export default function ServicesPage() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => openEdit(svc)}
+                    data-testid="edit-service-btn"
+                    aria-label="Chỉnh sửa dịch vụ"
                     className="p-2 hover:bg-bg-secondary rounded-lg text-text-muted hover:text-text-primary transition-colors"
                   >
                     <Pencil className="w-4 h-4" />
@@ -201,7 +203,7 @@ export default function ServicesPage() {
       {sheetOpen && (
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setSheetOpen(false)} />
-          <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto">
+          <div role="dialog" aria-modal="true" aria-label="Chỉnh sửa dịch vụ" className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-bg-secondary sticky top-0 bg-white">
               <h3 className="font-display text-base text-text-primary">
                 {editingId ? 'Chỉnh sửa dịch vụ' : t('add_service')}

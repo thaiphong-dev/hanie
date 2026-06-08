@@ -56,6 +56,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
       sessionStorage.setItem('user_full_name', user.full_name);
       sessionStorage.setItem('user_phone', user.phone);
       sessionStorage.setItem('user_role', user.role);
+      // Signal push notification prompt to show once per login session
+      sessionStorage.setItem('push_prompt_pending', 'true');
     }
     set({ user, isLoggedIn: true });
   },

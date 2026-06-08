@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { getCurrentUser, requireRole } from '@/lib/get-current-user';
 import { z } from 'zod';
+import { sendNotification, getAdminIds } from '@/lib/notifications';
 
 const CreateLeaveSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD'),
@@ -96,6 +97,18 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) throw new Error(error.message);
+
+    // Notify admin (fire-and-forget)
+    void getAdminIds().then((adminIds) =>
+      sendNotification({
+        userIds: adminIds,
+        type: 'leave_request_submitted',
+        title: 'Đơn xin nghỉ mới',
+        body: `${user!.full_name || user!.phone} xin nghỉ ngày ${date}: ${reason}`,
+        data: { leave_request_id: data!.id },
+        url: `/admin/staff/leave?leave_id=${data!.id}`,
+      }),
+    );
 
     return NextResponse.json({ data, error: null }, { status: 201 });
   } catch (err) {

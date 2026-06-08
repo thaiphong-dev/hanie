@@ -5,6 +5,7 @@ import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { AdminMobileNav } from '@/components/admin/AdminMobileNav';
 import { getLocale } from 'next-intl/server';
 import { AuthHydrator } from '@/components/auth/AuthHydrator';
+import { PushPromptModal } from '@/components/shared/PushPromptModal';
 
 export default async function AdminLayout({
   children,
@@ -38,6 +39,8 @@ export default async function AdminLayout({
 
       {/* Mobile Header + Bottom Nav */}
       <AdminMobileNav userRole={user.role} />
+
+      <PushPromptModal />
     </div>
   );
 }

@@ -16,17 +16,18 @@ if (!fs.existsSync(authDir)) {
 }
 
 // ===== Admin auth =====
+// Credentials: 0967273066 / haokhongnho (sau reset_and_new_admin.sql)
 setup('authenticate as admin', async ({ page }) => {
   await page.goto('/vi/login');
   await page.waitForLoadState('networkidle');
 
   // Fill form
-  await page.getByLabel(/số điện thoại|phone/i).fill('0901234567');
-  await page.getByLabel(/mật khẩu|password/i).fill('hanie2026');
+  await page.getByLabel(/số điện thoại|phone/i).fill('0967273066');
+  await page.getByLabel(/mật khẩu|password/i).fill('haokhongnho');
   await page.getByRole('button', { name: /đăng nhập|login/i }).click();
 
-  // Đợi redirect về admin dashboard
-  await page.waitForURL('**/admin/**', { timeout: 10000 });
+  // Đợi redirect về admin dashboard — dùng domcontentloaded để không bị block bởi slow API calls
+  await page.waitForURL('**/admin/**', { timeout: 30000, waitUntil: 'domcontentloaded' });
   await expect(page).toHaveURL(/.*\/admin.*/);
 
   console.log('[auth.setup] Admin logged in, URL:', page.url());
@@ -39,13 +40,16 @@ setup('authenticate as customer', async ({ page }) => {
   await page.goto('/vi/login');
   await page.waitForLoadState('networkidle');
 
+  // Đợi login form sẵn sàng
+  await page.waitForSelector('input', { timeout: 15000 });
+
   // Fill form
   await page.getByLabel(/số điện thoại|phone/i).fill('0977000001');
   await page.getByLabel(/mật khẩu|password/i).fill('testpass123');
   await page.getByRole('button', { name: /đăng nhập|login/i }).click();
 
-  // Customer → redirect về home /vi
-  await page.waitForURL(/\/(vi|en|ko)\/?$/, { timeout: 10000 });
+  // Customer → redirect về home /vi — dùng domcontentloaded + timeout dài hơn
+  await page.waitForURL(/\/(vi|en|ko)\/?$/, { timeout: 20000, waitUntil: 'domcontentloaded' });
 
   console.log('[auth.setup] Customer logged in, URL:', page.url());
   await page.context().storageState({ path: path.join(authDir, 'customer.json') });

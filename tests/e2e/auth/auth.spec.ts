@@ -159,7 +159,7 @@ test.describe('1.4 — Admin guard', () => {
     await expect(page).toHaveURL(/.*\/admin.*/);
 
     // Trang có nội dung dashboard (không chỉ là login page)
-    await expect(page.getByText(/dashboard|doanh thu|lịch hẹn|overview/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/dashboard|doanh thu|lịch hẹn|overview/i).first()).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -178,8 +178,10 @@ test.describe('1.5 — Logout', () => {
     await page.goto('/vi/profile');
     await page.waitForLoadState('networkidle');
 
-    // Click logout button
-    const logoutBtn = page.getByRole('button', { name: /đăng xuất|logout|sign out/i });
+    // Click logout button — có thể là button, link, hoặc trong dropdown
+    const logoutBtn = page.getByRole('button', { name: /đăng xuất|logout|sign out/i })
+      .or(page.getByRole('link', { name: /đăng xuất|logout|sign out/i }))
+      .first();
     await expect(logoutBtn).toBeVisible({ timeout: 5000 });
     await logoutBtn.click();
 

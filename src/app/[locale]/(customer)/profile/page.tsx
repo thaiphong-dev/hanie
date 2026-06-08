@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import {
   User,
   Crown,
@@ -131,7 +132,11 @@ export default function ProfilePage() {
 function ProfileContent() {
   const t = useTranslations();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabKey>('history');
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab') as TabKey | null;
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    tabParam && ['history', 'payments', 'vouchers', 'account'].includes(tabParam) ? tabParam : 'history',
+  );
 
   const TABS: Array<{ key: TabKey; label: string; icon: React.ElementType }> = [
     { key: 'history', label: t('history.title'), icon: Clock },
@@ -248,10 +253,12 @@ function HistoryTab() {
   return (
     <div>
       {/* Sub-tabs */}
-      <div className="flex border-b border-border mb-6">
+      <div className="flex border-b border-border mb-6" role="tablist">
         {bookingTabKeys.map((tab) => (
           <button
             key={tab}
+            role="tab"
+            aria-selected={activeTab === tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
               'flex-1 font-body text-xs py-2.5 border-b-2 transition-colors',
@@ -1043,6 +1050,8 @@ function AccountTab() {
       <section className="pt-4 border-t border-border">
         <button
           onClick={handleLogout}
+          data-testid="logout-btn"
+          aria-label={t('profile.logout')}
           className="flex items-center gap-2 font-body text-sm text-red-500 hover:text-red-700 transition-colors"
         >
           <LogOut size={16} />

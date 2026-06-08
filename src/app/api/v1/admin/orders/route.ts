@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { getCurrentUser, requireRole } from '@/lib/get-current-user';
 import { z } from 'zod';
+import { sendNotification } from '@/lib/notifications';
 
 const OrderItemSchema = z.object({
   service_id: z.string().uuid().nullable().optional(),
@@ -194,6 +195,21 @@ export async function POST(req: NextRequest) {
           // Non-critical — order already created successfully
         }
       })();
+    }
+
+    // Notify customer về thanh toán thành công (fire-and-forget)
+    if (customer_id) {
+      const METHOD_LABEL: Record<string, string> = { cash: 'tiền mặt', transfer: 'chuyển khoản', card: 'thẻ' };
+      const methodLabel = METHOD_LABEL[method] ?? method;
+      const formattedTotal = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(total);
+      void sendNotification({
+        userIds: customer_id,
+        type: 'payment_received',
+        title: 'Thanh toán thành công',
+        body: `Hoá đơn ${formattedTotal} đã được thanh toán bằng ${methodLabel}. Cảm ơn bạn!`,
+        data: { order_id: order.id, ...(booking_id ? { booking_id } : {}) },
+        url: booking_id ? `/history?booking_id=${booking_id}` : '/profile?tab=payments',
+      });
     }
 
     return NextResponse.json({

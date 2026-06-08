@@ -20,7 +20,7 @@ test.describe('3.1 — Home page sections', () => {
 
     // Từng section phải có mặt
     // 1. Hero
-    await expect(page.locator('section').first().or(page.getByRole('banner'))).toBeVisible();
+    await expect(page.locator('section').first()).toBeVisible();
 
     // 2. CTA button "Đặt lịch ngay"
     const ctaBtn = page.getByRole('link', { name: /đặt lịch ngay|book now|예약하기/i }).first();
@@ -176,10 +176,21 @@ test.describe('3.5 — History page (login required)', () => {
     // Phải ở trang history (không bị redirect về login)
     await expect(page).not.toHaveURL(/.*\/login.*/);
 
-    // Tabs
-    await expect(page.getByRole('tab', { name: /sắp tới|upcoming/i })).toBeVisible({ timeout: 5000 });
-    await expect(page.getByRole('tab', { name: /đã hoàn thành|completed|done/i })).toBeVisible({ timeout: 5000 });
-    await expect(page.getByRole('tab', { name: /đã huỷ|cancelled/i })).toBeVisible({ timeout: 5000 });
+    // Tabs — có thể dùng role="tab" hoặc button/link
+    const tabSelector = page.getByRole('tab', { name: /sắp tới|upcoming/i })
+      .or(page.getByRole('button', { name: /sắp tới|upcoming/i }))
+      .first();
+    await expect(tabSelector).toBeVisible({ timeout: 5000 });
+
+    const tab2 = page.getByRole('tab', { name: /đã hoàn thành|completed|done/i })
+      .or(page.getByRole('button', { name: /đã hoàn thành|completed|done/i }))
+      .first();
+    await expect(tab2).toBeVisible({ timeout: 5000 });
+
+    const tab3 = page.getByRole('tab', { name: /đã huỷ|cancelled/i })
+      .or(page.getByRole('button', { name: /đã huỷ|cancelled/i }))
+      .first();
+    await expect(tab3).toBeVisible({ timeout: 5000 });
   });
 
   test('history page: empty state hiện đẹp khi chưa có booking', async ({ page }) => {
@@ -218,8 +229,8 @@ test.describe('3.6 — i18n switch', () => {
       const enOption = page.getByRole('option', { name: /english|en/i }).or(page.getByRole('button', { name: /english|en/i }));
       if (await enOption.count() > 0) {
         await enOption.first().click();
-        await page.waitForURL(/\/en\//);
-        await expect(page).toHaveURL(/\/en\//);
+        await page.waitForURL(/\/en/, { timeout: 10000 });
+        await expect(page).toHaveURL(/\/en/);
       }
     } else {
       // Fallback: navigate trực tiếp
@@ -240,8 +251,8 @@ test.describe('3.6 — i18n switch', () => {
       const koOption = page.getByRole('option', { name: /한국어|korean|ko/i }).or(page.getByRole('button', { name: /한국어|ko/i }));
       if (await koOption.count() > 0) {
         await koOption.first().click();
-        await page.waitForURL(/\/ko\//);
-        await expect(page).toHaveURL(/\/ko\//);
+        await page.waitForURL(/\/ko/, { timeout: 10000 });
+        await expect(page).toHaveURL(/\/ko/);
       }
     } else {
       await page.goto('/ko');

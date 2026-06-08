@@ -62,7 +62,7 @@ export async function PATCH(req: NextRequest) {
       .from('users')
       .update({ full_name: parsed.data.full_name })
       .eq('id', userId)
-      .select('id, full_name, phone, avatar_url, member_tier, total_spent, birthday')
+      .select('id, full_name, phone, avatar_url, member_tier, total_spent, loyalty_points')
       .single();
 
     if (error) throw new Error(error.message);

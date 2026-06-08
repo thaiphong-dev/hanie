@@ -2,6 +2,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { BottomTabBar } from '@/components/layout/BottomTabBar';
 import { ZaloChatWidget } from '@/components/shared/ZaloChatWidget';
+import { PushPromptModal } from '@/components/shared/PushPromptModal';
 
 export default function CustomerLayout({
   children,
@@ -19,6 +20,8 @@ export default function CustomerLayout({
 
       {/* Zalo Chat Widget — chỉ hiện trên trang customer, không hiện trong admin */}
       {zaloOaId && <ZaloChatWidget oaId={zaloOaId} />}
+
+      <PushPromptModal />
     </div>
   );
 }

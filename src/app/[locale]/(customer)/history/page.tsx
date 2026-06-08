@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { CalendarDays, Clock, User } from 'lucide-react';
 import { AuthGuard } from '@/components/shared/AuthGuard';
 import { Link } from '@/lib/navigation';
@@ -54,6 +55,8 @@ export default function HistoryPage() {
 function HistoryContent() {
   const t = useTranslations();
   const locale = useLocale() as Locale;
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('booking_id');
 
   const [activeTab, setActiveTab] = useState<TabKey>('upcoming');
   const [bookings, setBookings] = useState<BookingWithServices[]>([]);
@@ -101,6 +104,20 @@ function HistoryContent() {
     }
   }
 
+  // Auto-switch tab and scroll to booking when arriving from a notification deep link
+  useEffect(() => {
+    if (!highlightId || loading || bookings.length === 0) return;
+    const found = bookings.find((b) => b.id === highlightId);
+    if (!found) return;
+    const targetTab = (Object.entries(TAB_STATUSES) as [TabKey, BookingStatus[]][]).find(
+      ([, statuses]) => statuses.includes(found.status),
+    )?.[0] ?? 'upcoming';
+    setActiveTab(targetTab);
+    setTimeout(() => {
+      document.getElementById(`booking-${highlightId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }, [highlightId, loading, bookings]);
+
   const tabKeys: TabKey[] = ['upcoming', 'completed', 'cancelled'];
 
   const filtered = bookings.filter((b) => TAB_STATUSES[activeTab].includes(b.status));
@@ -117,10 +134,12 @@ function HistoryContent() {
       {/* Tabs */}
       <div className="sticky top-16 z-30 bg-bg-secondary/95 backdrop-blur-sm border-b border-border">
         <div className="mx-auto max-w-2xl px-4">
-          <div className="flex">
+          <div className="flex" role="tablist">
             {tabKeys.map((tab) => (
               <button
                 key={tab}
+                role="tab"
+                aria-selected={activeTab === tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
                   'flex-1 font-body text-sm py-3.5 border-b-2 transition-colors',
@@ -179,7 +198,13 @@ function HistoryContent() {
             return (
               <div
                 key={booking.id}
-                className="bg-bg-primary border border-border rounded-2xl p-5"
+                id={`booking-${booking.id}`}
+                className={cn(
+                  'bg-bg-primary border rounded-2xl p-5 transition-shadow',
+                  booking.id === highlightId
+                    ? 'border-accent ring-2 ring-accent/30 shadow-md'
+                    : 'border-border',
+                )}
               >
                 {/* Status badge */}
                 <div className="flex items-start justify-between mb-3">

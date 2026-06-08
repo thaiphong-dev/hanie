@@ -11,6 +11,7 @@ export default defineConfig({
     ['json', { outputFile: 'tests/reports/results.json' }],
     ['list'],
   ],
+  timeout: 60000, // 60s per test (booking flow có nhiều bước)
   use: {
     baseURL: process.env.TEST_BASE_URL ?? 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -18,6 +19,7 @@ export default defineConfig({
     video: 'retain-on-failure',
     locale: 'vi-VN',
     timezoneId: 'Asia/Ho_Chi_Minh',
+    actionTimeout: 15000, // 15s per action
     // Dùng Chrome hệ thống thay vì download Playwright chromium
     channel: 'chrome',
   },

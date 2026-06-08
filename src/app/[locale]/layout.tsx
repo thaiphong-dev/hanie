@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { Gowun_Batang, Noto_Sans } from 'next/font/google';
+import { ServiceWorkerRegister } from '@/components/shared/ServiceWorkerRegister';
 import '../globals.css';
 
 const gowunBatang = Gowun_Batang({
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
     default: 'Hanie in Quy Nhon — Studio Làm Đẹp',
   },
   description: 'Nối mi · Lông mày · Gội đầu · Nail. 55 Nguyễn Nhạc, Quy Nhơn.',
+  manifest: '/manifest.json',
   openGraph: {
     siteName: 'Hanie in Quy Nhon',
     locale: 'vi_VN',
@@ -50,6 +52,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

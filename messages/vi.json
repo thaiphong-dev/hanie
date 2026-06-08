@@ -43,7 +43,7 @@
     "hero_eyebrow": "Hanie in Quy Nhon · Studio Làm Đẹp",
     "hero_title": "Đôi mắt đẹp hơn\nmỗi sáng thức dậy",
     "hero_title_accent": "sáng thức dậy",
-    "hero_sub": "Nối mi · Lông mày · Gội đầu · Nail\n09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai",
+    "hero_sub": "Nối mi · Lông mày · Gội đầu · Nail\n55 Nguyễn Nhạc, Quy Nhơn, Bình Định",
     "services_eyebrow": "DỊCH VỤ",
     "services_title": "Trải nghiệm làm đẹp\nđẳng cấp",
     "services_desc": "Chúng tôi mang đến dịch vụ làm đẹp chuyên nghiệp với đội ngũ kỹ thuật viên lành nghề.",
@@ -62,7 +62,7 @@
     "open_hours_title": "Giờ mở cửa",
     "open_hours_value": "08:00 – 20:00 hàng ngày",
     "address_title": "Địa chỉ",
-    "address_value": "09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai",
+    "address_value": "55 Nguyễn Nhạc, Quy Nhơn, Bình Định",
     "cta_book": "Đặt lịch ngay",
     "cta_services": "Xem dịch vụ"
   },
@@ -147,7 +147,7 @@
     "title": "Tìm đường đến Hanie Studio",
     "eyebrow": "ĐỊA CHỈ STUDIO",
     "address_label": "Địa chỉ",
-    "address_value": "09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai",
+    "address_value": "55 Nguyễn Nhạc, Quy Nhơn, Bình Định",
     "hours_label": "Giờ mở cửa",
     "hours_value": "Thứ 2 – Chủ nhật: 08:00 – 20:00",
     "phone_label": "Liên hệ",
@@ -280,7 +280,8 @@
     "have_account": "Đã có tài khoản?",
     "no_account": "Chưa có tài khoản?",
     "login_link": "Đăng nhập ngay",
-    "register_link": "Đăng ký ngay"
+    "register_link": "Đăng ký ngay",
+    "invalid_phone": "Số điện thoại không hợp lệ (VD: 0901234567)"
   },
   "admin": {
     "dashboard": "Tổng quan",
@@ -490,11 +491,11 @@
     "login_hint": "Đăng nhập để xem lịch sử và tích điểm"
   },
   "footer": {
-    "tagline": "Studio làm đẹp tại Gia Lai. Nối mi · Lông mày · Gội đầu · Nail.",
+    "tagline": "Studio làm đẹp tại Quy Nhơn. Nối mi · Lông mày · Gội đầu · Nail.",
     "services": "Dịch vụ",
     "info": "Thông tin",
     "quick_book": "Đặt lịch nhanh",
-    "address": "09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai",
+    "address": "55 Nguyễn Nhạc, Quy Nhơn, Bình Định",
     "phone": "0967 273 066",
     "hours": "08:00 – 20:00 hàng ngày"
   }

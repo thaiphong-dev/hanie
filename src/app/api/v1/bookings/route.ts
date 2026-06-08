@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createServerClient } from '@/lib/supabase/server';
 import { resolveGuestCustomer } from '@/lib/guest-booking';
+import { sendNotification, getAdminIds } from '@/lib/notifications';
 
-const PHONE_REGEX = /^(0[35789])+([0-9]{8})$/;
+const PHONE_REGEX = /^0[35789][0-9]{8}$/;
 const WORK_START_HOUR = 8;
 const WORK_END_HOUR = 20;
 
@@ -144,6 +145,18 @@ export async function POST(req: NextRequest) {
 
     const { error: bsErr } = await supabase.from('booking_services').insert(bookingServices);
     if (bsErr) throw new Error(bsErr.message);
+
+    // Notify admin (fire-and-forget, không block response)
+    void getAdminIds().then((adminIds) =>
+      sendNotification({
+        userIds: adminIds,
+        type: 'new_booking',
+        title: 'Lịch hẹn mới',
+        body: `${customer_name} vừa đặt lịch lúc ${new Date(scheduled_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`,
+        data: { booking_id: booking.id },
+        url: `/admin/bookings?booking_id=${booking.id}`,
+      }),
+    );
 
     return NextResponse.json(
       {

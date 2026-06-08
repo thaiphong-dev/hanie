@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server';
 const DEFAULT_GUEST_PASSWORD = 'hanie2020xinchao';
 
 // Regex SĐT Việt Nam
-const PHONE_REGEX = /^(0[35789])+([0-9]{8})$/;
+const PHONE_REGEX = /^0[35789][0-9]{8}$/;
 
 export interface ResolveResult {
   customerId: string;

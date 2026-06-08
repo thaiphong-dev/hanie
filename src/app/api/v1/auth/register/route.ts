@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase/server';
 import { signAccessToken, signRefreshToken } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rate-limit';
 
-const PHONE_REGEX = /^(0[35789])+([0-9]{8})$/;
+const PHONE_REGEX = /^0[35789][0-9]{8}$/;
 
 const RegisterSchema = z.object({
   phone: z.string().regex(PHONE_REGEX, 'INVALID_PHONE'),

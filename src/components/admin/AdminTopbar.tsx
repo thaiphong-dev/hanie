@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { NotificationBell } from '@/components/shared/NotificationBell';
 
 const ROUTE_NAME_MAP: Record<string, string> = {
   dashboard: 'dashboard',
@@ -65,6 +66,10 @@ export function AdminTopbar({ userName }: AdminTopbarProps) {
         <p className="font-body text-xs text-text-muted capitalize">{today}</p>
       </div>
 
+      {/* Right: Bell + Avatar */}
+      <div className="flex items-center gap-2">
+      <NotificationBell isLoggedIn />
+
       {/* Avatar dropdown */}
       <div className="relative">
         <button
@@ -96,6 +101,7 @@ export function AdminTopbar({ userName }: AdminTopbarProps) {
             </div>
           </>
         )}
+      </div>
       </div>
     </header>
   );

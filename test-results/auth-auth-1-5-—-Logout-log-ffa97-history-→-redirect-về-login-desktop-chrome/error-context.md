@@ -12,10 +12,17 @@
 # Error details
 
 ```
-TimeoutError: page.waitForURL: Timeout 10000ms exceeded.
-=========================== logs ===========================
-waiting for navigation until "load"
-============================================================
+Error: expect(locator).toBeVisible() failed
+
+Locator: getByRole('button', { name: /đăng xuất|logout|sign out/i }).or(getByRole('link', { name: /đăng xuất|logout|sign out/i })).first()
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for getByRole('button', { name: /đăng xuất|logout|sign out/i }).or(getByRole('link', { name: /đăng xuất|logout|sign out/i })).first()
+
 ```
 
 # Page snapshot
@@ -24,47 +31,108 @@ waiting for navigation until "load"
 - generic [active] [ref=e1]:
   - generic [ref=e2]:
     - banner [ref=e3]:
-      - link "Hanie Studio" [ref=e4] [cursor=pointer]:
-        - /url: /vi
-        - img "Hanie Studio" [ref=e5]
-    - main [ref=e6]:
-      - generic [ref=e8]:
-        - heading "Đăng nhập" [level=1] [ref=e9]
-        - generic [ref=e10]:
-          - generic [ref=e11]:
-            - generic [ref=e12]: Số điện thoại
-            - textbox "Số điện thoại" [ref=e13]:
-              - /placeholder: 0901 234 567
-              - text: "0977000001"
+      - generic [ref=e4]:
+        - link "Hanie Studio" [ref=e5] [cursor=pointer]:
+          - /url: /vi
+          - img "Hanie Studio" [ref=e6]
+        - navigation [ref=e7]:
+          - link "Trang chủ" [ref=e8] [cursor=pointer]:
+            - /url: /vi
+          - link "Dịch vụ" [ref=e9] [cursor=pointer]:
+            - /url: /vi/services
+          - link "Thư viện ảnh" [ref=e10] [cursor=pointer]:
+            - /url: /vi/gallery
+          - link "Đặt lịch" [ref=e11] [cursor=pointer]:
+            - /url: /vi/booking
+          - link "Địa chỉ" [ref=e12] [cursor=pointer]:
+            - /url: /vi/location
+        - generic [ref=e13]:
           - generic [ref=e14]:
-            - generic [ref=e15]: Mật khẩu
-            - textbox "Mật khẩu" [ref=e16]:
-              - /placeholder: Nhập mật khẩu
-              - text: testpass123
-          - paragraph [ref=e17]: Quá nhiều lần thử. Vui lòng đợi 15 phút.
-          - button "Đăng nhập" [ref=e18] [cursor=pointer]
-        - paragraph [ref=e19]:
-          - text: Chưa có tài khoản?
-          - link "Đăng ký ngay" [ref=e20] [cursor=pointer]:
-            - /url: /vi/register
-    - contentinfo [ref=e21]:
-      - paragraph [ref=e22]: © 2026 Hanie Studio
-  - alert [ref=e23]
+            - button "Switch to VI" [ref=e15] [cursor=pointer]: VI
+            - button "Switch to EN" [ref=e16] [cursor=pointer]: EN
+            - button "Switch to KO" [ref=e17] [cursor=pointer]: KO
+          - button "Thông báo" [ref=e19] [cursor=pointer]:
+            - img [ref=e20]
+          - link "Đặt lịch ngay" [ref=e23] [cursor=pointer]:
+            - /url: /vi/booking
+          - link [ref=e24] [cursor=pointer]:
+            - /url: /vi/profile
+            - img [ref=e25]
+    - main [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e32]:
+          - img [ref=e34]
+          - generic [ref=e37]:
+            - paragraph
+            - paragraph [ref=e38]: "0977000001"
+        - generic [ref=e41]:
+          - button "Lịch sử đặt lịch" [ref=e42] [cursor=pointer]:
+            - img [ref=e43]
+            - text: Lịch sử đặt lịch
+          - button "Lịch sử thanh toán" [ref=e46] [cursor=pointer]:
+            - img [ref=e47]
+            - text: Lịch sử thanh toán
+          - button "Voucher của tôi" [ref=e50] [cursor=pointer]:
+            - img [ref=e51]
+            - text: Voucher của tôi
+          - button "Hồ sơ cá nhân" [ref=e54] [cursor=pointer]:
+            - img [ref=e55]
+            - text: Hồ sơ cá nhân
+        - generic [ref=e59]:
+          - tablist [ref=e60]:
+            - tab "Sắp tới" [selected] [ref=e61] [cursor=pointer]
+            - tab "Hoàn thành" [ref=e62] [cursor=pointer]
+            - tab "Đã huỷ" [ref=e63] [cursor=pointer]
+          - generic [ref=e64]:
+            - paragraph [ref=e65]: Bạn chưa có lịch hẹn nào
+            - paragraph [ref=e66]: Đặt lịch ngay để trải nghiệm dịch vụ của chúng tôi
+            - link "Đặt lịch ngay" [ref=e67] [cursor=pointer]:
+              - /url: /vi/booking
+    - contentinfo [ref=e68]:
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - img "Hanie Studio" [ref=e72]
+            - paragraph [ref=e73]: Studio làm đẹp tại Quy Nhơn. Nối mi · Lông mày · Gội đầu · Nail.
+          - generic [ref=e74]:
+            - heading "Dịch vụ" [level=4] [ref=e75]
+            - list [ref=e76]:
+              - listitem [ref=e77]:
+                - link "Nail" [ref=e78] [cursor=pointer]:
+                  - /url: /vi/services#nail
+              - listitem [ref=e79]:
+                - link "Nối mi" [ref=e80] [cursor=pointer]:
+                  - /url: /vi/services#lash
+              - listitem [ref=e81]:
+                - link "Lông mày" [ref=e82] [cursor=pointer]:
+                  - /url: /vi/services#brow
+              - listitem [ref=e83]:
+                - link "Gội đầu" [ref=e84] [cursor=pointer]:
+                  - /url: /vi/services#hair_wash
+          - generic [ref=e85]:
+            - heading "Thông tin" [level=4] [ref=e86]
+            - list [ref=e87]:
+              - listitem [ref=e88]:
+                - img [ref=e89]
+                - generic [ref=e92]: 55 Nguyễn Nhạc, Quy Nhơn, Bình Định
+              - listitem [ref=e93]:
+                - img [ref=e94]
+                - link "0967 273 066" [ref=e96] [cursor=pointer]:
+                  - /url: tel:0967273066
+              - listitem [ref=e97]:
+                - img [ref=e98]
+                - generic [ref=e101]: 08:00 – 20:00 hàng ngày
+          - generic [ref=e102]:
+            - heading "Đặt lịch nhanh" [level=4] [ref=e103]
+            - link "Đặt lịch ngay" [ref=e104] [cursor=pointer]:
+              - /url: /vi/booking
+        - paragraph [ref=e106]: © 2026 Hanie Studio. All rights reserved.
+  - alert [ref=e107]
 ```
 
 # Test source
 
 ```ts
-  75  |     await page.getByLabel(/số điện thoại|phone/i).fill(CUSTOMER_PHONE);
-  76  |     await page.getByLabel(/mật khẩu|password/i).fill(CUSTOMER_PASSWORD);
-  77  |     await page.getByRole('button', { name: /đăng nhập|login/i }).click();
-  78  | 
-  79  |     // Redirect về callbackUrl
-  80  |     await page.waitForURL(/.*\/history.*/, { timeout: 10000 });
-  81  |     await expect(page).toHaveURL(/.*\/history.*/);
-  82  |   });
-  83  | 
-  84  |   test('sai mật khẩu → thấy error message, KHÔNG crash', async ({ page }) => {
   85  |     await page.goto('/vi/login');
   86  |     await page.waitForLoadState('networkidle');
   87  | 
@@ -142,7 +210,7 @@ waiting for navigation until "load"
   159 |     await expect(page).toHaveURL(/.*\/admin.*/);
   160 | 
   161 |     // Trang có nội dung dashboard (không chỉ là login page)
-  162 |     await expect(page.getByText(/dashboard|doanh thu|lịch hẹn|overview/i)).toBeVisible({ timeout: 5000 });
+  162 |     await expect(page.getByText(/dashboard|doanh thu|lịch hẹn|overview/i).first()).toBeVisible({ timeout: 5000 });
   163 |   });
   164 | });
   165 | 
@@ -155,26 +223,28 @@ waiting for navigation until "load"
   172 |     await page.getByLabel(/số điện thoại|phone/i).fill(CUSTOMER_PHONE);
   173 |     await page.getByLabel(/mật khẩu|password/i).fill(CUSTOMER_PASSWORD);
   174 |     await page.getByRole('button', { name: /đăng nhập|login/i }).click();
-> 175 |     await page.waitForURL(/\/(vi|en|ko)\/?$/, { timeout: 10000 });
-      |                ^ TimeoutError: page.waitForURL: Timeout 10000ms exceeded.
+  175 |     await page.waitForURL(/\/(vi|en|ko)\/?$/, { timeout: 10000 });
   176 | 
   177 |     // Logout — thường qua Profile hoặc Navbar
   178 |     await page.goto('/vi/profile');
   179 |     await page.waitForLoadState('networkidle');
   180 | 
-  181 |     // Click logout button
-  182 |     const logoutBtn = page.getByRole('button', { name: /đăng xuất|logout|sign out/i });
-  183 |     await expect(logoutBtn).toBeVisible({ timeout: 5000 });
-  184 |     await logoutBtn.click();
-  185 | 
-  186 |     // Đợi redirect
-  187 |     await page.waitForLoadState('networkidle');
-  188 | 
-  189 |     // Bây giờ vào /history → phải redirect về login
-  190 |     await page.goto('/vi/history');
-  191 |     await page.waitForURL(/.*\/login.*/, { timeout: 8000 });
-  192 |     await expect(page).toHaveURL(/.*\/login.*/);
-  193 |   });
-  194 | });
-  195 | 
+  181 |     // Click logout button — có thể là button, link, hoặc trong dropdown
+  182 |     const logoutBtn = page.getByRole('button', { name: /đăng xuất|logout|sign out/i })
+  183 |       .or(page.getByRole('link', { name: /đăng xuất|logout|sign out/i }))
+  184 |       .first();
+> 185 |     await expect(logoutBtn).toBeVisible({ timeout: 5000 });
+      |                             ^ Error: expect(locator).toBeVisible() failed
+  186 |     await logoutBtn.click();
+  187 | 
+  188 |     // Đợi redirect
+  189 |     await page.waitForLoadState('networkidle');
+  190 | 
+  191 |     // Bây giờ vào /history → phải redirect về login
+  192 |     await page.goto('/vi/history');
+  193 |     await page.waitForURL(/.*\/login.*/, { timeout: 8000 });
+  194 |     await expect(page).toHaveURL(/.*\/login.*/);
+  195 |   });
+  196 | });
+  197 | 
 ```

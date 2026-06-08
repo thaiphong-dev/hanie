@@ -474,4 +474,5 @@ export type NotificationType =
   | 'leave_request_submitted'
   | 'leave_request_approved'
   | 'leave_request_rejected'
-  | 'voucher_received';
+  | 'voucher_received'
+  | 'payment_received';

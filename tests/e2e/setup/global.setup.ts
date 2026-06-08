@@ -34,31 +34,56 @@ setup('seed test accounts', async () => {
   if (SERVICE_KEY) {
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Hash passwords mới với bcrypt cost=10
-    const adminHash = await bcrypt.hash('hanie2026', 10);
-    const staffHash = await bcrypt.hash('hanie2026', 10);
-
-    // Reset admin password
-    const adminUpdate = await supabase
+    // Admin mới: 0967273066 / haokhongnho (sau khi chạy reset_and_new_admin.sql)
+    // Kiểm tra admin tồn tại, nếu không thì tạo lại
+    const { data: adminUser } = await supabase
       .from('users')
-      .update({ password_hash: adminHash })
-      .eq('phone', '0901234567');
-    if (adminUpdate.error) {
-      console.warn('[global.setup] Admin password reset error:', adminUpdate.error.message);
+      .select('id, phone')
+      .eq('phone', '0967273066')
+      .single();
+
+    if (!adminUser) {
+      const adminHash = await bcrypt.hash('haokhongnho', 10);
+      const { error } = await supabase.from('users').insert({
+        phone: '0967273066',
+        password_hash: adminHash,
+        role: 'admin',
+        full_name: 'Hanie Admin',
+        is_active: true,
+      });
+      if (error) {
+        console.warn('[global.setup] Create admin error:', error.message);
+      } else {
+        console.log('[global.setup] Admin created: 0967273066/haokhongnho ✓');
+      }
     } else {
-      console.log('[global.setup] Admin password reset: 0901234567/hanie2026 ✓');
+      console.log('[global.setup] Admin exists: 0967273066/haokhongnho ✓');
     }
 
-    // Reset staff passwords
-    for (const phone of ['0912345678', '0923456789']) {
-      const update = await supabase
+    // Tạo/kiểm tra staff test accounts
+    const staffAccounts = [
+      { phone: '0912345678', name: 'Hanie', password: 'hanie2026' },
+      { phone: '0923456789', name: 'Lan', password: 'hanie2026' },
+    ];
+    for (const acc of staffAccounts) {
+      const { data: existing } = await supabase
         .from('users')
-        .update({ password_hash: staffHash })
-        .eq('phone', phone);
-      if (update.error) {
-        console.warn(`[global.setup] Staff ${phone} password reset error:`, update.error.message);
+        .select('id')
+        .eq('phone', acc.phone)
+        .single();
+      if (!existing) {
+        const hash = await bcrypt.hash(acc.password, 10);
+        const { error } = await supabase.from('users').insert({
+          phone: acc.phone,
+          password_hash: hash,
+          role: 'staff',
+          full_name: acc.name,
+          is_active: true,
+        });
+        if (error) console.warn(`[global.setup] Staff ${acc.phone} error:`, error.message);
+        else console.log(`[global.setup] Staff created: ${acc.phone}/${acc.password} ✓`);
       } else {
-        console.log(`[global.setup] Staff password reset: ${phone}/hanie2026 ✓`);
+        console.log(`[global.setup] Staff exists: ${acc.phone} ✓`);
       }
     }
   } else {
