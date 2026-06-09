@@ -1,19 +1,29 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ChevronRight, Zap, User, CalendarDays, Clock, Copy, CalendarPlus } from 'lucide-react';
-import { Link } from '@/lib/navigation';
-import { DatePicker } from '@/components/shared/DatePicker';
-import { getLocaleText, formatDate } from '@/lib/i18n-helpers';
-import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/authStore';
-import type { Database } from '@/types/database';
-import type { Locale } from '@/lib/navigation';
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Check,
+  ChevronRight,
+  Zap,
+  User,
+  CalendarDays,
+  Clock,
+  Copy,
+  CalendarPlus,
+} from "lucide-react";
+import { Link } from "@/lib/navigation";
+import { DatePicker } from "@/components/shared/DatePicker";
+import { getLocaleText, formatDate } from "@/lib/i18n-helpers";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
+import type { Database } from "@/types/database";
+import type { Locale } from "@/lib/navigation";
 
-type BookingCategory = Database['public']['Tables']['booking_categories']['Row'];
+type BookingCategory =
+  Database["public"]["Tables"]["booking_categories"]["Row"];
 
 interface TimeSlot {
   time: string;
@@ -29,14 +39,19 @@ interface StaffOption {
   avatar_url: string | null;
 }
 
-const STEPS = ['step_service', 'step_datetime', 'step_staff', 'step_confirm'] as const;
+const STEPS = [
+  "step_service",
+  "step_datetime",
+  "step_staff",
+  "step_confirm",
+] as const;
 
 type Step = 0 | 1 | 2 | 3 | 4; // 4 = success
 
 const slideVariants = {
-  enter: (dir: number) => ({ x: dir > 0 ? '100%' : '-100%', opacity: 0 }),
+  enter: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir < 0 ? '100%' : '-100%', opacity: 0 }),
+  exit: (dir: number) => ({ x: dir < 0 ? "100%" : "-100%", opacity: 0 }),
 };
 
 function BookingContent() {
@@ -46,38 +61,42 @@ function BookingContent() {
 
   // Auth — hydrate from sessionStorage on mount, no API call
   const { user, hydrate } = useAuthStore();
-  useEffect(() => { hydrate(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    hydrate();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── State ──
   const [step, setStep] = useState<Step>(0);
   const [direction, setDirection] = useState(1);
 
   // Step 0 — Select booking category
-  const [bookingCategories, setBookingCategories] = useState<BookingCategory[]>([]);
+  const [bookingCategories, setBookingCategories] = useState<BookingCategory[]>(
+    [],
+  );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 
   // Step 1 — Date & time
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
-  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [selectedTime, setSelectedTime] = useState<string>("");
   const [parallelAvailable, setParallelAvailable] = useState(false);
   const [useParallel, setUseParallel] = useState(false);
 
   // Step 2 — Staff
   const [staffList, setStaffList] = useState<StaffOption[]>([]);
-  const [selectedStaffId, setSelectedStaffId] = useState<string>('');
+  const [selectedStaffId, setSelectedStaffId] = useState<string>("");
 
   // Step 3 — Confirm
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [notes, setNotes] = useState('');
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState("");
 
   // Success
   const [isNewAccount, setIsNewAccount] = useState(false);
-  const [newAccountPhone, setNewAccountPhone] = useState('');
+  const [newAccountPhone, setNewAccountPhone] = useState("");
   const [bookingSummary, setBookingSummary] = useState<{
     services: string[];
     date: string;
@@ -91,13 +110,13 @@ function BookingContent() {
 
   // ── Load booking categories ──
   useEffect(() => {
-    fetch('/api/v1/booking-categories')
+    fetch("/api/v1/booking-categories")
       .then((r) => r.json())
       .then((json: { data: BookingCategory[] | null }) => {
         const cats = json.data ?? [];
         setBookingCategories(cats);
         // Pre-select from URL param (by slug)
-        const preselect = searchParams.get('category');
+        const preselect = searchParams.get("category");
         if (preselect) {
           const match = cats.find((c) => c.slug === preselect);
           if (match) setSelectedCategoryIds([match.id]);
@@ -109,10 +128,12 @@ function BookingContent() {
   // ── Load staff when entering step 2 ──
   useEffect(() => {
     if (step !== 2) return;
-    const dateParam = selectedDate ? `?date=${selectedDate}` : '';
+    const dateParam = selectedDate ? `?date=${selectedDate}` : "";
     fetch(`/api/v1/staff${dateParam}`)
       .then((r) => r.json())
-      .then((json: { data: StaffOption[] | null }) => setStaffList(json.data ?? []))
+      .then((json: { data: StaffOption[] | null }) =>
+        setStaffList(json.data ?? []),
+      )
       .catch(() => setStaffList([]));
   }, [step, selectedDate]);
 
@@ -120,8 +141,8 @@ function BookingContent() {
   // Prefill on mount (via hydrate) AND whenever user becomes available
   useEffect(() => {
     if (user) {
-      setCustomerName((prev) => prev || user.full_name || '');
-      setCustomerPhone((prev) => prev || user.phone || '');
+      setCustomerName((prev) => prev || user.full_name || "");
+      setCustomerPhone((prev) => prev || user.phone || "");
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -130,8 +151,8 @@ function BookingContent() {
     if (!selectedDate || selectedCategoryIds.length === 0) return;
     setSlotsLoading(true);
     try {
-      const ids = selectedCategoryIds.join(',');
-      const staffParam = selectedStaffId ? `&staff_id=${selectedStaffId}` : '';
+      const ids = selectedCategoryIds.join(",");
+      const staffParam = selectedStaffId ? `&staff_id=${selectedStaffId}` : "";
       const res = await fetch(
         `/api/v1/availability?date=${selectedDate}&booking_category_ids=${ids}${staffParam}`,
       );
@@ -163,13 +184,15 @@ function BookingContent() {
   // ── Submit ──
   async function handleSubmit() {
     setSubmitting(true);
-    setSubmitError('');
+    setSubmitError("");
     try {
-      const scheduledAt = new Date(`${selectedDate}T${selectedTime}:00+07:00`).toISOString();
+      const scheduledAt = new Date(
+        `${selectedDate}T${selectedTime}:00+07:00`,
+      ).toISOString();
 
-      const res = await fetch('/api/v1/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/v1/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           booking_category_ids: selectedCategoryIds,
           scheduled_at: scheduledAt,
@@ -182,12 +205,16 @@ function BookingContent() {
       });
 
       const json = (await res.json()) as {
-        data: { booking_id: string; is_new_account?: boolean; customer_phone?: string } | null;
+        data: {
+          booking_id: string;
+          is_new_account?: boolean;
+          customer_phone?: string;
+        } | null;
         error: { code: string; message: string } | null;
       };
 
       if (!res.ok || json.error) {
-        const errorCode = json.error?.code ?? 'INTERNAL_ERROR';
+        const errorCode = json.error?.code ?? "INTERNAL_ERROR";
         setSubmitError(t(`errors.${errorCode}` as Parameters<typeof t>[0]));
         return;
       }
@@ -197,7 +224,9 @@ function BookingContent() {
         setNewAccountPhone(json.data.customer_phone ?? customerPhone);
       }
       setBookingSummary({
-        services: selectedCategories.map((c) => getLocaleText(c.name_i18n, locale) || c.name),
+        services: selectedCategories.map(
+          (c) => getLocaleText(c.name_i18n, locale) || c.name,
+        ),
         date: selectedDate,
         time: selectedTime,
         duration: totalDuration,
@@ -213,7 +242,9 @@ function BookingContent() {
   }
 
   // ── Computed ──
-  const selectedCategories = bookingCategories.filter((c) => selectedCategoryIds.includes(c.id));
+  const selectedCategories = bookingCategories.filter((c) =>
+    selectedCategoryIds.includes(c.id),
+  );
 
   const totalDuration = (() => {
     if (selectedCategories.length === 0) return 0;
@@ -227,7 +258,9 @@ function BookingContent() {
   const showParallelBadge =
     selectedCategories.length >= 2 &&
     selectedCategories.every(
-      (c) => c.parallel_group !== null && c.parallel_group === selectedCategories[0]!.parallel_group,
+      (c) =>
+        c.parallel_group !== null &&
+        c.parallel_group === selectedCategories[0]!.parallel_group,
     );
 
   const canGoNext: Record<number, boolean> = {
@@ -253,27 +286,32 @@ function BookingContent() {
                     <div className="flex flex-col items-center">
                       <div
                         className={cn(
-                          'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors',
+                          "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors",
                           done
-                            ? 'bg-accent text-text-inverse'
+                            ? "bg-accent text-text-inverse"
                             : active
-                            ? 'bg-accent/20 text-accent border border-accent'
-                            : 'bg-bg-secondary text-text-muted',
+                              ? "bg-accent/20 text-accent border border-accent"
+                              : "bg-bg-secondary text-text-muted",
                         )}
                       >
                         {done ? <Check size={14} /> : idx + 1}
                       </div>
                       <span
                         className={cn(
-                          'text-[10px] font-body mt-1 hidden sm:block',
-                          active ? 'text-accent' : 'text-text-muted',
+                          "text-[10px] font-body mt-1 hidden sm:block",
+                          active ? "text-accent" : "text-text-muted",
                         )}
                       >
                         {t(`booking.${key}`)}
                       </span>
                     </div>
                     {idx < STEPS.length - 1 && (
-                      <div className={cn('flex-1 h-px mx-2', done ? 'bg-accent' : 'bg-border')} />
+                      <div
+                        className={cn(
+                          "flex-1 h-px mx-2",
+                          done ? "bg-accent" : "bg-border",
+                        )}
+                      />
                     )}
                   </div>
                 );
@@ -286,7 +324,6 @@ function BookingContent() {
       {/* Step content */}
       <div className="mx-auto max-w-2xl px-4 py-10">
         <AnimatePresence mode="wait" custom={direction}>
-
           {/* ── Step 0: Select booking category ── */}
           {step === 0 && (
             <motion.div
@@ -296,10 +333,10 @@ function BookingContent() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ type: 'tween', duration: 0.25 }}
+              transition={{ type: "tween", duration: 0.25 }}
             >
               <h2 className="font-display text-2xl text-text-primary mb-6">
-                {t('booking.select_service')}
+                {t("booking.select_service")}
               </h2>
 
               {bookingCategories.length === 0 && (
@@ -319,21 +356,25 @@ function BookingContent() {
                       key={cat.id}
                       onClick={() => {
                         setSelectedCategoryIds((prev) =>
-                          selected ? prev.filter((id) => id !== cat.id) : [...prev, cat.id],
+                          selected
+                            ? prev.filter((id) => id !== cat.id)
+                            : [...prev, cat.id],
                         );
-                        setSelectedTime('');
+                        setSelectedTime("");
                         setSlots([]);
                         setUseParallel(false);
                       }}
                       className={cn(
-                        'w-full flex items-center justify-between p-4 rounded-2xl border transition-colors text-left',
+                        "w-full flex items-center justify-between p-4 rounded-2xl border transition-colors text-left",
                         selected
-                          ? 'border-accent bg-accent/5'
-                          : 'border-border hover:border-accent/50',
+                          ? "border-accent bg-accent/5"
+                          : "border-border hover:border-accent/50",
                       )}
                     >
                       <div>
-                        <p className="font-display text-base text-text-primary">{name}</p>
+                        <p className="font-display text-base text-text-primary">
+                          {name}
+                        </p>
                         <p className="font-body text-sm text-text-muted mt-0.5">
                           ~{cat.duration_min} phút · {cat.slot_count} slot
                         </p>
@@ -352,7 +393,7 @@ function BookingContent() {
               {showParallelBadge && (
                 <div className="mt-4 flex items-center gap-2 text-accent font-body text-xs p-3 bg-accent/5 rounded-xl border border-accent/20">
                   <Zap size={14} />
-                  {t('booking.option_parallel_note')}
+                  {t("booking.option_parallel_note")}
                 </div>
               )}
             </motion.div>
@@ -367,33 +408,37 @@ function BookingContent() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ type: 'tween', duration: 0.25 }}
+              transition={{ type: "tween", duration: 0.25 }}
             >
               <h2 className="font-display text-2xl text-text-primary mb-6">
-                {t('booking.select_date')}
+                {t("booking.select_date")}
               </h2>
 
               <div className="mb-6">
                 <label className="font-body text-sm text-text-muted block mb-2">
-                  {t('booking.select_date')}
+                  {t("booking.select_date")}
                 </label>
                 <DatePicker
                   value={selectedDate}
-                  minDate={new Date(Date.now() + 3600 * 1000).toISOString().slice(0, 10)}
-                  maxDate={new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString().slice(0, 10)}
+                  minDate={new Date(Date.now() + 3600 * 1000)
+                    .toISOString()
+                    .slice(0, 10)}
+                  maxDate={new Date(Date.now() + 60 * 24 * 3600 * 1000)
+                    .toISOString()
+                    .slice(0, 10)}
                   onChange={(d) => {
                     setSelectedDate(d);
-                    setSelectedTime('');
+                    setSelectedTime("");
                     setSlots([]);
                   }}
-                  placeholder={t('booking.select_date')}
+                  placeholder={t("booking.select_date")}
                 />
               </div>
 
               {selectedDate && (
                 <>
                   <label className="font-body text-sm text-text-muted block mb-3">
-                    {t('booking.select_time')}
+                    {t("booking.select_time")}
                   </label>
 
                   {slotsLoading && (
@@ -412,12 +457,12 @@ function BookingContent() {
                           disabled={!slot.available}
                           onClick={() => setSelectedTime(slot.time)}
                           className={cn(
-                            'font-body text-sm py-2.5 rounded-xl border transition-colors',
+                            "font-body text-sm py-2.5 rounded-xl border transition-colors",
                             !slot.available
-                              ? 'border-border text-text-muted/40 cursor-not-allowed bg-bg-secondary'
+                              ? "border-border text-text-muted/40 cursor-not-allowed bg-bg-secondary"
                               : selectedTime === slot.time
-                              ? 'border-accent bg-accent text-text-inverse'
-                              : 'border-border hover:border-accent text-text-primary',
+                                ? "border-accent bg-accent text-text-inverse"
+                                : "border-border hover:border-accent text-text-primary",
                           )}
                         >
                           {slot.time}
@@ -429,33 +474,44 @@ function BookingContent() {
                   {/* Parallel option */}
                   {selectedTime && parallelAvailable && (
                     <div className="mt-6 space-y-2">
-                      <p className="font-body text-xs text-text-muted mb-2">Tuỳ chọn phục vụ:</p>
+                      <p className="font-body text-xs text-text-muted mb-2">
+                        Tuỳ chọn phục vụ:
+                      </p>
                       {[true, false].map((parallel) => (
                         <button
                           key={String(parallel)}
                           onClick={() => setUseParallel(parallel)}
                           className={cn(
-                            'w-full text-left p-4 rounded-2xl border transition-colors',
+                            "w-full text-left p-4 rounded-2xl border transition-colors",
                             useParallel === parallel
-                              ? 'border-accent bg-accent/5'
-                              : 'border-border hover:border-accent/50',
+                              ? "border-accent bg-accent/5"
+                              : "border-border hover:border-accent/50",
                           )}
                         >
                           <div className="flex items-center gap-2 mb-1">
-                            {parallel && <Zap size={14} className="text-accent" />}
+                            {parallel && (
+                              <Zap size={14} className="text-accent" />
+                            )}
                             <span className="font-body text-sm text-text-primary">
                               {parallel
-                                ? t('booking.option_parallel', {
-                                    duration: Math.max(...selectedCategories.map((c) => c.duration_min)),
+                                ? t("booking.option_parallel", {
+                                    duration: Math.max(
+                                      ...selectedCategories.map(
+                                        (c) => c.duration_min,
+                                      ),
+                                    ),
                                   })
-                                : t('booking.option_sequential', {
-                                    duration: selectedCategories.reduce((s, c) => s + c.duration_min, 0),
+                                : t("booking.option_sequential", {
+                                    duration: selectedCategories.reduce(
+                                      (s, c) => s + c.duration_min,
+                                      0,
+                                    ),
                                   })}
                             </span>
                           </div>
                           {parallel && (
                             <span className="font-body text-xs text-accent">
-                              {t('booking.option_parallel_note')}
+                              {t("booking.option_parallel_note")}
                             </span>
                           )}
                         </button>
@@ -476,27 +532,32 @@ function BookingContent() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ type: 'tween', duration: 0.25 }}
+              transition={{ type: "tween", duration: 0.25 }}
             >
               <h2 className="font-display text-2xl text-text-primary mb-6">
-                {t('booking.select_staff')}
+                {t("booking.select_staff")}
               </h2>
 
               <button
-                onClick={() => setSelectedStaffId('')}
+                onClick={() => setSelectedStaffId("")}
                 className={cn(
-                  'w-full flex items-center gap-4 p-4 rounded-2xl border mb-3 transition-colors text-left',
-                  selectedStaffId === ''
-                    ? 'border-accent bg-accent/5'
-                    : 'border-border hover:border-accent/50',
+                  "w-full flex items-center gap-4 p-4 rounded-2xl border mb-3 transition-colors text-left",
+                  selectedStaffId === ""
+                    ? "border-accent bg-accent/5"
+                    : "border-border hover:border-accent/50",
                 )}
               >
                 <div className="w-10 h-10 rounded-full bg-bg-secondary flex items-center justify-center">
                   <User size={18} className="text-text-muted" />
                 </div>
-                <p className="font-body text-sm text-text-primary">{t('booking.any_staff')}</p>
-                {selectedStaffId === '' && (
-                  <Check size={16} className="text-accent ml-auto flex-shrink-0" />
+                <p className="font-body text-sm text-text-primary">
+                  {t("booking.any_staff")}
+                </p>
+                {selectedStaffId === "" && (
+                  <Check
+                    size={16}
+                    className="text-accent ml-auto flex-shrink-0"
+                  />
                 )}
               </button>
 
@@ -505,17 +566,20 @@ function BookingContent() {
                   key={staff.id}
                   onClick={() => setSelectedStaffId(staff.id)}
                   className={cn(
-                    'w-full flex items-center gap-4 p-4 rounded-2xl border mb-3 transition-colors text-left',
+                    "w-full flex items-center gap-4 p-4 rounded-2xl border mb-3 transition-colors text-left",
                     selectedStaffId === staff.id
-                      ? 'border-accent bg-accent/5'
-                      : 'border-border hover:border-accent/50',
+                      ? "border-accent bg-accent/5"
+                      : "border-border hover:border-accent/50",
                   )}
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: `${staff.color}33` }}
                   >
-                    <span className="font-display text-sm" style={{ color: staff.color }}>
+                    <span
+                      className="font-display text-sm"
+                      style={{ color: staff.color }}
+                    >
                       {staff.full_name.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -525,16 +589,21 @@ function BookingContent() {
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: staff.color }}
                       />
-                      <p className="font-body text-sm text-text-primary">{staff.full_name}</p>
+                      <p className="font-body text-sm text-text-primary">
+                        {staff.full_name}
+                      </p>
                     </div>
                     {staff.specialties.length > 0 && (
                       <p className="font-body text-xs text-text-muted mt-0.5">
-                        {staff.specialties.join(' · ')}
+                        {staff.specialties.join(" · ")}
                       </p>
                     )}
                   </div>
                   {selectedStaffId === staff.id && (
-                    <Check size={16} className="text-accent ml-auto flex-shrink-0" />
+                    <Check
+                      size={16}
+                      className="text-accent ml-auto flex-shrink-0"
+                    />
                   )}
                 </button>
               ))}
@@ -550,25 +619,33 @@ function BookingContent() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ type: 'tween', duration: 0.25 }}
+              transition={{ type: "tween", duration: 0.25 }}
             >
               <h2 className="font-display text-2xl text-text-primary mb-6">
-                {t('booking.step_confirm')}
+                {t("booking.step_confirm")}
               </h2>
 
               {/* Summary */}
               <div className="bg-bg-secondary rounded-2xl p-5 mb-6 space-y-3">
                 <div className="flex items-start gap-3">
-                  <CalendarDays size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                  <CalendarDays
+                    size={16}
+                    className="text-accent mt-0.5 flex-shrink-0"
+                  />
                   <div>
                     <p className="font-body text-xs text-text-muted">Ngày</p>
                     <p className="font-body text-sm text-text-primary">
-                      {selectedDate ? formatDate(new Date(selectedDate), locale) : selectedDate}
+                      {selectedDate
+                        ? formatDate(new Date(selectedDate), locale)
+                        : selectedDate}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Clock size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                  <Clock
+                    size={16}
+                    className="text-accent mt-0.5 flex-shrink-0"
+                  />
                   <div>
                     <p className="font-body text-xs text-text-muted">Giờ</p>
                     <p className="font-body text-sm text-text-primary">
@@ -578,7 +655,10 @@ function BookingContent() {
                 </div>
                 <div className="border-t border-border pt-3 space-y-1">
                   {selectedCategories.map((c) => (
-                    <p key={c.id} className="font-body text-sm text-text-primary">
+                    <p
+                      key={c.id}
+                      className="font-body text-sm text-text-primary"
+                    >
                       {getLocaleText(c.name_i18n, locale) || c.name}
                       {useParallel && selectedCategories.length > 1 && (
                         <span className="text-accent ml-1 text-xs">
@@ -594,46 +674,48 @@ function BookingContent() {
               <div className="space-y-4">
                 <div>
                   <label className="font-body text-sm text-text-muted block mb-1.5">
-                    {t('booking.your_name')}
+                    {t("booking.your_name")}
                   </label>
                   <input
                     type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder={t('auth.name_placeholder')}
+                    placeholder={t("auth.name_placeholder")}
                     className="w-full font-body text-sm border border-border rounded-xl px-4 py-3 bg-bg-primary focus:outline-none focus:border-accent"
                   />
                 </div>
                 <div>
                   <label className="font-body text-sm text-text-muted block mb-1.5">
-                    {t('booking.your_phone')}
+                    {t("booking.your_phone")}
                   </label>
                   <input
                     type="tel"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    placeholder={t('auth.phone_placeholder')}
+                    placeholder={t("auth.phone_placeholder")}
                     className={cn(
-                      'w-full font-body text-sm border rounded-xl px-4 py-3 bg-bg-primary focus:outline-none transition-colors',
-                      customerPhone.length > 0 && !/^0[35789][0-9]{8}$/.test(customerPhone)
-                        ? 'border-red-400 focus:border-red-500'
-                        : 'border-border focus:border-accent',
+                      "w-full font-body text-sm border rounded-xl px-4 py-3 bg-bg-primary focus:outline-none transition-colors",
+                      customerPhone.length > 0 &&
+                        !/^0[35789][0-9]{8}$/.test(customerPhone)
+                        ? "border-red-400 focus:border-red-500"
+                        : "border-border focus:border-accent",
                     )}
                   />
-                  {customerPhone.length > 0 && !/^0[35789][0-9]{8}$/.test(customerPhone) && (
-                    <p className="font-body text-xs text-red-500 mt-1.5">
-                      {t('auth.invalid_phone')}
-                    </p>
-                  )}
+                  {customerPhone.length > 0 &&
+                    !/^0[35789][0-9]{8}$/.test(customerPhone) && (
+                      <p className="font-body text-xs text-red-500 mt-1.5">
+                        {t("auth.invalid_phone")}
+                      </p>
+                    )}
                 </div>
                 <div>
                   <label className="font-body text-sm text-text-muted block mb-1.5">
-                    {t('booking.notes_placeholder')}
+                    {t("booking.notes_placeholder")}
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder={t('booking.notes_placeholder')}
+                    placeholder={t("booking.notes_placeholder")}
                     rows={3}
                     className="w-full font-body text-sm border border-border rounded-xl px-4 py-3 bg-bg-primary focus:outline-none focus:border-accent resize-none"
                   />
@@ -662,16 +744,16 @@ function BookingContent() {
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ type: 'spring', delay: 0.1, stiffness: 200 }}
+                  transition={{ type: "spring", delay: 0.1, stiffness: 200 }}
                   className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-5"
                 >
                   <Check size={28} className="text-accent" />
                 </motion.div>
                 <h2 className="font-display text-2xl text-text-primary mb-1">
-                  {t('booking.success_title')}
+                  {t("booking.success_title")}
                 </h2>
                 <p className="font-body text-sm text-text-muted">
-                  {t('booking.success_sub')}
+                  {t("booking.success_sub")}
                 </p>
               </div>
 
@@ -679,13 +761,21 @@ function BookingContent() {
               <div className="bg-bg-secondary rounded-2xl p-5 space-y-4 mb-5">
                 {/* Services */}
                 <div className="flex gap-3">
-                  <Check size={15} className="text-accent mt-0.5 flex-shrink-0" />
+                  <Check
+                    size={15}
+                    className="text-accent mt-0.5 flex-shrink-0"
+                  />
                   <div>
                     <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
-                      {t('booking.summary_service')}
+                      {t("booking.summary_service")}
                     </p>
                     {bookingSummary.services.map((s, i) => (
-                      <p key={i} className="font-body text-sm text-text-primary">{s}</p>
+                      <p
+                        key={i}
+                        className="font-body text-sm text-text-primary"
+                      >
+                        {s}
+                      </p>
                     ))}
                   </div>
                 </div>
@@ -694,10 +784,13 @@ function BookingContent() {
 
                 {/* Date */}
                 <div className="flex gap-3">
-                  <CalendarDays size={15} className="text-accent mt-0.5 flex-shrink-0" />
+                  <CalendarDays
+                    size={15}
+                    className="text-accent mt-0.5 flex-shrink-0"
+                  />
                   <div>
                     <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
-                      {t('booking.summary_date')}
+                      {t("booking.summary_date")}
                     </p>
                     <p className="font-body text-sm text-text-primary">
                       {formatDate(new Date(bookingSummary.date), locale)}
@@ -707,15 +800,20 @@ function BookingContent() {
 
                 {/* Time */}
                 <div className="flex gap-3">
-                  <Clock size={15} className="text-accent mt-0.5 flex-shrink-0" />
+                  <Clock
+                    size={15}
+                    className="text-accent mt-0.5 flex-shrink-0"
+                  />
                   <div>
                     <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
-                      {t('booking.summary_time')}
+                      {t("booking.summary_time")}
                     </p>
                     <p className="font-body text-sm text-text-primary">
                       {bookingSummary.time}
                       <span className="text-text-muted ml-2">
-                        {t('booking.summary_duration', { duration: bookingSummary.duration })}
+                        {t("booking.summary_duration", {
+                          duration: bookingSummary.duration,
+                        })}
                       </span>
                     </p>
                   </div>
@@ -725,13 +823,20 @@ function BookingContent() {
 
                 {/* Customer */}
                 <div className="flex gap-3">
-                  <User size={15} className="text-accent mt-0.5 flex-shrink-0" />
+                  <User
+                    size={15}
+                    className="text-accent mt-0.5 flex-shrink-0"
+                  />
                   <div className="space-y-0.5">
                     <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
-                      {t('booking.summary_name')}
+                      {t("booking.summary_name")}
                     </p>
-                    <p className="font-body text-sm text-text-primary">{bookingSummary.customerName}</p>
-                    <p className="font-body text-sm text-text-muted">{bookingSummary.customerPhone}</p>
+                    <p className="font-body text-sm text-text-primary">
+                      {bookingSummary.customerName}
+                    </p>
+                    <p className="font-body text-sm text-text-muted">
+                      {bookingSummary.customerPhone}
+                    </p>
                   </div>
                 </div>
 
@@ -739,9 +844,11 @@ function BookingContent() {
                 {bookingSummary.notes && (
                   <div className="bg-white rounded-xl px-4 py-3">
                     <p className="font-body text-[11px] text-text-muted uppercase tracking-wider mb-1">
-                      {t('booking.summary_notes')}
+                      {t("booking.summary_notes")}
                     </p>
-                    <p className="font-body text-sm text-text-primary">{bookingSummary.notes}</p>
+                    <p className="font-body text-sm text-text-primary">
+                      {bookingSummary.notes}
+                    </p>
                   </div>
                 )}
               </div>
@@ -750,16 +857,17 @@ function BookingContent() {
               {isNewAccount && (
                 <div className="mb-5 rounded-2xl border border-accent/40 bg-accent/5 p-4 space-y-1">
                   <p className="font-body text-xs font-semibold text-accent uppercase tracking-wider mb-2">
-                    {t('new_account_notice.title')}
+                    {t("new_account_notice.title")}
                   </p>
                   <p className="font-body text-sm text-text-primary">
-                    📱 {t('new_account_notice.phone', { phone: newAccountPhone })}
+                    📱{" "}
+                    {t("new_account_notice.phone", { phone: newAccountPhone })}
                   </p>
                   <p className="font-body text-sm text-text-primary">
-                    🔑 {t('new_account_notice.password')}
+                    🔑 {t("new_account_notice.password")}
                   </p>
                   <p className="font-body text-xs text-text-muted mt-2">
-                    {t('new_account_notice.login_hint')}
+                    {t("new_account_notice.login_hint")}
                   </p>
                 </div>
               )}
@@ -770,15 +878,17 @@ function BookingContent() {
                 <button
                   onClick={() => {
                     const text = [
-                      '🏪 Hanie Studio',
+                      "🏪 Hanie Studio",
                       `📅 ${formatDate(new Date(bookingSummary.date), locale)}`,
                       `⏰ ${bookingSummary.time} (~${bookingSummary.duration} phút)`,
-                      `✨ ${bookingSummary.services.join(', ')}`,
+                      `✨ ${bookingSummary.services.join(", ")}`,
                       `👤 ${bookingSummary.customerName}`,
                       `📱 ${bookingSummary.customerPhone}`,
-                      '📍 55 Nguyễn Nhạc, Quy Nhơn, Bình Định',
-                      ...(bookingSummary.notes ? [`📝 ${bookingSummary.notes}`] : []),
-                    ].join('\n');
+                      "📍 09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai",
+                      ...(bookingSummary.notes
+                        ? [`📝 ${bookingSummary.notes}`]
+                        : []),
+                    ].join("\n");
                     void navigator.clipboard.writeText(text).then(() => {
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2500);
@@ -788,17 +898,28 @@ function BookingContent() {
                     border border-border rounded-full py-3.5 hover:bg-bg-secondary transition-colors text-text-primary"
                 >
                   <Copy size={15} />
-                  {copied ? t('booking.summary_copied') : t('booking.summary_copy')}
+                  {copied
+                    ? t("booking.summary_copied")
+                    : t("booking.summary_copy")}
                 </button>
 
                 {/* Google Calendar */}
                 <a
                   href={(() => {
-                    const start = new Date(`${bookingSummary.date}T${bookingSummary.time}:00+07:00`);
-                    const end   = new Date(start.getTime() + bookingSummary.duration * 60_000);
-                    const fmt   = (d: Date) => d.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
-                    const title = encodeURIComponent(`Hanie Studio – ${bookingSummary.services.join(', ')}`);
-                    const loc   = encodeURIComponent('55 Nguyễn Nhạc, Quy Nhơn, Bình Định');
+                    const start = new Date(
+                      `${bookingSummary.date}T${bookingSummary.time}:00+07:00`,
+                    );
+                    const end = new Date(
+                      start.getTime() + bookingSummary.duration * 60_000,
+                    );
+                    const fmt = (d: Date) =>
+                      d.toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+                    const title = encodeURIComponent(
+                      `Hanie Studio – ${bookingSummary.services.join(", ")}`,
+                    );
+                    const loc = encodeURIComponent(
+                      "09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai",
+                    );
                     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&location=${loc}`;
                   })()}
                   target="_blank"
@@ -807,7 +928,7 @@ function BookingContent() {
                     border border-border rounded-full py-3.5 hover:bg-bg-secondary transition-colors text-text-primary"
                 >
                   <CalendarPlus size={15} />
-                  {t('booking.summary_calendar')}
+                  {t("booking.summary_calendar")}
                 </a>
 
                 {/* Home */}
@@ -817,14 +938,14 @@ function BookingContent() {
                     bg-accent hover:bg-accent-dark text-text-inverse
                     px-8 py-4 rounded-full transition-colors duration-200"
                 >
-                  {t('nav.home')}
+                  {t("nav.home")}
                 </Link>
 
                 <Link
                   href="/history"
                   className="block text-center font-body text-sm text-accent hover:text-accent-dark transition-colors py-2"
                 >
-                  {t('nav.history')}
+                  {t("nav.history")}
                 </Link>
               </div>
             </motion.div>
@@ -839,7 +960,7 @@ function BookingContent() {
                 onClick={goPrev}
                 className="font-body text-sm text-text-muted hover:text-text-primary transition-colors"
               >
-                ← {t('common.back')}
+                ← {t("common.back")}
               </button>
             ) : (
               <div />
@@ -850,26 +971,28 @@ function BookingContent() {
                 onClick={goNext}
                 disabled={!canGoNext[step]}
                 className={cn(
-                  'flex items-center gap-2 font-body text-sm font-medium tracking-widest uppercase px-6 py-3 rounded-full transition-colors',
+                  "flex items-center gap-2 font-body text-sm font-medium tracking-widest uppercase px-6 py-3 rounded-full transition-colors",
                   canGoNext[step]
-                    ? 'bg-accent text-text-inverse hover:bg-accent-dark'
-                    : 'bg-bg-secondary text-text-muted cursor-not-allowed',
+                    ? "bg-accent text-text-inverse hover:bg-accent-dark"
+                    : "bg-bg-secondary text-text-muted cursor-not-allowed",
                 )}
               >
-                {t('common.next')} <ChevronRight size={16} />
+                {t("common.next")} <ChevronRight size={16} />
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
                 disabled={!canGoNext[3] || submitting}
                 className={cn(
-                  'flex items-center gap-2 font-body text-sm font-medium tracking-widest uppercase px-6 py-3 rounded-full transition-colors',
+                  "flex items-center gap-2 font-body text-sm font-medium tracking-widest uppercase px-6 py-3 rounded-full transition-colors",
                   canGoNext[3] && !submitting
-                    ? 'bg-accent text-text-inverse hover:bg-accent-dark'
-                    : 'bg-bg-secondary text-text-muted cursor-not-allowed',
+                    ? "bg-accent text-text-inverse hover:bg-accent-dark"
+                    : "bg-bg-secondary text-text-muted cursor-not-allowed",
                 )}
               >
-                {submitting ? t('common.loading') : t('booking.confirm_booking')}
+                {submitting
+                  ? t("common.loading")
+                  : t("booking.confirm_booking")}
               </button>
             )}
           </div>

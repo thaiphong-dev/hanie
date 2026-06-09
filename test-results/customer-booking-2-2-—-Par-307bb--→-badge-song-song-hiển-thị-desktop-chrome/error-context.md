@@ -132,7 +132,7 @@ Call log:
             - list [ref=e104]:
               - listitem [ref=e105]:
                 - img [ref=e106]
-                - generic [ref=e109]: 55 Nguyễn Nhạc, Quy Nhơn, Bình Định
+                - generic [ref=e109]: 09A Nguyễn Đình Thụ, Quy Nhơn Nam, Gia Lai
               - listitem [ref=e110]:
                 - img [ref=e111]
                 - link "0967 273 066" [ref=e113] [cursor=pointer]:
